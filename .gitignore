@@ -1,0 +1,28 @@
+# Ambientes virtuais e cache do Python
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+node_modules/
+
+# Credenciais e configurações locais
+.env
+.env.*
+secrets.json
+
+# Dados operacionais e bancos locais
+historico_premiacao.db
+*.sqlite
+*.sqlite3
+dados_reais/
+uploads/
+powerpoint_teste.pptx
+
+# Arquivos temporários e de sistema
+*.log
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

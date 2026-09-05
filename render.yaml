@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: performance-analytics-demo
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python servidor_html.py
+    healthCheckPath: /api/saude
+    envVars:
+      - key: PREMIACAO_DEMO
+        value: "1"
+      - key: PREMIACAO_OPEN_BROWSER
+        value: "0"
+

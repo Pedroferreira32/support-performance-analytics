@@ -1,0 +1,12 @@
+{
+  "name": "performance-analytics-premiacao",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Teste da geração do relatório executivo em PowerPoint.",
+  "scripts": {
+    "test:pptx": "node test_powerpoint.js"
+  },
+  "devDependencies": {
+    "pptxgenjs": "4.0.1"
+  }
+}
