@@ -49,6 +49,7 @@ ARQUIVOS_PUBLICOS = {
     "/dashboard.css": "dashboard.css",
     "/dashboard.js": "dashboard.js",
     "/powerpoint.js": "powerpoint.js",
+    "/social-preview.svg": "social-preview.svg",
     "/vendor/jszip.min.js": "vendor/jszip.min.js",
     "/vendor/pptxgen.min.js": "vendor/pptxgen.min.js",
 }
@@ -335,10 +336,15 @@ def resumo_gerencial(
 
     competencias_ate_atual = [item for item in db.competencias() if item <= competencia][-6:]
     serie_equipe = []
+    configuracao_serie_anterior: dict[str, Any] | None = None
     for item in competencias_ate_atual:
         mensal = db.ranking(item)
         if mensal.empty:
             continue
+        info_mensal = db.competencia_info(item) or {}
+        configuracao_mensal = carregar_json(
+            info_mensal.get("configuracao_json"), {}
+        )
         serie_equipe.append(
             {
                 "competencia": item,
@@ -348,8 +354,18 @@ def resumo_gerencial(
                 "elegiveis": int(mensal["elegivel"].sum()),
                 "premiados": int(mensal["premiado"].sum()),
                 "funcionarios": int(len(mensal)),
+                "perfil_regra": configuracao_mensal.get(
+                    "perfil_regra", "Regra oficial"
+                ),
+                "comparavel_com_anterior": bool(
+                    configuracao_serie_anterior
+                    and _perfis_comparaveis(
+                        configuracao_mensal, configuracao_serie_anterior
+                    )
+                ),
             }
         )
+        configuracao_serie_anterior = configuracao_mensal
 
     competencias_anteriores = [item for item in db.competencias() if item < competencia]
     competencia_anterior = competencias_anteriores[-1] if competencias_anteriores else None
@@ -397,11 +413,19 @@ def resumo_gerencial(
             prioridade = "Média"
             situacao = "Elegível fora do Top 3"
             gap_top3 = max(0.0, (nota_terceiro or nota) - nota)
-            objetivo = f"Recuperar {core.numero_br(gap_top3, 2)} ponto(s) para a referência atual do Top 3"
+            unidade = "ponto" if round(gap_top3, 2) == 1 else "pontos"
+            objetivo = (
+                f"Recuperar {core.numero_br(gap_top3, 2)} {unidade} para a "
+                "referência atual do Top 3"
+            )
         else:
             prioridade = "Alta"
             situacao = "Abaixo da meta"
-            objetivo = f"Recuperar {core.numero_br(core.META_PADRAO - nota, 2)} ponto(s) para a meta"
+            gap_meta = core.META_PADRAO - nota
+            unidade = "ponto" if round(gap_meta, 2) == 1 else "pontos"
+            objetivo = (
+                f"Recuperar {core.numero_br(gap_meta, 2)} {unidade} para a meta"
+            )
         if oportunidade["indicador"] == "Quantidade":
             alvo = min(maior_quantidade, int(math.ceil(int(row["atendimentos"]) * 1.05)))
             acao = f"Usar {alvo} atendimentos como referência de curto prazo, preservando a qualidade"
@@ -450,6 +474,274 @@ def resumo_gerencial(
             "observacao_alvos": (
                 "As referências de curto prazo são direcionais. A nota é normalizada pelo melhor resultado da equipe."
             ),
+        }
+    )
+
+
+CODIGOS_QUALIDADE = {
+    "SEM_ATENDENTE",
+    "DATA_INVALIDA",
+    "SEM_FINALIZACAO",
+    "DURACAO_NEGATIVA",
+}
+CODIGOS_ESCOPO = {"FORA_SUPORTE", "ATENDENTE_EXCLUIDO", "PERIODO"}
+CODIGOS_EXCECAO = {"ACIMA_H"}
+
+
+def _taxonomia_exclusao(codigo: object) -> str:
+    codigo_texto = str(codigo or "")
+    if codigo_texto in CODIGOS_QUALIDADE:
+        return "Qualidade dos dados"
+    if codigo_texto in CODIGOS_ESCOPO:
+        return "Fora do escopo"
+    if codigo_texto in CODIGOS_EXCECAO:
+        return "Exceção operacional"
+    return "Outros controles"
+
+
+def _metricas_operacionais_mes(
+    db: core.BancoHistorico, competencia: str
+) -> dict[str, Any]:
+    info = db.competencia_info(competencia) or {}
+    validos = db.validos(competencia)
+    exclusoes = db.exclusoes(competencia)
+    ranking = db.ranking(competencia)
+
+    if validos.empty:
+        tma = pd.Series(dtype=float)
+        avaliacoes = pd.Series(dtype=float)
+    else:
+        regulares = validos.loc[
+            pd.to_numeric(validos["suspeito_automatico"], errors="coerce")
+            .fillna(0)
+            .eq(0)
+        ]
+        tma = pd.to_numeric(regulares["tma_minutos"], errors="coerce").dropna()
+        avaliacoes = pd.to_numeric(validos["avaliacao"], errors="coerce").dropna()
+
+    total_importado = int(info.get("total_linhas") or 0)
+    total_validos = int(info.get("validos") or len(validos))
+    codigos = (
+        exclusoes["motivo_codigo"].astype(str)
+        if not exclusoes.empty
+        else pd.Series(dtype=str)
+    )
+    erros_qualidade = int(codigos.isin(CODIGOS_QUALIDADE).sum())
+    fora_escopo = int(codigos.isin(CODIGOS_ESCOPO).sum())
+    excecoes = int(codigos.isin(CODIGOS_EXCECAO).sum())
+    automaticos = int(
+        pd.to_numeric(
+            validos.get("suspeito_automatico", pd.Series(dtype=float)),
+            errors="coerce",
+        )
+        .fillna(0)
+        .sum()
+    )
+    return {
+        "competencia": competencia,
+        "total_importado": total_importado,
+        "base_premiavel": total_validos,
+        "base_operacional_observada": total_validos + excecoes,
+        "erros_qualidade": erros_qualidade,
+        "fora_escopo": fora_escopo,
+        "excecoes_operacionais": excecoes,
+        "automaticos": automaticos,
+        "tma_medio": float(tma.mean()) if not tma.empty else None,
+        "tma_mediano": float(tma.median()) if not tma.empty else None,
+        "tma_p90": float(tma.quantile(0.9)) if not tma.empty else None,
+        "avaliacao_media": float(avaliacoes.mean()) if not avaliacoes.empty else None,
+        "avaliacoes": int(len(avaliacoes)),
+        "cobertura_avaliacoes": (
+            len(avaliacoes) / total_validos * 100 if total_validos else 0
+        ),
+        "taxa_validacao": (
+            total_validos / total_importado * 100 if total_importado else 0
+        ),
+        "taxa_qualidade": (
+            erros_qualidade / total_importado * 100 if total_importado else 0
+        ),
+        "participacao_automaticos": (
+            automaticos / total_validos * 100 if total_validos else 0
+        ),
+        "funcionarios": int(len(ranking)),
+    }
+
+
+def resumo_operacional(
+    db: core.BancoHistorico, competencia: str | None
+) -> dict[str, Any]:
+    """Expõe saúde operacional sem misturar a base com a nota da campanha."""
+    competencias = db.competencias()[::-1]
+    vazio = {
+        "competencias": competencias,
+        "competencia": competencia,
+        "metricas": {},
+        "comparacao": {},
+        "serie": [],
+        "volume_por_dia": [],
+        "volume_por_hora": [],
+        "atendentes": [],
+        "categorias_exclusao": [],
+        "info": None,
+    }
+    if not competencia:
+        return vazio
+
+    info = db.competencia_info(competencia)
+    if not info:
+        return vazio
+    validos = db.validos(competencia)
+    exclusoes = db.exclusoes(competencia)
+    ranking = db.ranking(competencia)
+    metricas = _metricas_operacionais_mes(db, competencia)
+
+    anteriores = [item for item in db.competencias() if item < competencia]
+    competencia_anterior = anteriores[-1] if anteriores else None
+    anterior = (
+        _metricas_operacionais_mes(db, competencia_anterior)
+        if competencia_anterior
+        else None
+    )
+    comparacao: dict[str, Any] = {
+        "competencia_anterior": competencia_anterior,
+        "disponivel": bool(anterior),
+    }
+    for chave in (
+        "base_premiavel",
+        "base_operacional_observada",
+        "tma_mediano",
+        "tma_p90",
+        "avaliacao_media",
+        "cobertura_avaliacoes",
+        "erros_qualidade",
+        "automaticos",
+    ):
+        atual_valor = metricas.get(chave)
+        anterior_valor = anterior.get(chave) if anterior else None
+        comparacao[f"{chave}_anterior"] = anterior_valor
+        comparacao[f"delta_{chave}"] = (
+            float(atual_valor) - float(anterior_valor)
+            if atual_valor is not None and anterior_valor is not None
+            else None
+        )
+        comparacao[f"delta_pct_{chave}"] = (
+            (float(atual_valor) / float(anterior_valor) - 1) * 100
+            if atual_valor is not None
+            and anterior_valor not in (None, 0)
+            else None
+        )
+
+    volume_por_dia: list[dict[str, Any]] = []
+    volume_por_hora: list[dict[str, Any]] = []
+    atendentes: list[dict[str, Any]] = []
+    if not validos.empty:
+        base = validos.copy()
+        base["inicio_dt"] = pd.to_datetime(base["inicio"], errors="coerce")
+        base["avaliacao_num"] = pd.to_numeric(base["avaliacao"], errors="coerce")
+        base["tma_num"] = pd.to_numeric(base["tma_minutos"], errors="coerce")
+        base_regular = base.loc[
+            pd.to_numeric(base["suspeito_automatico"], errors="coerce")
+            .fillna(0)
+            .eq(0)
+        ].copy()
+
+        diarios = (
+            base.dropna(subset=["inicio_dt"])
+            .assign(data=lambda frame: frame["inicio_dt"].dt.strftime("%Y-%m-%d"))
+            .groupby("data", as_index=False)
+            .agg(atendimentos=("protocolo", "size"), avaliacoes=("avaliacao_num", "count"))
+        )
+        volume_por_dia = registros(diarios)
+
+        horarios = (
+            base.dropna(subset=["inicio_dt"])
+            .assign(hora=lambda frame: frame["inicio_dt"].dt.hour)
+            .groupby("hora", as_index=False)
+            .agg(atendimentos=("protocolo", "size"))
+            .sort_values("hora")
+        )
+        volume_por_hora = registros(horarios)
+
+        cobertura = (
+            base.groupby("atendente", as_index=False)
+            .agg(
+                atendimentos_observados=("protocolo", "size"),
+                avaliacoes_observadas=("avaliacao_num", "count"),
+                avaliacao_media_observada=("avaliacao_num", "mean"),
+                automaticos=("suspeito_automatico", "sum"),
+            )
+        )
+        tma_atendente = (
+            base_regular.groupby("atendente", as_index=False)
+            .agg(
+                tma_mediano=("tma_num", "median"),
+                tma_p90=("tma_num", lambda serie: serie.quantile(0.9)),
+            )
+        )
+        cobertura = cobertura.merge(tma_atendente, on="atendente", how="left")
+        cobertura["cobertura_avaliacoes"] = (
+            cobertura["avaliacoes_observadas"]
+            / cobertura["atendimentos_observados"].replace(0, pd.NA)
+            * 100
+        )
+        cobertura["participacao_volume"] = (
+            cobertura["atendimentos_observados"] / max(1, len(base)) * 100
+        )
+        if not ranking.empty:
+            cobertura = cobertura.merge(
+                ranking[["atendente", "rank", "nota_final", "elegivel", "premiado"]],
+                on="atendente",
+                how="left",
+            )
+        cobertura = cobertura.sort_values("atendimentos_observados", ascending=False)
+        atendentes = registros(cobertura)
+
+    categorias_exclusao = []
+    if not exclusoes.empty:
+        categorizada = exclusoes.copy()
+        categorizada["categoria"] = categorizada["motivo_codigo"].map(
+            _taxonomia_exclusao
+        )
+        agrupada = (
+            categorizada.groupby("categoria", as_index=False)
+            .size()
+            .rename(columns={"size": "quantidade"})
+        )
+        ordem = {
+            "Qualidade dos dados": 0,
+            "Fora do escopo": 1,
+            "Exceção operacional": 2,
+            "Outros controles": 3,
+        }
+        agrupada["ordem"] = agrupada["categoria"].map(ordem).fillna(9)
+        categorias_exclusao = registros(agrupada.sort_values("ordem").drop(columns="ordem"))
+
+    serie = [
+        _metricas_operacionais_mes(db, item)
+        for item in [comp for comp in db.competencias() if comp <= competencia][-6:]
+    ]
+    return limpar_json(
+        {
+            "competencias": competencias,
+            "competencia": competencia,
+            "competencia_br": core.competencia_para_br(competencia),
+            "info": {
+                **limpar_json(info),
+                "configuracao": carregar_json(info.get("configuracao_json"), {}),
+            },
+            "metricas": metricas,
+            "comparacao": comparacao,
+            "serie": serie,
+            "volume_por_dia": volume_por_dia,
+            "volume_por_hora": volume_por_hora,
+            "atendentes": atendentes,
+            "categorias_exclusao": categorias_exclusao,
+            "notas_metodologicas": [
+                "TMA observado calculado somente sobre atendimentos regulares da base premiável.",
+                "Encerramentos automáticos permanecem no volume e são retirados da leitura de tempo.",
+                "Casos acima do limite integram exceções operacionais e não desaparecem da visão gerencial.",
+                "Volume observado não equivale a produtividade por hora; jornada e complexidade não constam na fonte.",
+            ],
         }
     )
 
@@ -622,6 +914,11 @@ class PainelHandler(BaseHTTPRequestHandler):
                 competencia = competencia_selecionada(query, db)
                 self.enviar_json(resumo_gerencial(db, competencia))
                 return
+            if parsed.path == "/api/operacional":
+                db = banco()
+                competencia = competencia_selecionada(query, db)
+                self.enviar_json(resumo_operacional(db, competencia))
+                return
             if parsed.path == "/api/perfil":
                 texto = query.get("competencia", [datetime.now().strftime("%m/%Y")])[0]
                 self.enviar_json(perfil_competencia(texto))
@@ -691,7 +988,7 @@ class PainelHandler(BaseHTTPRequestHandler):
                 self.enviar_json(
                     {
                         "ok": True,
-                        "versao": "Portfolio 1.0",
+                        "versao": "Executive 2.0",
                         "meta_elegibilidade": core.META_PADRAO,
                         "demonstracao": DEMO_MODE,
                     }

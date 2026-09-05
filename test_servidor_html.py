@@ -126,6 +126,16 @@ class ServidorHtmlTest(unittest.TestCase):
         self.assertTrue(componentes["TMA"]["protegido"])
         self.assertEqual(gerencial["acoes"][0]["situacao"], "Premiado")
 
+        operacional = self.get_json("/api/operacional?competencia=2026-08")
+        self.assertEqual(operacional["competencia"], "2026-08")
+        self.assertEqual(operacional["metricas"]["base_premiavel"], 2)
+        self.assertEqual(operacional["metricas"]["base_operacional_observada"], 2)
+        self.assertEqual(operacional["metricas"]["automaticos"], 1)
+        self.assertEqual(operacional["metricas"]["fora_escopo"], 1)
+        self.assertAlmostEqual(operacional["metricas"]["tma_mediano"], 60.0)
+        self.assertEqual(len(operacional["atendentes"]), 1)
+        self.assertIn("Volume observado", operacional["notas_metodologicas"][-1])
+
         automaticos = self.get_json("/api/automaticos?competencia=2026-08")
         self.assertFalse(automaticos["requer_reprocessamento"])
         self.assertEqual(automaticos["metricas"]["identificados"], 1)

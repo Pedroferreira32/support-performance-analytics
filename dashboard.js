@@ -743,9 +743,12 @@ const state = {
   gerencial: null,
   auditoria: null,
   automaticos: null,
+  operacional: null,
   powerpoint: null,
-  view: "dashboard",
+  view: "gerencial",
   demo: false,
+  auditPage: 1,
+  automaticosPage: 1,
 };
 
 const $ = (selector, root = document) => root.querySelector(selector);
@@ -762,7 +765,15 @@ const compBr = (value) => {
   const parts = String(value ?? "").split("-");
   return parts.length === 2 ? `${parts[1]}/${parts[0]}` : String(value ?? "—");
 };
-const dataCurta = (value) => value ? String(value).replace("T", " ").slice(0, 19) : "—";
+const dataCurta = (value) => {
+  if (!value) return "—";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return String(value).replace("T", " ").slice(0, 19);
+  return date.toLocaleString("pt-BR", {
+    day: "2-digit", month: "2-digit", year: "numeric",
+    hour: "2-digit", minute: "2-digit",
+  });
+};
 const truncate = (text, length = 22) => String(text ?? "").length > length
   ? `${String(text).slice(0, length - 1)}…` : String(text ?? "");
 const isPremiado = (row) => Number(row?.premiado) === 1
@@ -772,6 +783,17 @@ const statusPremiacao = (row) => isPremiado(row)
   : Number(row?.elegivel) === 1
     ? '<span class="badge warning">Elegível — fora do Top 3</span>'
     : '<span class="badge neutral">Abaixo da meta</span>';
+
+const QUALITY_CODES = new Set(["SEM_ATENDENTE", "DATA_INVALIDA", "SEM_FINALIZACAO", "DURACAO_NEGATIVA"]);
+const SCOPE_CODES = new Set(["FORA_SUPORTE", "ATENDENTE_EXCLUIDO", "PERIODO"]);
+const EXCEPTION_CODES = new Set(["ACIMA_H"]);
+const exclusionCategory = (code) => QUALITY_CODES.has(String(code))
+  ? { key: "quality", label: "Qualidade dos dados" }
+  : SCOPE_CODES.has(String(code))
+    ? { key: "scope", label: "Fora do escopo" }
+    : EXCEPTION_CODES.has(String(code))
+      ? { key: "exception", label: "Exceção operacional" }
+      : { key: "other", label: "Outros controles" };
 
 async function api(url, options = {}) {
   const response = await fetch(url, { cache: "no-store", ...options });
@@ -821,19 +843,25 @@ function setSelectOptions(select, values, selected, formatter = (v) => v, placeh
 }
 
 function showView(name) {
+  if (name === "automaticos") name = "auditoria";
   state.view = name;
   $$(".view").forEach((view) => view.classList.toggle("active", view.id === `view-${name}`));
   $$(".nav-item").forEach((item) => item.classList.toggle("active", item.dataset.view === name));
   const view = $(`#view-${name}`);
-  $("#page-title").textContent = view?.dataset.title || "Premiação do Suporte";
-  $("#global-filter-wrap").classList.toggle("hidden", name === "importacao" || name === "historico");
+  $("#page-title").textContent = view?.dataset.title || "Support Performance";
+  $("#global-filter-wrap").classList.toggle("hidden", ["importacao", "historico", "sobre"].includes(name));
   $("#sidebar").classList.remove("open");
+  if (window.location.hash !== `#${name}`) history.replaceState(null, "", `#${name}`);
   if (name === "historico") loadHistorico($("#historico-atendente").value);
   if (name === "gerencial") loadGerencial(state.competencia);
-  if (name === "auditoria") loadAuditoria($("#auditoria-competencia").value || state.competencia);
-  if (name === "automaticos") loadAutomaticos($("#automaticos-competencia").value || state.competencia);
+  if (name === "operacional") loadOperacional(state.competencia);
+  if (name === "auditoria") {
+    const competencia = $("#auditoria-competencia").value || state.competencia;
+    loadAuditoria(competencia);
+    loadAutomaticos(competencia);
+  }
   if (name === "powerpoint") loadPowerPoint($("#powerpoint-competencia").value || state.competencia);
-  window.scrollTo({ top: 0, behavior: "smooth" });
+  window.scrollTo({ top: 0, behavior: "auto" });
 }
 
 function syncCompetencias(competencias, selected) {
@@ -873,30 +901,45 @@ function renderDashboard(data) {
   const elegiveis = ranking.filter((item) => Number(item.elegivel) === 1).length;
   const premiados = ranking.filter(isPremiado).length;
   const stats = info.estatisticas || {};
+  const config = info.configuracao || {};
+  const fixedRule = Boolean(config.pontuacao_tempo_tma_fixa);
+  const effectiveCeiling = fixedRule
+    ? 31.5 + Number(config.peso_quantidade || 0) + Number(config.peso_avaliacao || 0)
+    : Number(config.peso_quantidade || 0) + Number(config.peso_tempo || 0) + Number(config.peso_tma || 0) + Number(config.peso_avaliacao || 0);
   const total = Number(info.total_linhas || 0);
   const validos = Number(info.validos || 0);
   const taxa = total ? (validos / total) * 100 : 0;
 
-  $("#source-strip").innerHTML = `<strong>Fonte:</strong> ${esc(info.arquivo_origem || "—")} &nbsp;•&nbsp; <strong>Competência:</strong> ${esc(compBr(data.competencia))} &nbsp;•&nbsp; <strong>Processado em:</strong> ${esc(dataCurta(info.processado_em))} &nbsp;•&nbsp; <strong>Regra:</strong> ${esc(info.configuracao?.perfil_regra || "Regra oficial")}`;
+  $("#source-strip").innerHTML = `<strong>Competência ${esc(compBr(data.competencia))}</strong> &nbsp;·&nbsp; Fonte: ${esc(info.arquivo_origem || "—")} &nbsp;·&nbsp; Atualizado em ${esc(dataCurta(info.processado_em))} &nbsp;·&nbsp; ${esc(info.configuracao?.perfil_regra || "Regra oficial")}`;
   $("[data-kpi='validos']").textContent = nfmt(info.validos);
   $("[data-kpi-foot='validos']").textContent = `${nfmt(taxa, 1)}% da base importada`;
   $("[data-kpi='excluidos']").textContent = nfmt(info.excluidos);
   $("[data-kpi-foot='excluidos']").textContent = `${nfmt(100 - taxa, 1)}% dos registros analisados`;
   $("[data-kpi='lider']").textContent = leader?.atendente || "—";
   $("[data-kpi='nota']").textContent = nfmt(leader?.nota_final, 2);
+  $("[data-kpi-foot='nota']").textContent = `de ${nfmt(effectiveCeiling, 2)} pontos possíveis`;
   $("[data-kpi='premiados']").textContent = nfmt(premiados);
-  $("[data-kpi-foot='premiados']").textContent = `${nfmt(premiados)} de ${nfmt(elegiveis)} elegível(is)`;
+  $("[data-kpi-foot='premiados']").textContent = `${nfmt(premiados)} de ${nfmt(elegiveis)} ${elegiveis === 1 ? "elegível" : "elegíveis"}`;
   $("[data-kpi='automaticos']").textContent = nfmt(info.suspeitos_automaticos || stats.AUTOMATICOS_VALIDOS || 0);
 
   const notaLeader = Number(leader?.nota_final || 0);
   const gap = Math.max(0, meta - notaLeader);
-  let insight = `${leader?.atendente || "O líder"} encerrou ${compBr(data.competencia)} com ${nfmt(notaLeader, 2)} pontos.`;
-  if (elegiveis > 0) insight += ` ${elegiveis} funcionário${elegiveis === 1 ? " atingiu" : "s atingiram"} a meta; ${premiados} ${premiados === 1 ? "foi premiado" : "foram premiados"} pelo Top 3.`;
-  else insight += ` Nenhum funcionário atingiu ${nfmt(meta)} pontos; o menor afastamento da meta foi de ${nfmt(gap, 2)} pontos.`;
+  let insight = `${leader?.atendente || "A liderança"}: ${nfmt(notaLeader, 2)} de ${nfmt(effectiveCeiling, 2)}.`;
+  if (elegiveis > 0) insight += ` ${elegiveis} ${elegiveis === 1 ? "elegível" : "elegíveis"}; ${premiados} ${premiados === 1 ? "premiado" : "premiados"}.`;
+  else insight += ` Nenhum elegível; menor distância para a meta: ${nfmt(gap, 2)} pontos.`;
   $("#insight-text").textContent = insight;
 
-  renderRankingChart($("#ranking-chart"), ranking.slice(0, 12), meta);
-  renderCompositionChart($("#composition-chart"), ranking.slice(0, 8));
+  renderRankingChart($("#ranking-chart"), ranking.slice(0, 12), meta, effectiveCeiling);
+  const formula = $(".score-formula");
+  if (fixedRule) {
+    formula.style.gridTemplateColumns = "1fr auto 1fr auto 1fr auto 1.12fr";
+    formula.innerHTML = `<span><small>Base fixa</small><strong>31,50</strong><em>Tempo + TMA</em></span><b>+</b><span><small>Variável</small><strong>${nfmt(config.peso_quantidade, 2)}</strong><em>Quantidade</em></span><b>+</b><span><small>Variável</small><strong>${nfmt(config.peso_avaliacao, 2)}</strong><em>Avaliação</em></span><b>=</b><span class="score-total"><small>Teto efetivo</small><strong>${nfmt(effectiveCeiling, 2)}</strong><em>meta ${nfmt(meta, 2)}</em></span>`;
+  } else {
+    const parts = [["Quantidade", config.peso_quantidade], ["Tempo", config.peso_tempo], ["TMA", config.peso_tma], ["Avaliação", config.peso_avaliacao]];
+    formula.style.gridTemplateColumns = "repeat(4, 1fr) 1.12fr";
+    formula.innerHTML = `${parts.map(([label, value]) => `<span><small>Critério</small><strong>${nfmt(value, 2)}</strong><em>${esc(label)}</em></span>`).join("")}<span class="score-total"><small>Teto da regra</small><strong>${nfmt(effectiveCeiling, 2)}</strong><em>meta ${nfmt(meta, 2)}</em></span>`;
+  }
+  renderCompositionChart($("#composition-chart"), ranking.slice(0, 8), fixedRule, effectiveCeiling);
   renderRankingTable(ranking);
   $("#dashboard-export").onclick = () => exportar(state.competencia);
 }
@@ -909,8 +952,9 @@ function renderRankingTable(rows, search = "") {
       <td class="rank-cell">${nfmt(row.rank)}º</td>
       <td><strong>${esc(row.atendente)}</strong></td>
       <td class="num">${nfmt(row.atendimentos)}</td>
-      <td class="num">${nfmt(row.tma_medio_min, 2)} min</td>
+      <td class="num">${nfmt(row.tma_medio_min, 1)} min</td>
       <td class="num">${row.avaliacao_media == null ? "—" : nfmt(row.avaliacao_media, 2)}</td>
+      <td class="num">${Number(row.atendimentos) ? `${nfmt(Number(row.avaliacoes || 0) / Number(row.atendimentos) * 100, 1)}%` : "—"}</td>
       <td class="num"><strong>${nfmt(row.nota_final, 2)}</strong></td>
       <td>${statusPremiacao(row)}</td>
       <td class="feedback-cell">${esc(row.feedback)}</td>
@@ -921,32 +965,33 @@ function chartEmpty(host, message = "Dados insuficientes para exibir o gráfico.
   host.innerHTML = `<div class="chart-empty">${esc(message)}</div>`;
 }
 
-function gridLines(width, left, right, top, bottom, axis = "x") {
+function gridLines(width, left, right, top, bottom, axis = "x", maxValue = 100) {
   const plot = width - left - right;
-  return [0, 20, 40, 60, 80, 100].map((tick) => {
-    const x = left + (tick / 100) * plot;
-    return `<line x1="${x}" y1="${top}" x2="${x}" y2="${bottom}" stroke="#e7edf1" stroke-width="1"/><text x="${x}" y="${bottom + 21}" text-anchor="middle" fill="#7b8995" font-size="10">${tick}</text>`;
+  return [0, 1, 2, 3, 4, 5].map((step) => {
+    const tick = maxValue / 5 * step;
+    const x = left + (step / 5) * plot;
+    return `<line x1="${x}" y1="${top}" x2="${x}" y2="${bottom}" stroke="#e7edf1" stroke-width="1"/><text x="${x}" y="${bottom + 21}" text-anchor="middle" fill="#7b8995" font-size="10">${nfmt(tick, Number.isInteger(tick) ? 0 : 1)}</text>`;
   }).join("");
 }
 
-function renderRankingChart(host, rows, meta = META_ELEGIBILIDADE) {
+function renderRankingChart(host, rows, meta = META_ELEGIBILIDADE, maxScore = 100) {
   if (!rows.length) return chartEmpty(host);
   const width = 760, left = 148, right = 44, top = 16, rowHeight = 37;
   const height = top + rows.length * rowHeight + 42;
   const bottom = height - 34, plot = width - left - right;
   const bars = rows.map((row, index) => {
     const y = top + index * rowHeight + 7;
-    const note = Math.max(0, Math.min(100, Number(row.nota_final || 0)));
-    const barWidth = (note / 100) * plot;
+    const note = Math.max(0, Math.min(maxScore, Number(row.nota_final || 0)));
+    const barWidth = (note / maxScore) * plot;
     const tooltip = `${row.atendente}|Atendimentos: ${nfmt(row.atendimentos)}|Nota final: ${nfmt(note, 2)}|Posição: ${nfmt(row.rank)}º`;
     return `<text x="${left - 10}" y="${y + 14}" text-anchor="end" fill="#334657" font-size="11">${esc(truncate(row.atendente, 21))}</text>
       <rect x="${left}" y="${y}" width="${plot}" height="20" rx="3" fill="#f0f3f5"/>
       <rect x="${left}" y="${y}" width="${barWidth}" height="20" rx="3" fill="#1e5f8f" stroke="#164b72" data-tooltip="${esc(tooltip)}"/>
       <text x="${Math.min(left + barWidth + 6, width - 28)}" y="${y + 14}" fill="#173e5d" font-size="10" font-weight="700">${nfmt(note, 2)}</text>`;
   }).join("");
-  const metaX = left + (meta / 100) * plot;
+  const metaX = left + (meta / maxScore) * plot;
   host.innerHTML = `<svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Ranking de notas por atendente">
-    ${gridLines(width, left, right, top, bottom)}
+    ${gridLines(width, left, right, top, bottom, "x", maxScore)}
     <line x1="${metaX}" y1="${top}" x2="${metaX}" y2="${bottom}" stroke="#9f4b4b" stroke-width="1.5" stroke-dasharray="6 5"/>
     <text x="${metaX - 4}" y="${top + 8}" text-anchor="end" fill="#9f4b4b" font-size="9">Meta ${nfmt(meta)}</text>
     ${bars}
@@ -954,14 +999,11 @@ function renderRankingChart(host, rows, meta = META_ELEGIBILIDADE) {
   activateTooltips(host);
 }
 
-function renderCompositionChart(host, rows) {
+function renderCompositionChart(host, rows, fixedRule = true, maxScore = 100) {
   if (!rows.length) return chartEmpty(host);
-  const components = [
-    ["pontos_quantidade", "Quantidade", "#1e5f8f"],
-    ["pontos_tempo", "Tempo total", "#8a98a7"],
-    ["pontos_tma", "TMA", "#d3951d"],
-    ["pontos_avaliacao", "Avaliação", "#7352a3"],
-  ];
+  const components = fixedRule
+    ? [["base_fixa", "Base fixa", "#7b8791"], ["pontos_quantidade", "Quantidade", "#255f87"], ["pontos_avaliacao", "Avaliação", "#bf8c2f"]]
+    : [["pontos_quantidade", "Quantidade", "#255f87"], ["pontos_tempo", "Tempo total", "#7b8791"], ["pontos_tma", "TMA", "#4b7d79"], ["pontos_avaliacao", "Avaliação", "#bf8c2f"]];
   const width = 760, left = 148, right = 42, top = 15, rowHeight = 42;
   const height = top + rows.length * rowHeight + 40;
   const bottom = height - 32, plot = width - left - right;
@@ -969,8 +1011,10 @@ function renderCompositionChart(host, rows) {
     const y = top + index * rowHeight + 8;
     let cursor = left;
     const blocks = components.map(([key, label, color]) => {
-      const value = Math.max(0, Number(row[key] || 0));
-      const blockWidth = (value / 100) * plot;
+      const value = key === "base_fixa"
+        ? Number(row.pontos_tempo || 0) + Number(row.pontos_tma || 0)
+        : Math.max(0, Number(row[key] || 0));
+      const blockWidth = (value / maxScore) * plot;
       const result = `<rect x="${cursor}" y="${y}" width="${blockWidth}" height="22" fill="${color}" stroke="#fff" stroke-width=".5" data-tooltip="${esc(`${row.atendente}|${label}: ${nfmt(value, 2)} pontos|Nota final: ${nfmt(row.nota_final, 2)}`)}"/>`;
       cursor += blockWidth;
       return result;
@@ -980,7 +1024,7 @@ function renderCompositionChart(host, rows) {
       <text x="${Math.min(cursor + 6, width - 28)}" y="${y + 15}" fill="#173e5d" font-size="10" font-weight="700">${nfmt(row.nota_final, 2)}</text>`;
   }).join("");
   host.innerHTML = `<svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Composição da pontuação por atendente">
-    ${gridLines(width, left, right, top, bottom)}${marks}
+    ${gridLines(width, left, right, top, bottom, "x", maxScore)}${marks}
   </svg>`;
   activateTooltips(host);
 }
@@ -1008,12 +1052,17 @@ function renderGerencial(data) {
 
   const metrics = data.metricas || {};
   const info = data.atual?.info || {};
+  const managerConfig = info.configuracao || {};
+  const managerCeiling = managerConfig.pontuacao_tempo_tma_fixa
+    ? 31.5 + Number(managerConfig.peso_quantidade || 0) + Number(managerConfig.peso_avaliacao || 0)
+    : Number(managerConfig.peso_quantidade || 0) + Number(managerConfig.peso_tempo || 0) + Number(managerConfig.peso_tma || 0) + Number(managerConfig.peso_avaliacao || 0);
   const anterior = data.competencia_anterior ? compBr(data.competencia_anterior) : "não disponível";
-  $("#gerencial-source").innerHTML = `<strong>Fonte:</strong> ${esc(info.arquivo_origem || "—")} &nbsp;•&nbsp; <strong>Competência:</strong> ${esc(compBr(data.competencia))} &nbsp;•&nbsp; <strong>Comparação:</strong> ${esc(anterior)} &nbsp;•&nbsp; <strong>Regra:</strong> ${esc(info.configuracao?.perfil_regra || "Regra oficial")}`;
+  $("#gerencial-source").innerHTML = `<strong>Competência ${esc(compBr(data.competencia))}</strong> &nbsp;·&nbsp; Fonte: ${esc(info.arquivo_origem || "—")} &nbsp;·&nbsp; Comparação: ${esc(anterior)} &nbsp;·&nbsp; Atualizado em ${esc(dataCurta(info.processado_em))} &nbsp;·&nbsp; ${esc(info.configuracao?.perfil_regra || "Regra oficial")}`;
   $("[data-manager-kpi='media']").textContent = nfmt(metrics.nota_media, 2);
+  $("[data-manager-foot='media']").textContent = `teto efetivo ${nfmt(managerCeiling, 2)}`;
   $("[data-manager-kpi='mediana']").textContent = nfmt(metrics.nota_mediana, 2);
   $("[data-manager-kpi='premiados']").textContent = nfmt(metrics.premiados);
-  $("[data-manager-foot='premiados']").textContent = `${nfmt(metrics.premiados)} de ${nfmt(metrics.elegiveis)} elegível(is)`;
+  $("[data-manager-foot='premiados']").textContent = `${nfmt(metrics.premiados)} de ${nfmt(metrics.elegiveis)} ${Number(metrics.elegiveis) === 1 ? "elegível" : "elegíveis"}`;
   $("[data-manager-kpi='elegiveis']").textContent = nfmt(metrics.elegiveis);
   $("[data-manager-kpi='validacao']").textContent = `${nfmt(metrics.taxa_validacao, 1)}%`;
   $("[data-manager-foot='validacao']").textContent = `${nfmt(metrics.taxa_exclusao, 1)}% da base foi excluída`;
@@ -1023,13 +1072,25 @@ function renderGerencial(data) {
     : `média ponderada ${nfmt(metrics.avaliacao_ponderada, 2)}`;
 
   const foraTop3 = Math.max(0, Number(metrics.elegiveis || 0) - Number(metrics.premiados || 0));
-  const leituraPremiacao = foraTop3
-    ? `${nfmt(metrics.elegiveis)} atingiram 85 pontos; ${nfmt(metrics.premiados)} ficaram no Top 3 e ${nfmt(foraTop3)} ficou fora da premiação.`
-    : `${nfmt(metrics.elegiveis)} atingiram 85 pontos e ${nfmt(metrics.premiados)} foram premiados.`;
-  const leituraAutomaticos = Number(metrics.participacao_automaticos || 0) > 0
-    ? ` Finalizados automáticos representam ${nfmt(metrics.participacao_automaticos, 1)}% da base válida.`
-    : "";
-  $("#gerencial-insight").textContent = `A equipe registrou média de ${nfmt(metrics.nota_media, 2)} e mediana de ${nfmt(metrics.nota_mediana, 2)} pontos. ${leituraPremiacao} A maior alavanca média está em ${metrics.principal_alavanca || "—"}; o Top 3 concentrou ${nfmt(metrics.concentracao_volume_top3, 1)}% dos atendimentos.${leituraAutomaticos}`;
+  const below = Math.max(0, Number(metrics.funcionarios || 0) - Number(metrics.elegiveis || 0));
+  const priority = (data.acoes || []).find((item) => item.prioridade === "Alta") || data.acoes?.[0];
+  $("#executive-title").textContent = `${nfmt(metrics.elegiveis)} ${Number(metrics.elegiveis) === 1 ? "elegível" : "elegíveis"}; ${nfmt(metrics.premiados)} ${Number(metrics.premiados) === 1 ? "premiado" : "premiados"}`;
+  $("#gerencial-insight").textContent = `Índice médio de ${nfmt(metrics.nota_media, 2)} sobre teto efetivo de ${nfmt(managerCeiling, 2)}. A base validada representa ${nfmt(metrics.taxa_validacao, 1)}% da importação e o CSAT cobre ${nfmt(metrics.cobertura_avaliacoes, 1)}% dos atendimentos.`;
+  const status = $("#executive-status");
+  status.textContent = Number(metrics.premiados) > 0 ? "Premiação definida" : "Sem premiados";
+  status.parentElement.className = `executive-status ${Number(metrics.premiados) > 0 ? "good" : "attention"}`;
+  $("#decision-result").textContent = `${nfmt(metrics.premiados)} no Top 3 da competência`;
+  $("#decision-result-note").textContent = foraTop3
+    ? `${nfmt(foraTop3)} ${foraTop3 === 1 ? "elegível" : "elegíveis"} fora das posições premiadas.`
+    : `${nfmt(metrics.elegiveis)} profissionais atingiram o corte de 85.`;
+  $("#decision-risk").textContent = below ? `${nfmt(below)} abaixo da meta` : "Equipe acima do corte";
+  $("#decision-risk-note").textContent = priority
+    ? `${priority.atendente}: ${priority.objetivo}.`
+    : `Monitorar cobertura do CSAT e concentração de volume.`;
+  $("#decision-action").textContent = priority ? `Acompanhar ${priority.atendente}` : "Sustentar o resultado";
+  $("#decision-action-note").textContent = priority
+    ? `${priority.acao}.`
+    : `Manter controles semanais de volume e qualidade.`;
 
   renderGerencialTrend($("#gerencial-trend-chart"), data.serie_equipe || []);
   renderGerencialStatus($("#gerencial-status-chart"), data.distribuicao || []);
@@ -1056,14 +1117,21 @@ function renderGerencialTrend(host, rows) {
     ["nota_mediana", "Mediana", "#7352a3"],
     ["nota_lider", "Líder", "#d3951d"],
   ];
-  const paths = series.map(([key, label, color]) => {
-    const points = rows.map((row, index) => `${x(index)},${y(row[key])}`).join(" ");
-    const dots = rows.map((row, index) => `<circle cx="${x(index)}" cy="${y(row[key])}" r="4" fill="${color}" stroke="#fff" stroke-width="2" data-tooltip="${esc(`${compBr(row.competencia)}|${label}: ${nfmt(row[key], 2)}|Elegíveis: ${nfmt(row.elegiveis)}|Premiados: ${nfmt(row.premiados)}`)}"/>`).join("");
-    return `<polyline points="${points}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>${dots}`;
+  const paths = series.map(([key, label, color], seriesIndex) => {
+    const dots = rows.map((row, index) => {
+      const offset = (seriesIndex - 1) * 9;
+      return `<circle cx="${x(index) + offset}" cy="${y(row[key])}" r="4.5" fill="${color}" stroke="#fff" stroke-width="2" data-tooltip="${esc(`${compBr(row.competencia)}|${label}: ${nfmt(row[key], 2)}|Elegíveis: ${nfmt(row.elegiveis)}|Premiados: ${nfmt(row.premiados)}|Regra: ${row.perfil_regra || "oficial"}`)}"/>`;
+    }).join("");
+    return dots;
+  }).join("");
+  const ruleBreaks = rows.map((row, index) => {
+    if (!index || row.comparavel_com_anterior) return "";
+    const previousX = x(index - 1), currentX = x(index), divider = previousX + (currentX - previousX) / 2;
+    return `<line x1="${divider}" y1="${top}" x2="${divider}" y2="${height - bottom}" stroke="#bf8c2f" stroke-width="1.5" stroke-dasharray="4 5"/><text x="${divider + 4}" y="${top + 10}" fill="#8b641f" font-size="8">mudança de regra</text>`;
   }).join("");
   const metaY = y(85);
   const labels = rows.map((row, index) => `<text x="${x(index)}" y="${height - 22}" text-anchor="middle" fill="#647584" font-size="10">${esc(compBr(row.competencia))}</text>`).join("");
-  host.innerHTML = `<svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Evolução das notas da equipe">${grid}<line x1="${left}" y1="${metaY}" x2="${width - right}" y2="${metaY}" stroke="#a44747" stroke-width="1.5" stroke-dasharray="6 5"/><text x="${width - right}" y="${metaY - 6}" text-anchor="end" fill="#a44747" font-size="9">Meta 85</text>${paths}${labels}</svg>`;
+  host.innerHTML = `<svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Índices da equipe por competência">${grid}<line x1="${left}" y1="${metaY}" x2="${width - right}" y2="${metaY}" stroke="#a44747" stroke-width="1.5" stroke-dasharray="6 5"/><text x="${width - right}" y="${metaY - 6}" text-anchor="end" fill="#a44747" font-size="9">Meta 85</text>${ruleBreaks}${paths}${labels}</svg>`;
   activateTooltips(host);
 }
 
@@ -1092,47 +1160,41 @@ function renderGerencialStatus(host, rows) {
   activateTooltips(host);
 }
 
-function renderGerencialScatter(host, rows, metrics) {
+function renderGerencialScatter(host, rows, _metrics) {
   const valid = rows.filter((row) => row.avaliacao_media != null
     && Number.isFinite(Number(row.atendimentos))
     && Number.isFinite(Number(row.avaliacao_media)));
-  if (!valid.length) return chartEmpty(host, "Não há avaliações válidas para relacionar produtividade e qualidade.");
-  const width = 760, height = 360, left = 62, right = 32, top = 25, bottom = 62;
-  const plotWidth = width - left - right, plotHeight = height - top - bottom;
-  const quantities = valid.map((row) => Number(row.atendimentos));
-  const ratings = valid.map((row) => Number(row.avaliacao_media));
-  const maxX = Math.max(1, Math.max(...quantities) * 1.12);
-  let minY = Math.max(0, Math.floor((Math.min(...ratings) - .15) * 10) / 10);
-  let maxY = Math.ceil((Math.max(...ratings) + .15) * 10) / 10;
-  if (maxY - minY < .5) { minY = Math.max(0, minY - .2); maxY += .2; }
-  const x = (value) => left + Number(value) / maxX * plotWidth;
-  const y = (value) => top + (maxY - Number(value)) / (maxY - minY || 1) * plotHeight;
-  const avgX = quantities.reduce((sum, value) => sum + value, 0) / quantities.length;
-  const avgY = Number(metrics.avaliacao_ponderada ?? ratings.reduce((sum, value) => sum + value, 0) / ratings.length);
-  const xTicks = Array.from({ length: 5 }, (_, index) => maxX / 4 * index);
-  const yTicks = Array.from({ length: 5 }, (_, index) => minY + (maxY - minY) / 4 * index);
-  const grid = xTicks.map((tick) => `<line x1="${x(tick)}" y1="${top}" x2="${x(tick)}" y2="${height - bottom}" stroke="#edf1f4"/><text x="${x(tick)}" y="${height - bottom + 21}" text-anchor="middle" fill="#7b8995" font-size="10">${nfmt(tick)}</text>`).join("") + yTicks.map((tick) => `<line x1="${left}" y1="${y(tick)}" x2="${width - right}" y2="${y(tick)}" stroke="#edf1f4"/><text x="${left - 9}" y="${y(tick) + 4}" text-anchor="end" fill="#7b8995" font-size="10">${nfmt(tick, 1)}</text>`).join("");
-  const colors = { premiado: "#2d8b70", elegivel: "#d3951d", abaixo: "#8795a2" };
-  const points = valid.map((row, index) => {
-    const situation = isPremiado(row) ? "premiado" : Number(row.elegivel) === 1 ? "elegivel" : "abaixo";
-    const dx = index % 2 ? 7 : -7, anchor = index % 2 ? "start" : "end";
-    const tooltip = `${row.atendente}|Atendimentos: ${nfmt(row.atendimentos)}|Avaliação: ${nfmt(row.avaliacao_media, 2)}|Nota: ${nfmt(row.nota_final, 2)}|Posição: ${nfmt(row.rank)}º`;
-    return `<circle cx="${x(row.atendimentos)}" cy="${y(row.avaliacao_media)}" r="7" fill="${colors[situation]}" stroke="#fff" stroke-width="2" data-tooltip="${esc(tooltip)}"/><text x="${x(row.atendimentos) + dx}" y="${y(row.avaliacao_media) - 10}" text-anchor="${anchor}" fill="#435766" font-size="9">${esc(truncate(row.atendente, 16))}</text>`;
+  if (!valid.length) return chartEmpty(host, "Não há avaliações válidas para a leitura combinada.");
+  const width = 760, left = 150, split = 500, right = 32, top = 38, rowHeight = 39;
+  const height = top + valid.length * rowHeight + 35;
+  const maxVolume = Math.max(...valid.map((row) => Number(row.atendimentos)), 1);
+  const volumePlot = split - left - 40, ratingPlot = width - split - right;
+  const rowsSvg = valid.map((row, index) => {
+    const y = top + index * rowHeight;
+    const bar = Number(row.atendimentos) / maxVolume * volumePlot;
+    const ratingX = split + Number(row.avaliacao_media) / 5 * ratingPlot;
+    const color = isPremiado(row) ? "#32745f" : Number(row.elegivel) === 1 ? "#bf8c2f" : "#71808c";
+    const tooltip = `${row.atendente}|Volume observado: ${nfmt(row.atendimentos)}|CSAT: ${nfmt(row.avaliacao_media, 2)}|Índice: ${nfmt(row.nota_final, 2)}`;
+    return `<text x="${left - 10}" y="${y + 15}" text-anchor="end" fill="#334657" font-size="10">${esc(truncate(row.atendente, 20))}</text><rect x="${left}" y="${y}" width="${volumePlot}" height="19" rx="2" fill="#edf1f3"/><rect x="${left}" y="${y}" width="${bar}" height="19" rx="2" fill="#255f87" data-tooltip="${esc(tooltip)}"/><text x="${Math.min(left + bar + 6, split - 12)}" y="${y + 14}" fill="#24465e" font-size="9" font-weight="700">${nfmt(row.atendimentos)}</text><line x1="${split}" y1="${y + 10}" x2="${width - right}" y2="${y + 10}" stroke="#dfe5e8"/><circle cx="${ratingX}" cy="${y + 10}" r="6" fill="${color}" stroke="#fff" stroke-width="2" data-tooltip="${esc(tooltip)}"/><text x="${Math.min(ratingX + 9, width - 25)}" y="${y + 14}" fill="#435766" font-size="9" font-weight="700">${nfmt(row.avaliacao_media, 2)}</text>`;
   }).join("");
-  host.innerHTML = `<svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Relação entre atendimentos e avaliação média">${grid}<line x1="${x(avgX)}" y1="${top}" x2="${x(avgX)}" y2="${height - bottom}" stroke="#6e7d89" stroke-dasharray="4 4"/><line x1="${left}" y1="${y(avgY)}" x2="${width - right}" y2="${y(avgY)}" stroke="#6e7d89" stroke-dasharray="4 4"/>${points}<text x="${left + plotWidth / 2}" y="${height - 12}" text-anchor="middle" fill="#647584" font-size="10">Quantidade de atendimentos</text><text x="15" y="${top + plotHeight / 2}" text-anchor="middle" fill="#647584" font-size="10" transform="rotate(-90 15 ${top + plotHeight / 2})">Avaliação média</text></svg>`;
+  host.innerHTML = `<svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Volume observado e avaliação média por funcionário"><text x="${left}" y="17" fill="#647584" font-size="9" font-weight="700">VOLUME OBSERVADO</text><text x="${split}" y="17" fill="#647584" font-size="9" font-weight="700">CSAT (0–5)</text>${rowsSvg}</svg>`;
   activateTooltips(host);
 }
 
 function renderGerencialComponents(host, rows) {
   if (!rows.length) return chartEmpty(host);
-  const width = 700, left = 142, right = 75, top = 25, rowHeight = 59;
-  const height = top + rows.length * rowHeight + 42, plot = width - left - right;
-  const marks = rows.map((row, index) => {
+  const fixed = rows.filter((row) => row.protegido);
+  const items = fixed.length
+    ? [{ indicador: "Base fixa", media_pontos: fixed.reduce((sum, row) => sum + Number(row.media_pontos || 0), 0), peso: fixed.reduce((sum, row) => sum + Number(row.peso || 0), 0), protegido: true }, ...rows.filter((row) => !row.protegido)]
+    : rows;
+  const width = 700, left = 142, right = 75, top = 25, rowHeight = 76;
+  const height = top + items.length * rowHeight + 35, plot = width - left - right;
+  const marks = items.map((row, index) => {
     const y = top + index * rowHeight;
-    const utilization = Math.max(0, Math.min(100, Number(row.aproveitamento || 0)));
-    const color = row.protegido ? "#8a98a7" : utilization >= 85 ? "#2d8b70" : utilization >= 70 ? "#d3951d" : "#a44747";
-    const tooltip = `${row.indicador}|Média: ${nfmt(row.media_pontos, 2)} de ${nfmt(row.peso, 2)} pts|Aproveitamento: ${nfmt(utilization, 1)}%${row.protegido ? "|Critério protegido: pontuação igual para todos" : `|Gap médio: ${nfmt(row.gap_medio, 2)} pts`}`;
-    return `<text x="${left - 10}" y="${y + 20}" text-anchor="end" fill="#334657" font-size="11">${esc(row.indicador)}</text><rect x="${left}" y="${y + 4}" width="${plot}" height="22" rx="4" fill="#edf1f4"/><rect x="${left}" y="${y + 4}" width="${plot * utilization / 100}" height="22" rx="4" fill="${color}" data-tooltip="${esc(tooltip)}"/><text x="${left + plot + 9}" y="${y + 19}" fill="#173e5d" font-size="10" font-weight="700">${nfmt(utilization, 1)}%</text><text x="${left}" y="${y + 43}" fill="#7b8995" font-size="9">${nfmt(row.media_pontos, 2)} / ${nfmt(row.peso, 2)} pts${row.protegido ? " • fixo para todos" : ` • gap médio ${nfmt(row.gap_medio, 2)}`}</text>`;
+    const utilization = Number(row.peso) ? Math.max(0, Math.min(100, Number(row.media_pontos) / Number(row.peso) * 100)) : 0;
+    const color = row.protegido ? "#71808c" : row.indicador === "Quantidade" ? "#255f87" : "#bf8c2f";
+    const tooltip = `${row.indicador}|Média: ${nfmt(row.media_pontos, 2)} de ${nfmt(row.peso, 2)} pontos|Aproveitamento: ${nfmt(utilization, 1)}%${row.protegido ? "|Parcela igual para toda a equipe" : "|Critério que diferencia a classificação"}`;
+    return `<text x="${left - 10}" y="${y + 21}" text-anchor="end" fill="#334657" font-size="11">${esc(row.indicador)}</text><rect x="${left}" y="${y + 4}" width="${plot}" height="24" rx="3" fill="#edf1f3"/><rect x="${left}" y="${y + 4}" width="${plot * utilization / 100}" height="24" rx="3" fill="${color}" data-tooltip="${esc(tooltip)}"/><text x="${left + plot + 9}" y="${y + 20}" fill="#173e5d" font-size="10" font-weight="700">${nfmt(row.media_pontos, 2)}</text><text x="${left}" y="${y + 47}" fill="#7b8995" font-size="9">máximo ${nfmt(row.peso, 2)} pontos • ${nfmt(utilization, 1)}% utilizado${row.protegido ? " • fixo" : " • variável"}</text>`;
   }).join("");
   host.innerHTML = `<svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Aproveitamento médio dos critérios">${marks}</svg>`;
   activateTooltips(host);
@@ -1140,7 +1202,7 @@ function renderGerencialComponents(host, rows) {
 
 function renderGerencialActions(rows) {
   const classPriority = { "Alta": "high", "Média": "medium", "Monitorar": "monitor" };
-  $("#gerencial-actions-table tbody").innerHTML = rows.map((row) => `<tr><td><span class="priority-badge ${classPriority[row.prioridade] || "monitor"}">${esc(row.prioridade)}</span></td><td><strong>${esc(row.atendente)}</strong></td><td class="num">${nfmt(row.rank)}º</td><td class="num"><strong>${nfmt(row.nota, 2)}</strong></td><td>${row.situacao === "Premiado" ? '<span class="badge success">Premiado</span>' : row.situacao.includes("Elegível") ? '<span class="badge warning">Elegível — fora do Top 3</span>' : '<span class="badge neutral">Abaixo da meta</span>'}</td><td>${esc(row.foco)}</td><td class="manager-text">${esc(row.objetivo)}</td><td class="manager-text">${esc(row.acao)}</td></tr>`).join("");
+  $("#gerencial-actions-table tbody").innerHTML = rows.map((row) => `<tr><td><span class="priority-badge ${classPriority[row.prioridade] || "monitor"}">${esc(row.prioridade)}</span></td><td><strong>${esc(row.atendente)}</strong><small class="treatment-detail">${nfmt(row.rank)}º no ranking</small></td><td class="num"><strong>${nfmt(row.nota, 2)}</strong></td><td>${row.situacao === "Premiado" ? '<span class="badge success">Premiado</span>' : row.situacao.includes("Elegível") ? '<span class="badge warning">Elegível — fora do Top 3</span>' : '<span class="badge neutral">Abaixo da meta</span>'}</td><td class="manager-text"><strong>${esc(row.foco)}</strong><small class="treatment-detail">${esc(row.objetivo)}</small></td><td class="manager-text">${esc(row.acao)}</td></tr>`).join("");
 }
 
 function deltaCell(value, digits = 2, suffix = "") {
@@ -1171,12 +1233,99 @@ function renderGerencialComparison(data) {
   $("#gerencial-comparison-table tbody").innerHTML = rows.map((row) => `<tr><td><strong>${esc(row.atendente)}</strong></td><td class="num">${nfmt(row.rank_atual)}º</td><td class="num">${deltaCell(row.delta_rank, 0)}</td><td class="num">${nfmt(row.nota_atual, 2)}</td><td class="num">${deltaCell(row.delta_nota)}</td><td class="num">${nfmt(row.atendimentos_atual)}</td><td class="num">${deltaCell(row.delta_atendimentos, 0)}</td><td class="num">${row.avaliacao_atual == null ? "—" : nfmt(row.avaliacao_atual, 2)}</td><td class="num">${deltaCell(row.delta_avaliacao)}</td></tr>`).join("");
 }
 
+async function loadOperacional(competencia = state.competencia || "") {
+  loading(true);
+  try {
+    const suffix = competencia ? `?competencia=${encodeURIComponent(competencia)}` : "";
+    const data = await api(`/api/operacional${suffix}`);
+    state.operacional = data;
+    renderOperacional(data);
+  } catch (error) {
+    toast(error.message, "error");
+  } finally {
+    loading(false);
+  }
+}
+
+function renderOperacional(data) {
+  const empty = !data?.competencia || !data?.info;
+  $("#operacional-empty").classList.toggle("hidden", !empty);
+  $("#operacional-content").classList.toggle("hidden", empty);
+  if (empty) return;
+  const metrics = data.metricas || {};
+  const comparison = data.comparacao || {};
+  const info = data.info || {};
+  $("#operacional-source").innerHTML = `<strong>Competência ${esc(compBr(data.competencia))}</strong> &nbsp;·&nbsp; Fonte: ${esc(info.arquivo_origem || "—")} &nbsp;·&nbsp; Atualizado em ${esc(dataCurta(info.processado_em))} &nbsp;·&nbsp; TMA sem encerramentos automáticos`;
+  $("[data-ops-kpi='base']").textContent = nfmt(metrics.base_operacional_observada);
+  const volumeDelta = comparison.delta_pct_base_operacional_observada;
+  $("[data-ops-kpi='volume-delta']").textContent = volumeDelta == null ? "—" : `${volumeDelta > 0 ? "+" : ""}${nfmt(volumeDelta, 1)}%`;
+  $("[data-ops-foot='volume-delta']").textContent = comparison.disponivel
+    ? `versus ${compBr(comparison.competencia_anterior)}`
+    : "sem competência anterior";
+  $("[data-ops-kpi='tma-mediano']").textContent = metrics.tma_mediano == null ? "—" : `${nfmt(metrics.tma_mediano, 1)} min`;
+  $("[data-ops-kpi='tma-p90']").textContent = metrics.tma_p90 == null ? "—" : `${nfmt(metrics.tma_p90, 1)} min`;
+  $("[data-ops-kpi='csat']").textContent = metrics.avaliacao_media == null ? "—" : nfmt(metrics.avaliacao_media, 2);
+  $("[data-ops-kpi='coverage']").textContent = `${nfmt(metrics.cobertura_avaliacoes, 1)}%`;
+  $("[data-ops-foot='coverage']").textContent = `${nfmt(metrics.avaliacoes)} avaliações válidas`;
+  $("#basis-award").textContent = nfmt(metrics.base_premiavel);
+  $("#basis-quality").textContent = nfmt(metrics.erros_qualidade);
+  $("#basis-scope").textContent = nfmt(metrics.fora_escopo);
+  $("#basis-exception").textContent = nfmt(metrics.excecoes_operacionais);
+  $("#basis-auto").textContent = nfmt(metrics.automaticos);
+  $("#basis-auto-note").textContent = `${nfmt(metrics.participacao_automaticos, 1)}% da base premiável`;
+  renderOperationalTrend($("#operacional-trend-chart"), data.serie || []);
+  renderOperationalHours($("#operacional-hour-chart"), data.volume_por_hora || []);
+  renderOperationalTable(data.atendentes || []);
+  const notes = data.notas_metodologicas || [];
+  $("#operacional-method-note").innerHTML = `<strong>Leitura responsável dos dados</strong><ul>${notes.map((note) => `<li>${esc(note)}</li>`).join("")}</ul>`;
+}
+
+function renderOperationalTrend(host, rows) {
+  if (!rows.length) return chartEmpty(host);
+  const width = 760, left = 115, right = 75, top = 32, rowHeight = 70;
+  const height = top + rows.length * rowHeight + 28;
+  const plot = width - left - right;
+  const maxValue = Math.max(...rows.map((row) => Number(row.base_operacional_observada || 0)), 1);
+  const marks = rows.map((row, index) => {
+    const y = top + index * rowHeight;
+    const value = Number(row.base_operacional_observada || 0);
+    const bar = value / maxValue * plot;
+    const tooltip = `${compBr(row.competencia)}|Base operacional observada: ${nfmt(value)}|Base premiável: ${nfmt(row.base_premiavel)}|Cobertura CSAT: ${nfmt(row.cobertura_avaliacoes, 1)}%|Erros de qualidade: ${nfmt(row.erros_qualidade)}`;
+    return `<text x="${left - 12}" y="${y + 18}" text-anchor="end" fill="#334657" font-size="11" font-weight="700">${esc(compBr(row.competencia))}</text><rect x="${left}" y="${y}" width="${plot}" height="24" rx="3" fill="#edf1f3"/><rect x="${left}" y="${y}" width="${bar}" height="24" rx="3" fill="#255f87" data-tooltip="${esc(tooltip)}"/><text x="${Math.min(left + bar + 7, width - right - 5)}" y="${y + 17}" fill="#173e5d" font-size="10" font-weight="700">${nfmt(value)}</text><text x="${left}" y="${y + 45}" fill="#6f7f8b" font-size="9">Cobertura CSAT ${nfmt(row.cobertura_avaliacoes, 1)}% · Qualidade ${nfmt(row.erros_qualidade)} · Automáticos ${nfmt(row.automaticos)}</text>`;
+  }).join("");
+  host.innerHTML = `<svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Volume operacional e cobertura por competência"><text x="${left}" y="15" fill="#71808c" font-size="9" font-weight="700">BASE OBSERVADA POR COMPETÊNCIA</text>${marks}</svg>`;
+  activateTooltips(host);
+}
+
+function renderOperationalHours(host, rows) {
+  if (!rows.length) return chartEmpty(host);
+  const width = 760, height = 335, left = 48, right = 22, top = 25, bottom = 50;
+  const plotWidth = width - left - right, plotHeight = height - top - bottom;
+  const max = Math.max(...rows.map((row) => Number(row.atendimentos || 0)), 1);
+  const slot = plotWidth / rows.length;
+  const bars = rows.map((row, index) => {
+    const value = Number(row.atendimentos || 0);
+    const barHeight = value / max * plotHeight;
+    const x = left + index * slot + slot * .18;
+    const y = top + plotHeight - barHeight;
+    return `<rect x="${x}" y="${y}" width="${slot * .64}" height="${barHeight}" rx="2" fill="#3d7d7a" data-tooltip="${esc(`${String(row.hora).padStart(2, "0")}:00|Entradas: ${nfmt(value)}`)}"/><text x="${x + slot * .32}" y="${height - 26}" text-anchor="middle" fill="#647584" font-size="9">${String(row.hora).padStart(2, "0")}h</text>`;
+  }).join("");
+  host.innerHTML = `<svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Entradas por hora"><line x1="${left}" y1="${top + plotHeight}" x2="${width - right}" y2="${top + plotHeight}" stroke="#cfd8de"/>${bars}</svg>`;
+  activateTooltips(host);
+}
+
+function renderOperationalTable(rows, search = "") {
+  const term = search.trim().toLocaleLowerCase("pt-BR");
+  const filtered = rows.filter((row) => !term || String(row.atendente).toLocaleLowerCase("pt-BR").includes(term));
+  $("#operacional-table tbody").innerHTML = filtered.length ? filtered.map((row) => `<tr><td><strong>${esc(row.atendente)}</strong></td><td class="num">${nfmt(row.atendimentos_observados)}</td><td class="num">${nfmt(row.participacao_volume, 1)}%</td><td class="num">${row.tma_mediano == null ? "—" : `${nfmt(row.tma_mediano, 1)} min`}</td><td class="num">${row.tma_p90 == null ? "—" : `${nfmt(row.tma_p90, 1)} min`}</td><td class="num">${row.avaliacao_media_observada == null ? "—" : nfmt(row.avaliacao_media_observada, 2)}</td><td class="num">${nfmt(row.avaliacoes_observadas)}</td><td class="num"><strong>${nfmt(row.cobertura_avaliacoes, 1)}%</strong></td><td class="num">${nfmt(row.automaticos)}</td></tr>`).join("") : '<tr><td colspan="9" class="empty-table">Nenhum funcionário encontrado.</td></tr>';
+}
+
 let tooltipNode = null;
 function activateTooltips(root) {
   if (!tooltipNode) {
-    tooltipNode = document.createElement("div");
+    tooltipNode = $("#chart-tooltip") || document.createElement("div");
     tooltipNode.className = "chart-tooltip";
-    document.body.appendChild(tooltipNode);
+    if (!tooltipNode.parentElement) document.body.appendChild(tooltipNode);
   }
   $$('[data-tooltip]', root).forEach((node) => {
     node.addEventListener("mousemove", (event) => {
@@ -1245,7 +1394,7 @@ async function processarArquivo() {
     $("#process-result").innerHTML = `<h3>${esc(result.competencia_br)} processado com sucesso</h3><p>${nfmt(result.validos)} válidos, ${nfmt(result.excluidos)} excluídos e ${nfmt(result.atendentes)} funcionários no ranking.${autoTexto} O reprocessamento substituiu somente esta competência.</p>`;
     toast("Competência atualizada com sucesso.", "success");
     await loadResumo(result.competencia);
-    showView("dashboard");
+    showView("gerencial");
   } catch (error) {
     toast(error.message, "error", 7000);
   } finally {
@@ -1281,10 +1430,13 @@ function renderHistorico(atendente, rows) {
   $("[data-history-foot='nota']").textContent = delta == null ? "primeira competência registrada" : `${delta >= 0 ? "+" : ""}${nfmt(delta, 2)} ponto(s) versus mês anterior`;
   $("[data-history-kpi='rank']").textContent = `${nfmt(latest.rank)}º`;
   $("[data-history-kpi='atendimentos']").textContent = nfmt(latest.atendimentos);
+  $("[data-history-kpi='tma']").textContent = latest.tma_medio_min == null ? "—" : `${nfmt(latest.tma_medio_min, 1)} min`;
+  const coverage = Number(latest.atendimentos) ? Number(latest.avaliacoes || 0) / Number(latest.atendimentos) * 100 : null;
+  $("[data-history-kpi='cobertura']").textContent = coverage == null ? "—" : `${nfmt(coverage, 1)}%`;
   $("[data-history-kpi='competencias']").textContent = nfmt(ordered.length);
-  $("#history-chart-title").textContent = `Evolução das notas — ${atendente}`;
+  $("#history-chart-title").textContent = `Evolução do índice — ${atendente}`;
   renderHistoryChart($("#history-chart"), ordered);
-  $("#history-table tbody").innerHTML = [...ordered].reverse().map((row) => `<tr><td><strong>${esc(compBr(row.competencia))}</strong></td><td>${nfmt(row.rank)}º</td><td class="num">${nfmt(row.atendimentos)}</td><td class="num">${row.avaliacao_media == null ? "—" : nfmt(row.avaliacao_media, 2)}</td><td class="num"><strong>${nfmt(row.nota_final, 2)}</strong></td><td>${statusPremiacao(row)}</td></tr>`).join("");
+  $("#history-table tbody").innerHTML = [...ordered].reverse().map((row) => `<tr><td><strong>${esc(compBr(row.competencia))}</strong></td><td>${nfmt(row.rank)}º</td><td class="num">${nfmt(row.atendimentos)}</td><td class="num">${row.tma_medio_min == null ? "—" : `${nfmt(row.tma_medio_min, 1)} min`}</td><td class="num">${row.avaliacao_media == null ? "—" : nfmt(row.avaliacao_media, 2)}</td><td class="num">${Number(row.atendimentos) ? `${nfmt(Number(row.avaliacoes || 0) / Number(row.atendimentos) * 100, 1)}%` : "—"}</td><td class="num"><strong>${nfmt(row.nota_final, 2)}</strong></td><td>${statusPremiacao(row)}</td></tr>`).join("");
   setSelectOptions($("#feedback-competencia"), [...ordered].reverse().map((row) => row.competencia), latest.competencia, compBr);
   updateFeedbackText();
 }
@@ -1392,13 +1544,23 @@ function renderAutomaticos(data) {
     $("[data-auto-treatment='tma']").textContent = "Regra histórica";
     $("#automaticos-formula-note").textContent = "Esta competência preserva a regra histórica gravada no processamento.";
   }
+  state.automaticosPage = 1;
   renderAutomaticosTable(data.registros || []);
 }
 
 function renderAutomaticosTable(rows, search = "") {
   const term = search.trim().toLocaleLowerCase("pt-BR");
   const filtered = rows.filter((row) => !term || Object.values(row).some((value) => String(value ?? "").toLocaleLowerCase("pt-BR").includes(term)));
-  $("#automaticos-table tbody").innerHTML = filtered.length ? filtered.map((row) => `<tr><td>${nfmt(row.linha_origem)}</td><td>${esc(row.protocolo)}</td><td><strong>${esc(row.atendente)}</strong></td><td>${esc(dataCurta(row.inicio))}</td><td>${esc(dataCurta(row.fim))}</td><td class="num">${row.duracao_horas == null ? "—" : `${nfmt(row.duracao_horas, 2)} h`}</td><td class="num">${row.avaliacao == null ? "—" : nfmt(row.avaliacao, 2)}</td><td>${esc(row.gatilho_identificacao)}</td><td><span class="badge success">Incluído</span><small class="treatment-detail">${esc(row.tratamento || "Regra da competência")}</small></td></tr>`).join("") : `<tr><td colspan="9" class="empty-table">Nenhum encerramento automático incluído nesta competência.</td></tr>`;
+  const pageSize = 20;
+  const pages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  state.automaticosPage = Math.min(state.automaticosPage, pages);
+  const start = (state.automaticosPage - 1) * pageSize;
+  const visible = filtered.slice(start, start + pageSize);
+  $("#automaticos-table tbody").innerHTML = visible.length ? visible.map((row) => `<tr><td>${nfmt(row.linha_origem)}</td><td>${esc(row.protocolo)}</td><td><strong>${esc(row.atendente)}</strong></td><td>${esc(dataCurta(row.inicio))}</td><td>${esc(dataCurta(row.fim))}</td><td class="num">${row.duracao_horas == null ? "—" : `${nfmt(row.duracao_horas, 2)} h`}</td><td class="num">${row.avaliacao == null ? "—" : nfmt(row.avaliacao, 2)}</td><td>${esc(row.gatilho_identificacao)}</td><td><span class="badge success">Incluído</span><small class="treatment-detail">${esc(row.tratamento || "Regra da competência")}</small></td></tr>`).join("") : `<tr><td colspan="9" class="empty-table">Nenhum encerramento automático incluído nesta competência.</td></tr>`;
+  renderPagination($("#automaticos-pagination"), filtered.length, state.automaticosPage, pageSize, (page) => {
+    state.automaticosPage = page;
+    renderAutomaticosTable(rows, search);
+  });
 }
 
 const STAT_LABELS = {
@@ -1419,11 +1581,18 @@ function renderAuditoria(data) {
   $("#auditoria-empty").classList.toggle("hidden", has);
   if (!has) return;
   const info = data.info;
-  $("#audit-source-strip").innerHTML = `<strong>Fonte:</strong> ${esc(info.arquivo_origem || "—")} &nbsp;•&nbsp; <strong>Competência:</strong> ${esc(compBr(data.competencia))} &nbsp;•&nbsp; <strong>Processado em:</strong> ${esc(dataCurta(info.processado_em))} &nbsp;•&nbsp; <strong>Regra:</strong> ${esc(info.configuracao?.perfil_regra || "Regra oficial")}`;
+  $("#audit-source-strip").innerHTML = `<strong>Competência ${esc(compBr(data.competencia))}</strong> &nbsp;·&nbsp; Fonte: ${esc(info.arquivo_origem || "—")} &nbsp;·&nbsp; Atualizado em ${esc(dataCurta(info.processado_em))} &nbsp;·&nbsp; ${esc(info.configuracao?.perfil_regra || "Regra oficial")}`;
   const stats = info.estatisticas || {};
-  const statsOrder = ["TOTAL_IMPORTADO", "VALIDOS", "EXCLUIDOS", "FORA_SUPORTE", "ATENDENTE_EXCLUIDO", "ACIMA_H", "PERIODO", "AUTOMATICOS_IDENTIFICADOS", "AUTOMATICOS_VALIDOS", "AUTOMATICOS_RECUPERADOS", "AUTOMATICOS_EXCLUIDOS", "AVALIACOES_VALIDAS", "ATENDENTES_RANKING"];
+  const qualityCount = (data.exclusoes || []).filter((row) => exclusionCategory(row.motivo_codigo).key === "quality").length;
+  const scopeCount = (data.exclusoes || []).filter((row) => exclusionCategory(row.motivo_codigo).key === "scope").length;
+  const exceptionCount = (data.exclusoes || []).filter((row) => exclusionCategory(row.motivo_codigo).key === "exception").length;
+  $("#audit-quality").textContent = nfmt(qualityCount);
+  $("#audit-scope").textContent = nfmt(scopeCount);
+  $("#audit-exception").textContent = nfmt(exceptionCount);
+  const statsOrder = ["TOTAL_IMPORTADO", "VALIDOS", "EXCLUIDOS", "AVALIACOES_VALIDAS", "ATENDENTES_RANKING", "AUTOMATICOS_VALIDOS"];
   $("#audit-stats").innerHTML = statsOrder.filter((key) => key in stats).map((key) => `<article class="audit-stat"><span>${esc(STAT_LABELS[key] || key)}</span><strong>${nfmt(stats[key])}</strong></article>`).join("");
   renderExclusionChart($("#exclusion-chart"), data.resumo_exclusoes || []);
+  state.auditPage = 1;
   renderAuditTable(data.exclusoes || []);
   renderValidTable(data.validos || []);
   $("#valid-preview-count").textContent = `(${nfmt(data.validos_total)} registros)`;
@@ -1462,8 +1631,36 @@ function renderConfig(config) {
 
 function renderAuditTable(rows, search = "") {
   const term = search.trim().toLocaleLowerCase("pt-BR");
-  const filtered = rows.filter((row) => !term || Object.values(row).some((value) => String(value ?? "").toLocaleLowerCase("pt-BR").includes(term)));
-  $("#audit-table tbody").innerHTML = filtered.map((row) => `<tr><td>${nfmt(row.linha_origem)}</td><td>${esc(row.protocolo)}</td><td><strong>${esc(row.atendente || "—")}</strong></td><td>${esc(row.departamento || "—")}</td><td>${esc(dataCurta(row.inicio))}</td><td class="num">${row.duracao_horas == null ? "—" : `${nfmt(row.duracao_horas, 2)} h`}</td><td><span class="badge warning">${esc(row.motivo)}</span></td></tr>`).join("");
+  const categoryFilter = $("#audit-category")?.value || "";
+  const filtered = rows.filter((row) => {
+    const category = exclusionCategory(row.motivo_codigo);
+    const matchesCategory = !categoryFilter || category.key === categoryFilter;
+    const matchesText = !term || Object.values(row).some((value) => String(value ?? "").toLocaleLowerCase("pt-BR").includes(term));
+    return matchesCategory && matchesText;
+  });
+  const pageSize = 20;
+  const pages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  state.auditPage = Math.min(state.auditPage, pages);
+  const start = (state.auditPage - 1) * pageSize;
+  const visible = filtered.slice(start, start + pageSize);
+  $("#audit-table tbody").innerHTML = visible.length ? visible.map((row) => {
+    const category = exclusionCategory(row.motivo_codigo);
+    return `<tr><td>${nfmt(row.linha_origem)}</td><td>${esc(row.protocolo)}</td><td><strong>${esc(row.atendente || "—")}</strong></td><td>${esc(row.departamento || "—")}</td><td>${esc(dataCurta(row.inicio))}</td><td class="num">${row.duracao_horas == null ? "—" : `${nfmt(row.duracao_horas, 2)} h`}</td><td><span class="category-pill ${category.key}">${esc(category.label)}</span></td><td>${esc(row.motivo)}</td></tr>`;
+  }).join("") : '<tr><td colspan="8" class="empty-table">Nenhum registro encontrado para os filtros aplicados.</td></tr>';
+  renderPagination($("#audit-pagination"), filtered.length, state.auditPage, pageSize, (page) => {
+    state.auditPage = page;
+    renderAuditTable(rows, search);
+  });
+}
+
+function renderPagination(host, total, page, pageSize, onChange) {
+  if (!host) return;
+  const pages = Math.max(1, Math.ceil(total / pageSize));
+  const first = total ? (page - 1) * pageSize + 1 : 0;
+  const last = Math.min(page * pageSize, total);
+  host.innerHTML = `<span>${nfmt(first)}–${nfmt(last)} de ${nfmt(total)} registros</span><div class="pagination-actions"><button type="button" data-page="prev" ${page <= 1 ? "disabled" : ""} aria-label="Página anterior">‹</button><span>Página ${nfmt(page)} de ${nfmt(pages)}</span><button type="button" data-page="next" ${page >= pages ? "disabled" : ""} aria-label="Próxima página">›</button></div>`;
+  $("[data-page='prev']", host)?.addEventListener("click", () => onChange(page - 1));
+  $("[data-page='next']", host)?.addEventListener("click", () => onChange(page + 1));
 }
 
 function renderValidTable(rows) {
@@ -1612,12 +1809,17 @@ function initializeEvents() {
   $("#global-competencia").addEventListener("change", async (event) => {
     await loadResumo(event.target.value);
     if (state.view === "gerencial") await loadGerencial(event.target.value);
-    if (state.view === "auditoria") await loadAuditoria(event.target.value);
-    if (state.view === "automaticos") await loadAutomaticos(event.target.value);
+    if (state.view === "operacional") await loadOperacional(event.target.value);
+    if (state.view === "auditoria") {
+      await Promise.all([loadAuditoria(event.target.value), loadAutomaticos(event.target.value)]);
+    }
     if (state.view === "powerpoint") await loadPowerPoint(event.target.value);
   });
-  $("#auditoria-competencia").addEventListener("change", (event) => loadAuditoria(event.target.value));
-  $("#automaticos-competencia").addEventListener("change", (event) => loadAutomaticos(event.target.value));
+  $("#auditoria-competencia").addEventListener("change", async (event) => {
+    state.competencia = event.target.value;
+    setSelectOptions($("#global-competencia"), state.resumo?.competencias || [], state.competencia, compBr);
+    await Promise.all([loadAuditoria(event.target.value), loadAutomaticos(event.target.value)]);
+  });
   $("#powerpoint-competencia").addEventListener("change", (event) => loadPowerPoint(event.target.value));
   $("#powerpoint-download").addEventListener("click", baixarPowerPoint);
   $("#historico-atendente").addEventListener("change", (event) => loadHistorico(event.target.value));
@@ -1626,19 +1828,40 @@ function initializeEvents() {
   $("#processar-btn").addEventListener("click", processarArquivo);
   $("#import-competencia").addEventListener("change", updateProfile);
   $("#dashboard-export").addEventListener("click", () => exportar(state.competencia));
+  $("#header-excel").addEventListener("click", () => exportar(state.competencia));
+  $("#header-ppt").addEventListener("click", () => showView("powerpoint"));
   $("#auditoria-export").addEventListener("click", () => exportar($("#auditoria-competencia").value));
   $("#ranking-search").addEventListener("input", (event) => renderRankingTable(state.resumo?.ranking || [], event.target.value));
-  $("#audit-search").addEventListener("input", (event) => renderAuditTable(state.auditoria?.exclusoes || [], event.target.value));
-  $("#automaticos-search").addEventListener("input", (event) => renderAutomaticosTable(state.automaticos?.registros || [], event.target.value));
+  $("#operacional-search").addEventListener("input", (event) => renderOperationalTable(state.operacional?.atendentes || [], event.target.value));
+  $("#audit-search").addEventListener("input", (event) => {
+    state.auditPage = 1;
+    renderAuditTable(state.auditoria?.exclusoes || [], event.target.value);
+  });
+  $("#audit-category").addEventListener("change", () => {
+    state.auditPage = 1;
+    renderAuditTable(state.auditoria?.exclusoes || [], $("#audit-search").value);
+  });
+  $("#automaticos-search").addEventListener("input", (event) => {
+    state.automaticosPage = 1;
+    renderAutomaticosTable(state.automaticos?.registros || [], event.target.value);
+  });
+  window.addEventListener("hashchange", () => {
+    const requested = window.location.hash.slice(1);
+    const allowed = ["gerencial", "operacional", "dashboard", "historico", "auditoria", "sobre", "importacao", "powerpoint"];
+    if (allowed.includes(requested) && requested !== state.view) showView(requested);
+  });
 }
 
 async function init() {
+  let version = "Executive 2.0";
   try {
     const saude = await api("/api/saude");
     state.demo = Boolean(saude?.demonstracao);
+    version = saude?.versao || version;
   } catch (_error) {
     state.demo = false;
   }
+  $(".version-mark").textContent = String(version).toLocaleUpperCase("pt-BR");
   const now = new Date();
   $("#today-chip").textContent = now.toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" });
   $("#import-competencia").value = `${String(now.getMonth() + 1).padStart(2, "0")}/${now.getFullYear()}`;
@@ -1648,6 +1871,9 @@ async function init() {
   aplicarModoDemonstracao();
   await updateProfile();
   await loadResumo();
+  const requested = window.location.hash.slice(1);
+  const allowed = ["gerencial", "operacional", "dashboard", "historico", "auditoria", "sobre", "importacao", "powerpoint"];
+  showView(allowed.includes(requested) ? requested : "gerencial");
 }
 
 document.addEventListener("DOMContentLoaded", init);

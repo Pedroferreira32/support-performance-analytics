@@ -1,6 +1,6 @@
 # Performance Analytics: validação e premiação do suporte
 
-Aplicação web desenvolvida em Python para transformar dados brutos de atendimento em indicadores auditáveis de desempenho, ranking e apoio à decisão gerencial.
+Aplicação web desenvolvida em Python para transformar dados brutos de atendimento em uma visão executiva de operação, qualidade, desempenho, ranking e premiação auditável.
 
 > **Privacidade:** esta edição de portfólio utiliza somente dados sintéticos. Nomes, protocolos, avaliações e atendimentos foram gerados artificialmente e não representam pessoas ou operações reais.
 
@@ -34,23 +34,33 @@ O sistema implementa um pipeline completo de dados:
 
 Cada exclusão preserva o motivo, a linha de origem e os campos necessários para auditoria. O reprocessamento substitui apenas a competência selecionada, evitando duplicidades no histórico.
 
+## Visões executivas
+
+- **Resumo executivo:** resultado, risco e próxima decisão em uma única tela;
+- **Operação do suporte:** volume observado, TMA mediano/P90, CSAT, cobertura e exceções;
+- **Performance e premiação:** regra oficial, teto efetivo, elegibilidade, Top 3 e memória de cálculo;
+- **Pessoas e histórico:** evolução individual com representatividade das avaliações;
+- **Qualidade e auditoria:** separação entre erros de dados, fora do escopo, exceções operacionais e encerramentos automáticos;
+- **Sobre o projeto:** problema de negócio, pipeline, governança, tecnologia e limites da fonte.
+
 ## Indicadores apresentados
 
 - Volume de atendimentos válidos;
-- Tempo Médio de Atendimento (TMA);
+- Tempo Médio de Atendimento (média, mediana e P90 na leitura operacional);
 - Horas totais absorvidas;
 - Avaliação média e cobertura das avaliações;
 - Aproveitamento e taxa de exclusão da base;
 - Pontuação por componente;
 - Nota consolidada, elegibilidade e Top 3;
 - Evolução mensal da equipe e de cada profissional;
-- Produtividade versus qualidade;
+- Volume observado versus qualidade, sem inferir produtividade quando jornada e complexidade não estão disponíveis;
 - Concentração de volume e oportunidades de melhoria.
 
 ## Funcionalidades
 
-- Dashboard executivo com KPIs e gráficos;
-- Análise gerencial com leitura determinística dos resultados;
+- Resumo executivo orientado a decisão;
+- Análise gerencial com leitura determinística dos resultados, sem IA;
+- Visão operacional independente da regra de premiação;
 - Ranking e memória de cálculo detalhada;
 - Histórico mensal e individual;
 - Auditoria dos registros aceitos e excluídos;
@@ -59,6 +69,16 @@ Cada exclusão preserva o motivo, a linha de origem e os campos necessários par
 - Geração de apresentação PowerPoint no navegador;
 - Perfis de regras versionados por competência;
 - Modo público protegido e preenchido com dados sintéticos.
+
+## Bases analíticas
+
+A interface distingue três universos para evitar interpretações incorretas:
+
+1. **Base premiável:** registros que atendem a todos os critérios da campanha;
+2. **Base operacional observada:** base premiável mais casos acima do limite de duração;
+3. **Qualidade e escopo:** erros de preenchimento/coerência e exclusões legítimas da campanha são apresentados separadamente.
+
+Encerramentos automáticos permanecem identificados no volume e são retirados da leitura operacional de tempo. O volume é apresentado como observado; não equivale a produtividade por hora sem jornada e complexidade na fonte.
 
 ## Tecnologias
 

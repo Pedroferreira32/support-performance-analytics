@@ -4,447 +4,181 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light">
-  <title>Performance Analytics — Demonstração</title>
+  <meta name="description" content="Dashboard executivo de operação, qualidade de dados e premiação do suporte, com regras auditáveis e dados sintéticos.">
+  <meta name="author" content="Pedro Aurélio Gonçalves Ferreira">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="pt_BR">
+  <meta property="og:title" content="Support Performance | Analytics executivo">
+  <meta property="og:description" content="Da base bruta à decisão: operação, performance, premiação e auditoria em uma única aplicação.">
+  <meta property="og:url" content="https://performance-analytics-demo.onrender.com/">
+  <meta property="og:image" content="https://performance-analytics-demo.onrender.com/social-preview.svg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="theme-color" content="#10283e">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22><rect width=%2264%22 height=%2264%22 rx=%2214%22 fill=%22%2310283e%22/><path d=%22M15 45V29h9v16zm13 0V17h9v28zm13 0V34h9v11%22 fill=%22%235f9fc8%22/></svg>">
+  <title>Support Performance | Dashboard executivo</title>
   <link rel="stylesheet" href="/dashboard.css">
 </head>
 <body>
   <div class="app-shell">
     <aside class="sidebar" id="sidebar">
       <div class="brand">
-        <div class="brand-mark" aria-hidden="true">
-          <svg viewBox="0 0 40 40"><path d="M8 27V15h6v12H8Zm9 0V9h6v18h-6Zm9 0V18h6v9h-6Z"/><path class="brand-line" d="M7 31h26"/></svg>
-        </div>
-        <div>
-          <strong>Performance Analytics</strong>
-          <span>Dados & decisão</span>
-        </div>
+        <div class="brand-mark" aria-hidden="true"><svg viewBox="0 0 40 40"><path d="M8 27V15h6v12H8Zm9 0V9h6v18h-6Zm9 0V18h6v9h-6Z"/><path class="brand-line" d="M7 31h26"/></svg></div>
+        <div><strong>Support Performance</strong><span>Analytics executivo</span></div>
       </div>
-
       <nav class="nav-list" aria-label="Navegação principal">
-        <button class="nav-item active" data-view="dashboard">
-          <span class="nav-icon">▦</span><span>Visão geral</span>
-        </button>
-        <button class="nav-item" data-view="gerencial">
-          <span class="nav-icon">◈</span><span>Análise gerencial</span>
-        </button>
-        <button class="nav-item" data-view="importacao" id="nav-importacao">
-          <span class="nav-icon">⇧</span><span>Importar e validar</span>
-        </button>
-        <button class="nav-item" data-view="historico">
-          <span class="nav-icon">⌁</span><span>Histórico individual</span>
-        </button>
-        <button class="nav-item" data-view="powerpoint">
-          <span class="nav-icon">▣</span><span>PowerPoint executivo</span>
-        </button>
-        <button class="nav-item" data-view="automaticos">
-          <span class="nav-icon">↻</span><span>Finalizados automáticos</span>
-        </button>
-        <button class="nav-item" data-view="auditoria">
-          <span class="nav-icon">✓</span><span>Auditoria</span>
-        </button>
+        <p class="nav-section-label">Gestão</p>
+        <button class="nav-item active" data-view="gerencial"><span class="nav-icon">01</span><span>Resumo executivo</span></button>
+        <button class="nav-item" data-view="operacional"><span class="nav-icon">02</span><span>Operação do suporte</span></button>
+        <button class="nav-item" data-view="dashboard"><span class="nav-icon">03</span><span>Performance e premiação</span></button>
+        <button class="nav-item" data-view="historico"><span class="nav-icon">04</span><span>Pessoas e histórico</span></button>
+        <button class="nav-item" data-view="auditoria"><span class="nav-icon">05</span><span>Qualidade e auditoria</span></button>
+        <button class="nav-item" data-view="sobre"><span class="nav-icon">06</span><span>Sobre o projeto</span></button>
+        <p class="nav-section-label tools-label">Ferramentas</p>
+        <button class="nav-item nav-utility" data-view="importacao" id="nav-importacao"><span class="nav-icon">↥</span><span>Atualizar base</span></button>
+        <button class="nav-item nav-utility" data-view="powerpoint"><span class="nav-icon">▤</span><span>Relatório executivo</span></button>
       </nav>
-
-      <div class="sidebar-footer">
-        <div class="status-dot"><span></span> <span id="sidebar-status">Sistema disponível</span></div>
-        <small id="sidebar-note">Dashboard analítico de performance.</small>
-      </div>
+      <div class="sidebar-footer"><div class="status-dot"><span></span><strong id="sidebar-status">Sistema disponível</strong></div><small id="sidebar-note">Indicadores com memória de cálculo.</small><small class="version-mark">EXECUTIVE 2.0</small></div>
     </aside>
 
     <main class="main-content">
       <header class="topbar">
         <button class="mobile-menu" id="mobile-menu" aria-label="Abrir menu">☰</button>
-        <div>
-          <p class="eyebrow">GESTÃO DE PERFORMANCE</p>
-          <h1 id="page-title">Visão geral da premiação</h1>
-        </div>
+        <div class="topbar-title"><p class="eyebrow">CENTRAL DE DECISÃO</p><h1 id="page-title">Resumo executivo</h1></div>
         <div class="topbar-actions">
-          <label class="compact-field" id="global-filter-wrap">
-            <span>Competência</span>
-            <select id="global-competencia" aria-label="Competência do dashboard"></select>
-          </label>
+          <label class="compact-field" id="global-filter-wrap"><span>Competência</span><select id="global-competencia" aria-label="Competência do dashboard"></select></label>
+          <button class="btn secondary top-action" id="header-excel">Excel</button>
+          <button class="btn primary top-action" id="header-ppt">PowerPoint</button>
           <div class="date-chip" id="today-chip"></div>
         </div>
       </header>
-
-      <div class="demo-banner hidden" id="demo-banner">
-        <span class="demo-banner-icon">◆</span>
-        <div>
-          <strong>Demonstração pública com dados sintéticos</strong>
-          <p>Todos os nomes, protocolos e atendimentos desta versão são fictícios. Funções de alteração estão bloqueadas.</p>
-        </div>
-      </div>
-
+      <div class="demo-banner hidden" id="demo-banner"><span class="demo-label">AMBIENTE DEMO</span><p>Dados integralmente sintéticos. Navegação pública em modo somente leitura.</p></div>
       <div id="toast-stack" class="toast-stack" aria-live="polite"></div>
-      <div id="loading" class="loading-overlay hidden" aria-live="polite">
-        <div class="spinner"></div><span>Processando dados…</span>
-      </div>
+      <div id="loading" class="loading-overlay hidden" aria-live="polite"><div class="spinner"></div><span>Atualizando indicadores…</span></div>
 
-      <section class="view active" id="view-dashboard" data-title="Visão geral da premiação">
-        <div id="dashboard-empty" class="empty-state hidden">
-          <div class="empty-icon">▦</div>
-          <h2>Nenhuma competência processada</h2>
-          <p>Importe o primeiro arquivo mensal da plataforma de atendimento para liberar os indicadores e gráficos.</p>
-          <button class="btn primary" data-go="importacao">Importar primeira competência</button>
-        </div>
-
-        <div id="dashboard-content">
-          <div class="source-strip" id="source-strip"></div>
-
-          <div class="kpi-grid" id="dashboard-kpis">
-            <article class="kpi-card accent-blue">
-              <div class="kpi-label">Base válida <span class="info-tip" title="Atendimentos contabilizados após todas as validações.">i</span></div>
-              <div class="kpi-value" data-kpi="validos">—</div>
-              <div class="kpi-foot" data-kpi-foot="validos">atendimentos contabilizados</div>
-            </article>
-            <article class="kpi-card accent-slate">
-              <div class="kpi-label">Excluídos <span class="info-tip" title="Registros retirados pelo primeiro motivo de exclusão encontrado.">i</span></div>
-              <div class="kpi-value" data-kpi="excluidos">—</div>
-              <div class="kpi-foot" data-kpi-foot="excluidos">registros auditáveis</div>
-            </article>
-            <article class="kpi-card accent-gold">
-              <div class="kpi-label">Líder do mês</div>
-              <div class="kpi-value text" data-kpi="lider">—</div>
-              <div class="kpi-foot" data-kpi-foot="lider">1ª posição do ranking</div>
-            </article>
-            <article class="kpi-card accent-purple">
-              <div class="kpi-label">Nota líder</div>
-              <div class="kpi-value" data-kpi="nota">—</div>
-              <div class="kpi-foot">meta mínima: 85 pontos</div>
-            </article>
-            <article class="kpi-card accent-green">
-              <div class="kpi-label">Premiados</div>
-              <div class="kpi-value" data-kpi="premiados">—</div>
-              <div class="kpi-foot" data-kpi-foot="premiados">Top 3 entre os elegíveis</div>
-            </article>
-            <article class="kpi-card accent-orange">
-              <div class="kpi-label">Automáticos incluídos</div>
-              <div class="kpi-value" data-kpi="automaticos">—</div>
-              <div class="kpi-foot">mantidos após as regras da competência</div>
-            </article>
-          </div>
-
-          <div class="insight-banner" id="insight-banner">
-            <span class="insight-icon">◆</span>
-            <div><strong>Leitura do mês</strong><p id="insight-text">Carregando análise do desempenho…</p></div>
-          </div>
-
-          <div class="dashboard-grid two-columns">
-            <article class="panel chart-panel">
-              <div class="panel-heading">
-                <div><p class="panel-kicker">COMPARAÇÃO</p><h2>Ranking de notas</h2><p>Nota final por atendente; linha tracejada representa a meta 85.</p></div>
-                <span class="legend-chip"><i class="legend-blue"></i> Nota final</span>
-              </div>
-              <div class="chart-host" id="ranking-chart"></div>
-            </article>
-
-            <article class="panel chart-panel">
-              <div class="panel-heading">
-                <div><p class="panel-kicker">COMPOSIÇÃO</p><h2>Origem da pontuação</h2><p>Contribuição dos quatro critérios para o Top 8.</p></div>
-              </div>
-              <div class="chart-legend">
-                <span><i style="--legend:#1e5f8f"></i>Quantidade</span>
-                <span><i style="--legend:#8a98a7"></i>Tempo total</span>
-                <span><i style="--legend:#d3951d"></i>TMA</span>
-                <span><i style="--legend:#7352a3"></i>Avaliação</span>
-              </div>
-              <div class="chart-host" id="composition-chart"></div>
-            </article>
-          </div>
-
-          <article class="panel table-panel">
-            <div class="panel-heading inline">
-              <div><p class="panel-kicker">MEMÓRIA DE CÁLCULO</p><h2>Detalhamento por funcionário</h2><p>Resultados consolidados e feedback gerencial da competência.</p></div>
-              <div class="table-tools">
-                <input type="search" id="ranking-search" placeholder="Buscar funcionário…" aria-label="Buscar funcionário">
-                <button class="btn secondary" id="dashboard-export">Exportar Excel</button>
-              </div>
-            </div>
-            <div class="table-wrap">
-              <table id="ranking-table">
-                <thead><tr><th>Rank</th><th>Atendente</th><th>Atendimentos</th><th>TMA médio</th><th>Avaliação</th><th>Nota final</th><th>Situação</th><th>Feedback</th></tr></thead>
-                <tbody></tbody>
-              </table>
-            </div>
-          </article>
-        </div>
-      </section>
-
-      <section class="view" id="view-gerencial" data-title="Análise gerencial da equipe">
-        <div id="gerencial-empty" class="empty-state hidden">
-          <div class="empty-icon">◈</div>
-          <h2>Análise gerencial indisponível</h2>
-          <p>Processe uma competência para liberar os indicadores, comparações e prioridades da equipe.</p>
-        </div>
-
+      <section class="view active" id="view-gerencial" data-title="Resumo executivo">
+        <div id="gerencial-empty" class="empty-state hidden"><p class="empty-code">SEM DADOS</p><h2>Resumo indisponível</h2><p>Processe uma competência para liberar a leitura gerencial.</p></div>
         <div id="gerencial-content">
           <div class="source-strip" id="gerencial-source"></div>
-
+          <article class="executive-hero"><div class="executive-copy"><p class="panel-kicker">FECHAMENTO DA COMPETÊNCIA</p><h2 id="executive-title">Resultado consolidado</h2><p id="gerencial-insight">Carregando leitura executiva…</p></div><div class="executive-status"><span>Situação</span><strong id="executive-status">Em apuração</strong><small id="executive-status-note">meta mínima: 85 pontos</small></div></article>
           <div class="kpi-grid" id="gerencial-kpis">
-            <article class="kpi-card accent-purple"><div class="kpi-label">Nota média da equipe</div><div class="kpi-value" data-manager-kpi="media">—</div><div class="kpi-foot" data-manager-foot="media">média simples dos funcionários</div></article>
-            <article class="kpi-card accent-blue"><div class="kpi-label">Mediana das notas</div><div class="kpi-value" data-manager-kpi="mediana">—</div><div class="kpi-foot">ponto central da distribuição</div></article>
+            <article class="kpi-card accent-navy"><div class="kpi-label">Índice médio oficial</div><div class="kpi-value" data-manager-kpi="media">—</div><div class="kpi-foot" data-manager-foot="media">teto efetivo 91,50</div></article>
+            <article class="kpi-card accent-gold"><div class="kpi-label">Elegíveis</div><div class="kpi-value" data-manager-kpi="elegiveis">—</div><div class="kpi-foot">índice igual ou superior a 85</div></article>
             <article class="kpi-card accent-green"><div class="kpi-label">Premiados</div><div class="kpi-value" data-manager-kpi="premiados">—</div><div class="kpi-foot" data-manager-foot="premiados">Top 3 entre elegíveis</div></article>
-            <article class="kpi-card accent-gold"><div class="kpi-label">Elegíveis</div><div class="kpi-value" data-manager-kpi="elegiveis">—</div><div class="kpi-foot">nota igual ou superior a 85</div></article>
-            <article class="kpi-card accent-slate"><div class="kpi-label">Aproveitamento da base</div><div class="kpi-value" data-manager-kpi="validacao">—</div><div class="kpi-foot" data-manager-foot="validacao">registros válidos após os filtros</div></article>
-            <article class="kpi-card accent-orange"><div class="kpi-label">Cobertura de avaliações</div><div class="kpi-value" data-manager-kpi="avaliacoes">—</div><div class="kpi-foot" data-manager-foot="avaliacoes">avaliações válidas sobre atendimentos</div></article>
+            <article class="kpi-card accent-blue"><div class="kpi-label">Base validada</div><div class="kpi-value" data-manager-kpi="validacao">—</div><div class="kpi-foot" data-manager-foot="validacao">aproveitamento da importação</div></article>
+            <article class="kpi-card accent-teal"><div class="kpi-label">Cobertura CSAT</div><div class="kpi-value" data-manager-kpi="avaliacoes">—</div><div class="kpi-foot" data-manager-foot="avaliacoes">respostas sobre atendimentos</div></article>
+            <article class="kpi-card accent-slate"><div class="kpi-label">Mediana da equipe</div><div class="kpi-value" data-manager-kpi="mediana">—</div><div class="kpi-foot">centro da distribuição</div></article>
           </div>
-
-          <div class="insight-banner manager-insight">
-            <span class="insight-icon">◆</span>
-            <div><strong>Leitura executiva</strong><p id="gerencial-insight">Carregando diagnóstico da competência…</p></div>
+          <div class="decision-grid" aria-label="Síntese para decisão">
+            <article class="decision-card result"><span>RESULTADO</span><strong id="decision-result">—</strong><p id="decision-result-note">—</p></article>
+            <article class="decision-card risk"><span>RISCO A MONITORAR</span><strong id="decision-risk">—</strong><p id="decision-risk-note">—</p></article>
+            <article class="decision-card action"><span>PRÓXIMA DECISÃO</span><strong id="decision-action">—</strong><p id="decision-action-note">—</p></article>
           </div>
-
+          <div class="dashboard-grid executive-grid">
+            <article class="panel chart-panel wide-panel"><div class="panel-heading"><div><p class="panel-kicker">EVOLUÇÃO</p><h2>Índice da equipe</h2><p>Média, mediana e liderança nas competências disponíveis. A linha marca o corte de elegibilidade.</p></div></div><div class="chart-legend"><span><i style="--legend:#255f87"></i>Média</span><span><i style="--legend:#66798a"></i>Mediana</span><span><i style="--legend:#bf8c2f"></i>Líder</span><span><i style="--legend:#a34d4d"></i>Meta 85</span></div><div class="chart-host" id="gerencial-trend-chart"></div></article>
+            <article class="panel chart-panel narrow-panel"><div class="panel-heading"><div><p class="panel-kicker">ELEGIBILIDADE</p><h2>Situação da equipe</h2><p>Leitura direta do resultado oficial.</p></div></div><div class="chart-host manager-status" id="gerencial-status-chart"></div></article>
+          </div>
           <div class="dashboard-grid two-columns">
-            <article class="panel chart-panel">
-              <div class="panel-heading"><div><p class="panel-kicker">TRAJETÓRIA</p><h2>Desempenho da equipe</h2><p>Média, mediana e melhor nota nas últimas seis competências processadas.</p></div></div>
-              <div class="chart-legend"><span><i style="--legend:#1e5f8f"></i>Média</span><span><i style="--legend:#7352a3"></i>Mediana</span><span><i style="--legend:#d3951d"></i>Líder</span><span><i style="--legend:#a44747"></i>Meta 85</span></div>
-              <div class="chart-host" id="gerencial-trend-chart"></div>
-            </article>
-
-            <article class="panel chart-panel">
-              <div class="panel-heading"><div><p class="panel-kicker">DISTRIBUIÇÃO</p><h2>Situação da equipe</h2><p>Separação entre premiados, elegíveis fora do Top 3 e abaixo da meta.</p></div></div>
-              <div class="chart-host manager-status" id="gerencial-status-chart"></div>
-            </article>
+            <article class="panel chart-panel"><div class="panel-heading"><div><p class="panel-kicker">VOLUME E QUALIDADE</p><h2>Posição relativa da equipe</h2><p>Volume observado e avaliação média apresentados lado a lado, sem inferir produtividade por hora.</p></div></div><div class="chart-host" id="gerencial-scatter-chart"></div></article>
+            <article class="panel chart-panel"><div class="panel-heading"><div><p class="panel-kicker">MODELO DE PONTUAÇÃO</p><h2>Parcela fixa e critérios variáveis</h2><p>Tempo/TMA formam uma base fixa; Quantidade e Avaliação diferenciam o índice.</p></div></div><div class="chart-host" id="gerencial-components-chart"></div></article>
           </div>
-
-          <div class="dashboard-grid two-columns">
-            <article class="panel chart-panel">
-              <div class="panel-heading"><div><p class="panel-kicker">PRODUTIVIDADE × QUALIDADE</p><h2>Posicionamento dos funcionários</h2><p>Quantidade de atendimentos versus avaliação média; linhas representam as médias da equipe.</p></div></div>
-              <div class="chart-host" id="gerencial-scatter-chart"></div>
-            </article>
-
-            <article class="panel chart-panel">
-              <div class="panel-heading"><div><p class="panel-kicker">ALAVANCAS DA NOTA</p><h2>Aproveitamento médio dos critérios</h2><p>Percentual médio de pontos obtidos em cada componente da regra.</p></div></div>
-              <div class="chart-host" id="gerencial-components-chart"></div>
-            </article>
-          </div>
-
-          <article class="panel table-panel manager-actions-panel">
-            <div class="panel-heading"><div><p class="panel-kicker">PLANO DE AÇÃO</p><h2>Prioridades por funcionário</h2><p>Fila ordenada pela situação atual; metas de curto prazo são direcionais porque a nota depende do melhor resultado da equipe.</p></div></div>
-            <div class="table-wrap"><table id="gerencial-actions-table"><thead><tr><th>Prioridade</th><th>Funcionário</th><th>Rank</th><th>Nota</th><th>Situação</th><th>Principal foco</th><th>Objetivo</th><th>Ação sugerida</th></tr></thead><tbody></tbody></table></div>
-          </article>
-
-          <article class="panel table-panel">
-            <div class="panel-heading"><div><p class="panel-kicker">COMPARATIVO MENSAL</p><h2 id="gerencial-comparison-title">Variação por funcionário</h2><p id="gerencial-comparison-note">Comparação com a competência anterior.</p></div></div>
-            <div class="table-wrap"><table id="gerencial-comparison-table"><thead><tr><th>Funcionário</th><th>Rank atual</th><th>Δ Rank</th><th>Nota atual</th><th>Δ Nota</th><th>Atendimentos</th><th>Δ Atendimentos</th><th>Avaliação</th><th>Δ Avaliação</th></tr></thead><tbody></tbody></table></div>
-          </article>
+          <article class="panel table-panel manager-actions-panel"><div class="panel-heading"><div><p class="panel-kicker">AGENDA DO GESTOR</p><h2>Prioridades por funcionário</h2><p>Evidência objetiva e próximo acompanhamento; referências de volume não consideram jornada ou complexidade.</p></div></div><div class="table-wrap"><table id="gerencial-actions-table"><thead><tr><th>Prioridade</th><th>Funcionário</th><th>Índice</th><th>Situação</th><th>Evidência</th><th>Próxima ação</th></tr></thead><tbody></tbody></table></div></article>
+          <article class="panel table-panel"><div class="panel-heading"><div><p class="panel-kicker">COMPARAÇÃO CONTROLADA</p><h2 id="gerencial-comparison-title">Variação por funcionário</h2><p id="gerencial-comparison-note">Comparação com a competência anterior.</p></div></div><div class="table-wrap"><table id="gerencial-comparison-table"><thead><tr><th>Funcionário</th><th>Rank atual</th><th>Δ Rank</th><th>Índice atual</th><th>Δ Índice</th><th>Volume</th><th>Δ Volume</th><th>Avaliação</th><th>Δ Avaliação</th></tr></thead><tbody></tbody></table></div></article>
         </div>
       </section>
 
-      <section class="view" id="view-importacao" data-title="Importar e validar competência">
-        <div class="page-intro">
-          <div><p class="eyebrow">ATUALIZAÇÃO MENSAL</p><h2>Importação da base de atendimento</h2><p>O mês reprocessado é substituído integralmente, sem duplicar o histórico.</p></div>
+      <section class="view" id="view-operacional" data-title="Operação do suporte">
+        <div id="operacional-empty" class="empty-state hidden"><p class="empty-code">SEM DADOS</p><h2>Visão operacional indisponível</h2><p>Processe uma competência para avaliar volume, tempo, qualidade e exceções.</p></div>
+        <div id="operacional-content">
+          <div class="source-strip" id="operacional-source"></div>
+          <div class="section-heading"><div><p class="eyebrow">SAÚDE DA OPERAÇÃO</p><h2>Demanda, tempo e qualidade</h2><p>Indicadores independentes da nota de premiação.</p></div><span class="method-chip">BASE OBSERVADA</span></div>
+          <div class="kpi-grid operational-kpis">
+            <article class="kpi-card accent-navy"><div class="kpi-label">Base operacional observada</div><div class="kpi-value" data-ops-kpi="base">—</div><div class="kpi-foot" data-ops-foot="base">válidos + exceções acima do limite</div></article>
+            <article class="kpi-card accent-blue"><div class="kpi-label">Variação mensal do volume</div><div class="kpi-value" data-ops-kpi="volume-delta">—</div><div class="kpi-foot" data-ops-foot="volume-delta">contra a competência anterior</div></article>
+            <article class="kpi-card accent-teal"><div class="kpi-label">TMA observado — mediana</div><div class="kpi-value" data-ops-kpi="tma-mediano">—</div><div class="kpi-foot">regulares da base premiável</div></article>
+            <article class="kpi-card accent-slate"><div class="kpi-label">TMA observado — P90</div><div class="kpi-value" data-ops-kpi="tma-p90">—</div><div class="kpi-foot">90% dos casos abaixo deste valor</div></article>
+            <article class="kpi-card accent-green"><div class="kpi-label">CSAT médio</div><div class="kpi-value" data-ops-kpi="csat">—</div><div class="kpi-foot">escala de 1 a 5</div></article>
+            <article class="kpi-card accent-gold"><div class="kpi-label">Cobertura CSAT</div><div class="kpi-value" data-ops-kpi="coverage">—</div><div class="kpi-foot" data-ops-foot="coverage">avaliações válidas</div></article>
+          </div>
+          <div class="basis-grid"><article><span>BASE PREMIÁVEL</span><strong id="basis-award">—</strong><p>registros que entram na campanha</p></article><article><span>QUALIDADE DOS DADOS</span><strong id="basis-quality">—</strong><p>falhas de preenchimento ou coerência</p></article><article><span>FORA DO ESCOPO</span><strong id="basis-scope">—</strong><p>área, período ou público não elegível</p></article><article><span>EXCEÇÃO OPERACIONAL</span><strong id="basis-exception">—</strong><p>casos acima do limite de duração</p></article><article><span>ENCERRAMENTOS AUTOMÁTICOS</span><strong id="basis-auto">—</strong><p id="basis-auto-note">incluídos e identificados</p></article></div>
+          <div class="dashboard-grid two-columns"><article class="panel chart-panel"><div class="panel-heading"><div><p class="panel-kicker">TRAJETÓRIA OPERACIONAL</p><h2>Volume e cobertura</h2><p>Competências disponíveis, sem cruzar versões de regra da pontuação.</p></div></div><div class="chart-host" id="operacional-trend-chart"></div></article><article class="panel chart-panel"><div class="panel-heading"><div><p class="panel-kicker">DISTRIBUIÇÃO HORÁRIA</p><h2>Entradas por hora</h2><p>Concentração do volume validado pelo horário de início.</p></div></div><div class="chart-host" id="operacional-hour-chart"></div></article></div>
+          <article class="panel table-panel"><div class="panel-heading inline"><div><p class="panel-kicker">EQUIPE</p><h2>Volume, tempo e representatividade do CSAT</h2><p>O volume é observado; a fonte não contém jornada, categoria ou complexidade para cálculo de produtividade.</p></div><input type="search" id="operacional-search" placeholder="Buscar funcionário…"></div><div class="table-wrap"><table id="operacional-table"><thead><tr><th>Funcionário</th><th>Volume</th><th>Participação</th><th>TMA mediano</th><th>TMA P90</th><th>CSAT</th><th>Avaliações</th><th>Cobertura</th><th>Automáticos</th></tr></thead><tbody></tbody></table></div></article>
+          <div class="method-note" id="operacional-method-note"></div>
         </div>
-
-        <div class="dashboard-grid import-grid">
-          <article class="panel upload-panel">
-            <div class="panel-heading"><div><p class="panel-kicker">ARQUIVO DE ORIGEM</p><h2>Selecione a base mensal</h2><p>Formatos aceitos: CSV, TXT, XLSX, XLS e XLSM. Limite de 50 MB.</p></div></div>
-            <label class="drop-zone" id="drop-zone">
-              <input type="file" id="arquivo-upload" accept=".csv,.txt,.xlsx,.xls,.xlsm" hidden>
-              <span class="upload-icon">⇧</span>
-              <strong>Arraste o arquivo aqui</strong>
-              <span>ou clique para selecionar no computador</span>
-              <small id="file-name">Nenhum arquivo selecionado</small>
-            </label>
-
-            <div class="form-row">
-              <label class="form-field"><span>Competência</span><input id="import-competencia" inputmode="numeric" placeholder="MM/AAAA"><small>Informe o mês dos atendimentos iniciados no arquivo.</small></label>
-            </div>
-
-            <label class="form-field"><span>Atendentes fora da campanha</span><textarea id="import-excluidos" rows="4"></textarea><small>Nomes completos ou parciais, separados por ponto e vírgula.</small></label>
-            <button class="btn primary wide" id="processar-btn">Processar e atualizar histórico</button>
-            <p class="demo-only-note hidden" id="import-demo-note">Na demonstração pública, a importação fica visível para apresentar o fluxo, mas permanece bloqueada para proteger o ambiente.</p>
-          </article>
-
-          <article class="panel params-panel">
-            <div class="panel-heading"><div><p class="panel-kicker">REGRA AUTOMÁTICA</p><h2 id="profile-name">Perfil da competência</h2><p>Confira os parâmetros antes de iniciar o processamento.</p></div></div>
-            <div class="rule-summary" id="rule-summary"></div>
-            <div class="weight-grid" id="weight-grid"></div>
-            <div class="rule-note"><strong>Regra de pontuação</strong><p id="profile-rule-note">Os critérios são normalizados pelo melhor resultado da equipe. Em julho/2026, Tempo Total e TMA somam 31,5 pontos fixos.</p></div>
-          </article>
-        </div>
-
-        <article class="panel hidden" id="process-result-panel">
-          <div class="result-message" id="process-result"></div>
-        </article>
       </section>
 
-      <section class="view" id="view-historico" data-title="Histórico individual">
-        <div class="filter-bar">
-          <label class="form-field compact"><span>Funcionário</span><select id="historico-atendente"></select></label>
+      <section class="view" id="view-dashboard" data-title="Performance e premiação">
+        <div id="dashboard-empty" class="empty-state hidden"><p class="empty-code">SEM DADOS</p><h2>Nenhuma competência processada</h2><p>Atualize a base para liberar o cálculo oficial.</p><button class="btn primary" data-go="importacao">Atualizar base</button></div>
+        <div id="dashboard-content">
+          <div class="source-strip" id="source-strip"></div>
+          <article class="score-model"><div><p class="panel-kicker">REGRA OFICIAL</p><h2>Índice de performance</h2><p>O ranking preserva a regra vigente; a leitura abaixo explicita o que é fixo e o que diferencia a equipe.</p></div><div class="score-formula" aria-label="Composição do índice"><span><small>Base fixa</small><strong>31,50</strong><em>Tempo + TMA</em></span><b>+</b><span><small>Variável</small><strong>20,00</strong><em>Quantidade</em></span><b>+</b><span><small>Variável</small><strong>40,00</strong><em>Avaliação</em></span><b>=</b><span class="score-total"><small>Teto efetivo</small><strong>91,50</strong><em>meta 85,00</em></span></div></article>
+          <div class="kpi-grid" id="dashboard-kpis">
+            <article class="kpi-card accent-navy"><div class="kpi-label">Base premiável</div><div class="kpi-value" data-kpi="validos">—</div><div class="kpi-foot" data-kpi-foot="validos">atendimentos contabilizados</div></article>
+            <article class="kpi-card accent-slate"><div class="kpi-label">Registros excluídos</div><div class="kpi-value" data-kpi="excluidos">—</div><div class="kpi-foot" data-kpi-foot="excluidos">itens auditáveis</div></article>
+            <article class="kpi-card accent-gold"><div class="kpi-label">Liderança</div><div class="kpi-value text" data-kpi="lider">—</div><div class="kpi-foot">1ª posição oficial</div></article>
+            <article class="kpi-card accent-blue"><div class="kpi-label">Índice da liderança</div><div class="kpi-value" data-kpi="nota">—</div><div class="kpi-foot" data-kpi-foot="nota">teto efetivo da regra</div></article>
+            <article class="kpi-card accent-green"><div class="kpi-label">Premiados</div><div class="kpi-value" data-kpi="premiados">—</div><div class="kpi-foot" data-kpi-foot="premiados">Top 3 entre elegíveis</div></article>
+            <article class="kpi-card accent-teal"><div class="kpi-label">Automáticos incluídos</div><div class="kpi-value" data-kpi="automaticos">—</div><div class="kpi-foot">identificados e rastreáveis</div></article>
+          </div>
+          <div class="decision-strip"><strong id="insight-text">Carregando fechamento…</strong><span>Regra determinística, sem IA e com memória de cálculo.</span></div>
+          <div class="dashboard-grid two-columns"><article class="panel chart-panel"><div class="panel-heading"><div><p class="panel-kicker">CLASSIFICAÇÃO</p><h2>Ranking oficial</h2><p>Índice por funcionário; linha tracejada em 85.</p></div><span class="legend-chip"><i class="legend-blue"></i> Índice</span></div><div class="chart-host" id="ranking-chart"></div></article><article class="panel chart-panel"><div class="panel-heading"><div><p class="panel-kicker">MEMÓRIA VISUAL</p><h2>Composição do índice</h2><p>Base fixa de 31,50 + Quantidade + Avaliação.</p></div></div><div class="chart-legend"><span><i style="--legend:#7b8791"></i>Base fixa</span><span><i style="--legend:#255f87"></i>Quantidade</span><span><i style="--legend:#bf8c2f"></i>Avaliação</span></div><div class="chart-host" id="composition-chart"></div></article></div>
+          <article class="panel table-panel"><div class="panel-heading inline"><div><p class="panel-kicker">MEMÓRIA DE CÁLCULO</p><h2>Detalhamento por funcionário</h2><p>Resultados, cobertura de avaliação e situação na campanha.</p></div><div class="table-tools"><input type="search" id="ranking-search" placeholder="Buscar funcionário…"><button class="btn secondary" id="dashboard-export">Exportar Excel</button></div></div><div class="table-wrap"><table id="ranking-table"><thead><tr><th>Rank</th><th>Funcionário</th><th>Volume</th><th>TMA observado</th><th>CSAT</th><th>Cobertura</th><th>Índice oficial</th><th>Situação</th><th>Feedback</th></tr></thead><tbody></tbody></table></div></article>
         </div>
+      </section>
+
+      <section class="view" id="view-historico" data-title="Pessoas e histórico">
+        <div class="filter-bar"><label class="form-field compact"><span>Funcionário</span><select id="historico-atendente"></select></label></div>
         <div id="historico-empty" class="empty-state hidden"><h2>Histórico indisponível</h2><p>Processe ao menos uma competência para acompanhar a evolução individual.</p></div>
         <div id="historico-content">
-          <div class="kpi-grid four" id="historico-kpis">
-            <article class="kpi-card accent-purple"><div class="kpi-label">Última nota</div><div class="kpi-value" data-history-kpi="nota">—</div><div class="kpi-foot" data-history-foot="nota">competência mais recente</div></article>
-            <article class="kpi-card accent-blue"><div class="kpi-label">Última posição</div><div class="kpi-value" data-history-kpi="rank">—</div><div class="kpi-foot">posição no ranking</div></article>
-            <article class="kpi-card accent-gold"><div class="kpi-label">Atendimentos</div><div class="kpi-value" data-history-kpi="atendimentos">—</div><div class="kpi-foot">última competência</div></article>
-            <article class="kpi-card accent-green"><div class="kpi-label">Competências</div><div class="kpi-value" data-history-kpi="competencias">—</div><div class="kpi-foot">meses no histórico</div></article>
-          </div>
-
-          <article class="panel chart-panel full">
-            <div class="panel-heading"><div><p class="panel-kicker">EVOLUÇÃO</p><h2 id="history-chart-title">Evolução das notas</h2><p>Nota final por competência; linha tracejada representa a meta 85.</p></div></div>
-            <div class="chart-host history" id="history-chart"></div>
-          </article>
-
-          <div class="dashboard-grid history-grid">
-            <article class="panel table-panel">
-              <div class="panel-heading"><div><p class="panel-kicker">HISTÓRICO</p><h2>Resultados mensais</h2></div></div>
-              <div class="table-wrap"><table id="history-table"><thead><tr><th>Competência</th><th>Rank</th><th>Atendimentos</th><th>Avaliação</th><th>Nota</th><th>Situação</th></tr></thead><tbody></tbody></table></div>
-            </article>
-            <article class="panel feedback-panel">
-              <div class="panel-heading"><div><p class="panel-kicker">GESTÃO</p><h2>Feedback individual</h2><p>Edite o texto da competência selecionada.</p></div></div>
-              <label class="form-field"><span>Competência</span><select id="feedback-competencia"></select></label>
-              <label class="form-field"><span>Feedback</span><textarea id="feedback-texto" rows="9"></textarea></label>
-              <button class="btn primary wide" id="feedback-save">Salvar feedback</button>
-              <p class="demo-only-note hidden" id="feedback-demo-note">A edição de feedback está bloqueada nesta demonstração.</p>
-            </article>
-          </div>
+          <div class="kpi-grid history-kpis" id="historico-kpis"><article class="kpi-card accent-navy"><div class="kpi-label">Último índice</div><div class="kpi-value" data-history-kpi="nota">—</div><div class="kpi-foot" data-history-foot="nota">competência mais recente</div></article><article class="kpi-card accent-blue"><div class="kpi-label">Última posição</div><div class="kpi-value" data-history-kpi="rank">—</div><div class="kpi-foot">posição no ranking</div></article><article class="kpi-card accent-gold"><div class="kpi-label">Volume observado</div><div class="kpi-value" data-history-kpi="atendimentos">—</div><div class="kpi-foot">última competência</div></article><article class="kpi-card accent-teal"><div class="kpi-label">TMA observado</div><div class="kpi-value" data-history-kpi="tma">—</div><div class="kpi-foot">não altera a nota na regra fixa</div></article><article class="kpi-card accent-green"><div class="kpi-label">Cobertura CSAT</div><div class="kpi-value" data-history-kpi="cobertura">—</div><div class="kpi-foot">última competência</div></article><article class="kpi-card accent-slate"><div class="kpi-label">Competências</div><div class="kpi-value" data-history-kpi="competencias">—</div><div class="kpi-foot">meses no histórico</div></article></div>
+          <article class="panel chart-panel full"><div class="panel-heading"><div><p class="panel-kicker">EVOLUÇÃO INDIVIDUAL</p><h2 id="history-chart-title">Índice por competência</h2><p>A linha tracejada representa a meta de 85.</p></div></div><div class="chart-host history" id="history-chart"></div></article>
+          <div class="dashboard-grid history-grid"><article class="panel table-panel"><div class="panel-heading"><div><p class="panel-kicker">HISTÓRICO</p><h2>Resultados mensais</h2></div></div><div class="table-wrap"><table id="history-table"><thead><tr><th>Competência</th><th>Rank</th><th>Volume</th><th>TMA observado</th><th>CSAT</th><th>Cobertura</th><th>Índice</th><th>Situação</th></tr></thead><tbody></tbody></table></div></article><article class="panel feedback-panel"><div class="panel-heading"><div><p class="panel-kicker">REGISTRO DE GESTÃO</p><h2>Feedback individual</h2><p>Texto vinculado à competência selecionada.</p></div></div><label class="form-field"><span>Competência</span><select id="feedback-competencia"></select></label><label class="form-field"><span>Feedback</span><textarea id="feedback-texto" rows="9"></textarea></label><button class="btn primary wide" id="feedback-save">Salvar feedback</button><p class="demo-only-note hidden" id="feedback-demo-note">Edição bloqueada na demonstração pública.</p></article></div>
         </div>
       </section>
 
-      <section class="view" id="view-powerpoint" data-title="PowerPoint executivo">
-        <div class="filter-bar powerpoint-actions">
-          <label class="form-field compact"><span>Competência da apresentação</span><select id="powerpoint-competencia"></select></label>
-          <button class="btn primary" id="powerpoint-download" disabled>Baixar apresentação PowerPoint</button>
-        </div>
-
-        <div id="powerpoint-empty" class="empty-state hidden">
-          <div class="empty-icon">▣</div>
-          <h2>Apresentação indisponível</h2>
-          <p>Processe uma competência para gerar o PowerPoint executivo com os dados validados.</p>
-          <button class="btn primary" data-go="importacao">Importar competência</button>
-        </div>
-
-        <div id="powerpoint-content">
-          <div class="source-strip" id="powerpoint-source-strip"></div>
-          <div class="dashboard-grid powerpoint-grid">
-            <article class="panel powerpoint-preview-panel">
-              <div class="panel-heading">
-                <div><p class="panel-kicker">PRÉVIA DA CAPA</p><h2>Premiação do Suporte</h2><p>Apuração executiva no padrão das apresentações anteriores.</p></div>
-                <span class="ppt-file-badge">PPTX</span>
-              </div>
-              <div class="ppt-cover-preview">
-                <div class="ppt-cover-brand">PREMIAÇÃO SUPORTE</div>
-                <h3 id="powerpoint-cover-title">Apuração executiva</h3>
-                <p id="powerpoint-cover-subtitle">Resultado oficial da competência</p>
-                <div class="ppt-cover-kpis">
-                  <div><span>Analisados</span><strong data-ppt-kpi="analisados">—</strong></div>
-                  <div><span>Válidos</span><strong data-ppt-kpi="validos">—</strong></div>
-                  <div><span>Premiados</span><strong data-ppt-kpi="premiados">—</strong></div>
-                  <div><span>Líder</span><strong class="text" data-ppt-kpi="lider">—</strong></div>
-                </div>
-                <div class="ppt-cover-accent"></div>
-              </div>
-            </article>
-
-            <article class="panel powerpoint-summary-panel">
-              <div class="panel-heading"><div><p class="panel-kicker">CONTEÚDO AUTOMÁTICO</p><h2>Estrutura da apresentação</h2><p>Todos os números são lidos do histórico validado.</p></div></div>
-              <div class="ppt-meta-grid">
-                <div><span>Quantidade estimada</span><strong id="powerpoint-slide-count">—</strong><small>lâminas</small></div>
-                <div><span>Comparativo mensal</span><strong id="powerpoint-comparison-status">—</strong><small>competência anterior</small></div>
-              </div>
-              <div class="ppt-route" id="powerpoint-route"></div>
-            </article>
-          </div>
-
-          <article class="panel powerpoint-note">
-            <div class="ppt-note-icon">✓</div>
-            <div><strong>Arquivo pronto para apresentação gerencial</strong><p>O download inclui regras aplicadas, ranking, memória de cálculo, comparativo mensal, gráficos, detalhamento individual, feedbacks e recomendações.</p></div>
-          </article>
-        </div>
-      </section>
-
-      <section class="view" id="view-automaticos" data-title="Validação dos finalizados automaticamente">
-        <div class="filter-bar automatic-actions">
-          <label class="form-field compact"><span>Competência</span><select id="automaticos-competencia"></select></label>
-          <span class="validation-version">REGRA AUDITÁVEL</span>
-        </div>
-
-        <div id="automaticos-empty" class="empty-state hidden">
-          <div class="empty-icon">↻</div>
-          <h2>Validação automática indisponível</h2>
-          <p>Processe uma competência para consultar os critérios e os protocolos classificados como encerramento automático.</p>
-          <button class="btn primary" data-go="importacao">Importar competência</button>
-        </div>
-
-        <div id="automaticos-content">
-          <div class="source-strip" id="automaticos-source-strip"></div>
-          <div id="automaticos-reprocessar" class="reprocess-warning hidden">
-            <strong>Esta competência usa o cálculo anterior.</strong>
-            <p>Reimporte o arquivo da competência para incluir os finalizados automaticamente e recalcular o ranking com a nova regra.</p>
-          </div>
-
-          <div class="kpi-grid four" id="automaticos-kpis">
-            <article class="kpi-card accent-blue"><div class="kpi-label">Identificados</div><div class="kpi-value" data-auto-kpi="identificados">—</div><div class="kpi-foot">pelos dois gatilhos automáticos</div></article>
-            <article class="kpi-card accent-green"><div class="kpi-label">Incluídos na base</div><div class="kpi-value" data-auto-kpi="incluidos">—</div><div class="kpi-foot">contam em Quantidade e Avaliação</div></article>
-            <article class="kpi-card accent-gold"><div class="kpi-label">Recuperados acima do limite</div><div class="kpi-value" data-auto-kpi="recuperados">—</div><div class="kpi-foot">não excluídos apenas por duração</div></article>
-            <article class="kpi-card accent-slate"><div class="kpi-label">Automáticos excluídos</div><div class="kpi-value" data-auto-kpi="excluidos">—</div><div class="kpi-foot">por outro critério obrigatório</div></article>
-          </div>
-
-          <div class="dashboard-grid automatic-grid">
-            <article class="panel validation-panel">
-              <div class="panel-heading"><div><p class="panel-kicker">IDENTIFICAÇÃO</p><h2>Como o sistema reconhece</h2><p>O encerramento automático é uma classificação auditável, não uma exclusão.</p></div></div>
-              <ol class="validation-steps">
-                <li><span>1</span><div><strong>Horário exato de 06:00</strong><p>O campo Fim registra 06:00, padrão típico do encerramento automático.</p></div></li>
-                <li><span>2</span><div><strong>Encerramentos simultâneos</strong><p>Vinte ou mais protocolos possuem o mesmo dia, hora e minuto de finalização.</p></div></li>
-                <li><span>3</span><div><strong>Validações obrigatórias preservadas</strong><p>O protocolo ainda precisa ser de Suporte, ter atendente válido, início e fim coerentes e início dentro do período da campanha.</p></div></li>
-              </ol>
-            </article>
-
-            <article class="panel scoring-treatment">
-              <div class="panel-heading"><div><p class="panel-kicker">PONTUAÇÃO</p><h2>Tratamento por indicador</h2><p>Evita que o horário artificial distorça a comparação da equipe.</p></div></div>
-              <div class="treatment-list">
-                <div><span class="treatment-icon include">✓</span><span>Quantidade</span><strong>Incluído</strong></div>
-                <div><span class="treatment-icon include">✓</span><span>Avaliação válida</span><strong>Incluída</strong></div>
-                <div><span class="treatment-icon neutralize">—</span><span>Tempo Total</span><strong data-auto-treatment="tempo">Duração desconsiderada</strong></div>
-                <div><span class="treatment-icon neutralize">—</span><span>TMA</span><strong data-auto-treatment="tma">Duração desconsiderada</strong></div>
-              </div>
-              <div class="formula-note"><strong>Regra efetiva</strong><p id="automaticos-formula-note">Todos recebem os mesmos 31,50 pontos de Tempo/TMA. Quantidade e Avaliação continuam diferenciando o resultado.</p></div>
-            </article>
-          </div>
-
-          <article class="panel table-panel">
-            <div class="panel-heading inline">
-              <div><p class="panel-kicker">RASTREABILIDADE</p><h2>Protocolos incluídos como automáticos</h2><p>O tempo original é exibido apenas para auditoria e não entra em Tempo Total/TMA.</p></div>
-              <input type="search" id="automaticos-search" placeholder="Buscar protocolo ou atendente…">
-            </div>
-            <div class="table-wrap"><table id="automaticos-table"><thead><tr><th>Linha</th><th>Protocolo</th><th>Atendente</th><th>Início</th><th>Fim</th><th>Duração original</th><th>Avaliação</th><th>Gatilho</th><th>Tratamento</th></tr></thead><tbody></tbody></table></div>
-          </article>
-        </div>
-      </section>
-
-      <section class="view" id="view-auditoria" data-title="Auditoria da validação">
-        <div class="filter-bar audit-actions">
-          <label class="form-field compact"><span>Competência</span><select id="auditoria-competencia"></select></label>
-          <button class="btn primary" id="auditoria-export">Baixar auditoria em Excel</button>
-        </div>
+      <section class="view" id="view-auditoria" data-title="Qualidade dos dados e auditoria">
+        <div class="filter-bar audit-actions"><label class="form-field compact"><span>Competência</span><select id="auditoria-competencia"></select></label><select id="automaticos-competencia" class="hidden" aria-hidden="true"></select><button class="btn primary" id="auditoria-export">Baixar auditoria em Excel</button></div>
         <div id="auditoria-empty" class="empty-state hidden"><h2>Sem dados para auditoria</h2><p>Processe uma competência para consultar regras, exclusões e base validada.</p></div>
         <div id="auditoria-content">
           <div class="source-strip" id="audit-source-strip"></div>
+          <div class="quality-summary"><article><span>QUALIDADE DOS DADOS</span><strong id="audit-quality">—</strong><p>preenchimento e coerência</p></article><article><span>FORA DO ESCOPO</span><strong id="audit-scope">—</strong><p>área, campanha ou período</p></article><article><span>EXCEÇÕES OPERACIONAIS</span><strong id="audit-exception">—</strong><p>duração acima do limite</p></article></div>
           <div class="audit-stat-grid" id="audit-stats"></div>
-
-          <div class="dashboard-grid audit-grid">
-            <article class="panel chart-panel">
-              <div class="panel-heading"><div><p class="panel-kicker">CONTROLE</p><h2>Exclusões por motivo</h2><p>Primeiro motivo identificado para cada registro retirado.</p></div></div>
-              <div class="chart-host" id="exclusion-chart"></div>
-            </article>
-            <article class="panel config-panel">
-              <div class="panel-heading"><div><p class="panel-kicker">RASTREABILIDADE</p><h2>Parâmetros aplicados</h2><p>Perfil e campos identificados no arquivo de origem.</p></div></div>
-              <div id="audit-config" class="config-list"></div>
-              <details><summary>Mapeamento de colunas</summary><pre id="audit-mapping"></pre></details>
-            </article>
+          <div class="dashboard-grid audit-grid"><article class="panel chart-panel"><div class="panel-heading"><div><p class="panel-kicker">CAUSA-RAIZ</p><h2>Exclusões por motivo</h2><p>Primeiro controle que retirou cada registro.</p></div></div><div class="chart-host" id="exclusion-chart"></div></article><article class="panel config-panel"><div class="panel-heading"><div><p class="panel-kicker">REGRA APLICADA</p><h2>Parâmetros do fechamento</h2><p>Versão e campos usados no processamento.</p></div></div><div id="audit-config" class="config-list"></div><details><summary>Mapeamento de colunas</summary><pre id="audit-mapping"></pre></details></article></div>
+          <article class="panel table-panel"><div class="panel-heading inline"><div><p class="panel-kicker">LOG DE EXCLUSÕES</p><h2>Registros retirados</h2><p>Filtro por categoria e paginação para conferência.</p></div><div class="table-tools"><select id="audit-category" aria-label="Categoria da exclusão"><option value="">Todas as categorias</option><option value="quality">Qualidade dos dados</option><option value="scope">Fora do escopo</option><option value="exception">Exceção operacional</option></select><input type="search" id="audit-search" placeholder="Buscar no log…"></div></div><div class="table-wrap"><table id="audit-table"><thead><tr><th>Linha</th><th>Protocolo</th><th>Funcionário</th><th>Departamento</th><th>Início</th><th>Duração</th><th>Categoria</th><th>Motivo</th></tr></thead><tbody></tbody></table></div><div class="pagination" id="audit-pagination"></div></article>
+          <details class="panel valid-preview"><summary>Prévia da base validada <span id="valid-preview-count"></span></summary><div class="table-wrap"><table id="valid-table"><thead><tr><th>Linha</th><th>Protocolo</th><th>Funcionário</th><th>Departamento</th><th>Início</th><th>Fim</th><th>Avaliação</th><th>Automático</th></tr></thead><tbody></tbody></table></div></details>
+          <div class="section-divider"><span>CONTROLE ESPECÍFICO</span><h2>Encerramentos automáticos</h2><p>Tratamento separado para manter volume e qualidade sem contaminar a leitura de tempo.</p></div>
+          <div id="automaticos-empty" class="empty-state hidden"><h2>Nenhum automático disponível</h2></div>
+          <div id="automaticos-content">
+            <div class="source-strip compact-source" id="automaticos-source-strip"></div><div id="automaticos-reprocessar" class="reprocess-warning hidden"><strong>Esta competência usa o cálculo anterior.</strong><p>Reimporte a base para aplicar a regra atual.</p></div>
+            <div class="kpi-grid four" id="automaticos-kpis"><article class="kpi-card accent-navy"><div class="kpi-label">Identificados</div><div class="kpi-value" data-auto-kpi="identificados">—</div><div class="kpi-foot">pelos gatilhos auditáveis</div></article><article class="kpi-card accent-green"><div class="kpi-label">Incluídos</div><div class="kpi-value" data-auto-kpi="incluidos">—</div><div class="kpi-foot">mantidos na base</div></article><article class="kpi-card accent-gold"><div class="kpi-label">Recuperados</div><div class="kpi-value" data-auto-kpi="recuperados">—</div><div class="kpi-foot">acima do limite de duração</div></article><article class="kpi-card accent-slate"><div class="kpi-label">Excluídos</div><div class="kpi-value" data-auto-kpi="excluidos">—</div><div class="kpi-foot">por outro controle obrigatório</div></article></div>
+            <div class="dashboard-grid automatic-grid"><article class="panel validation-panel"><div class="panel-heading"><div><p class="panel-kicker">IDENTIFICAÇÃO</p><h2>Critérios determinísticos</h2><p>A classificação é rastreável e não representa uma exclusão automática.</p></div></div><ol class="validation-steps"><li><span>1</span><div><strong>Fim exatamente às 06:00</strong><p>Padrão observado no encerramento sistêmico.</p></div></li><li><span>2</span><div><strong>Vinte ou mais fins no mesmo minuto</strong><p>Concentração simultânea indica rotina automática.</p></div></li><li><span>3</span><div><strong>Demais controles preservados</strong><p>Área, atendente, datas e período continuam obrigatórios.</p></div></li></ol></article><article class="panel scoring-treatment"><div class="panel-heading"><div><p class="panel-kicker">TRATAMENTO</p><h2>Impacto por indicador</h2><p>A duração artificial não interfere na leitura comparativa.</p></div></div><div class="treatment-list"><div><span class="treatment-icon include">✓</span><span>Quantidade</span><strong>Incluída</strong></div><div><span class="treatment-icon include">✓</span><span>Avaliação válida</span><strong>Incluída</strong></div><div><span class="treatment-icon neutralize">—</span><span>Tempo Total</span><strong data-auto-treatment="tempo">—</strong></div><div><span class="treatment-icon neutralize">—</span><span>TMA</span><strong data-auto-treatment="tma">—</strong></div></div><div class="formula-note"><strong>Regra efetiva</strong><p id="automaticos-formula-note">—</p></div></article></div>
+            <article class="panel table-panel"><div class="panel-heading inline"><div><p class="panel-kicker">RASTREABILIDADE</p><h2>Protocolos classificados</h2><p>Tempo original exibido apenas para auditoria.</p></div><input type="search" id="automaticos-search" placeholder="Buscar protocolo ou funcionário…"></div><div class="table-wrap"><table id="automaticos-table"><thead><tr><th>Linha</th><th>Protocolo</th><th>Funcionário</th><th>Início</th><th>Fim</th><th>Duração original</th><th>Avaliação</th><th>Gatilho</th><th>Tratamento</th></tr></thead><tbody></tbody></table></div><div class="pagination" id="automaticos-pagination"></div></article>
           </div>
-
-          <article class="panel table-panel">
-            <div class="panel-heading inline"><div><p class="panel-kicker">LOG DE EXCLUSÕES</p><h2>Registros retirados</h2><p>Detalhamento completo para conferência do fechamento.</p></div><input type="search" id="audit-search" placeholder="Buscar no log…"></div>
-            <div class="table-wrap"><table id="audit-table"><thead><tr><th>Linha</th><th>Protocolo</th><th>Atendente</th><th>Departamento</th><th>Início</th><th>Duração</th><th>Motivo</th></tr></thead><tbody></tbody></table></div>
-          </article>
-
-          <details class="panel valid-preview"><summary>Prévia da base validada <span id="valid-preview-count"></span></summary><div class="table-wrap"><table id="valid-table"><thead><tr><th>Linha</th><th>Protocolo</th><th>Atendente</th><th>Departamento</th><th>Início</th><th>Fim</th><th>Avaliação</th><th>Automático</th></tr></thead><tbody></tbody></table></div></details>
         </div>
       </section>
+
+      <section class="view" id="view-importacao" data-title="Atualizar base">
+        <div class="page-intro"><div><p class="eyebrow">PIPELINE MENSAL</p><h2>Importação e validação</h2><p>O reprocessamento substitui somente a competência selecionada e preserva o histórico.</p></div></div>
+        <div class="dashboard-grid import-grid"><article class="panel upload-panel"><div class="panel-heading"><div><p class="panel-kicker">ARQUIVO DE ORIGEM</p><h2>Selecione a base mensal</h2><p>CSV, TXT, XLSX, XLS ou XLSM; limite de 50 MB.</p></div></div><label class="drop-zone" id="drop-zone"><input type="file" id="arquivo-upload" accept=".csv,.txt,.xlsx,.xls,.xlsm" hidden><span class="upload-icon">↥</span><strong>Arraste o arquivo aqui</strong><span>ou selecione no computador</span><small id="file-name">Nenhum arquivo selecionado</small></label><div class="form-row"><label class="form-field"><span>Competência</span><input id="import-competencia" inputmode="numeric" placeholder="MM/AAAA"><small>Mês dos atendimentos iniciados no arquivo.</small></label></div><label class="form-field"><span>Funcionários fora da campanha</span><textarea id="import-excluidos" rows="4"></textarea><small>Nomes completos ou parciais, separados por ponto e vírgula.</small></label><button class="btn primary wide" id="processar-btn">Validar e atualizar competência</button><p class="demo-only-note hidden" id="import-demo-note">Importação bloqueada na demonstração pública.</p></article><article class="panel params-panel"><div class="panel-heading"><div><p class="panel-kicker">PERFIL DA REGRA</p><h2 id="profile-name">Parâmetros da competência</h2><p>Conferência antes do processamento.</p></div></div><div class="rule-summary" id="rule-summary"></div><div class="weight-grid" id="weight-grid"></div><div class="rule-note"><strong>Regra de pontuação</strong><p id="profile-rule-note">Os critérios são normalizados pelo melhor resultado da equipe. Tempo Total e TMA podem compor 31,50 pontos fixos.</p></div></article></div>
+        <article class="panel hidden" id="process-result-panel"><div class="result-message" id="process-result"></div></article>
+      </section>
+
+      <section class="view" id="view-powerpoint" data-title="Relatório executivo">
+        <div class="filter-bar powerpoint-actions"><label class="form-field compact"><span>Competência</span><select id="powerpoint-competencia"></select></label><button class="btn primary" id="powerpoint-download" disabled>Baixar apresentação PowerPoint</button></div>
+        <div id="powerpoint-empty" class="empty-state hidden"><h2>Apresentação indisponível</h2><p>Processe uma competência para gerar o relatório.</p></div>
+        <div id="powerpoint-content"><div class="source-strip" id="powerpoint-source-strip"></div><div class="dashboard-grid powerpoint-grid"><article class="panel powerpoint-preview-panel"><div class="panel-heading"><div><p class="panel-kicker">PRÉVIA</p><h2>Premiação do Suporte</h2><p>Relatório executivo gerado no navegador.</p></div><span class="ppt-file-badge">PPTX</span></div><div class="ppt-cover-preview"><div class="ppt-cover-brand">SUPPORT PERFORMANCE</div><h3 id="powerpoint-cover-title">Apuração executiva</h3><p id="powerpoint-cover-subtitle">Resultado oficial</p><div class="ppt-cover-kpis"><div><span>Analisados</span><strong data-ppt-kpi="analisados">—</strong></div><div><span>Válidos</span><strong data-ppt-kpi="validos">—</strong></div><div><span>Premiados</span><strong data-ppt-kpi="premiados">—</strong></div><div><span>Líder</span><strong class="text" data-ppt-kpi="lider">—</strong></div></div><div class="ppt-cover-accent"></div></div></article><article class="panel powerpoint-summary-panel"><div class="panel-heading"><div><p class="panel-kicker">CONTEÚDO</p><h2>Estrutura da apresentação</h2><p>Números provenientes do histórico validado.</p></div></div><div class="ppt-meta-grid"><div><span>Quantidade estimada</span><strong id="powerpoint-slide-count">—</strong><small>lâminas</small></div><div><span>Comparativo mensal</span><strong id="powerpoint-comparison-status">—</strong><small>competência anterior</small></div></div><div class="ppt-route" id="powerpoint-route"></div></article></div><article class="panel powerpoint-note"><div class="ppt-note-icon">✓</div><div><strong>Arquivo pronto para apresentação gerencial</strong><p>Inclui regras, ranking, memória de cálculo, comparativo, detalhamento individual e recomendações.</p></div></article></div>
+      </section>
+
+      <section class="view" id="view-sobre" data-title="Sobre o projeto">
+        <article class="project-hero"><div><p class="panel-kicker">CASE DE ANALYTICS</p><h2>Da base bruta à decisão auditável</h2><p>Aplicação criada para substituir uma apuração mensal fragmentada por um processo reproduzível de validação, análise e comunicação executiva.</p></div><a class="btn secondary" href="https://github.com/Pedroferreira32/support-performance-analytics" target="_blank" rel="noopener">Ver código no GitHub ↗</a></article>
+        <div class="project-grid"><article class="panel"><p class="panel-kicker">PROBLEMA</p><h2>Fechamento difícil de explicar</h2><p>A campanha depende de filtros de período, área, duração, avaliação, público e encerramentos automáticos. A solução registra por que cada linha entra ou sai.</p></article><article class="panel"><p class="panel-kicker">ENTREGA</p><h2>Uma fonte de verdade</h2><p>Operação, performance, premiação e qualidade dos dados usam a mesma base processada e a mesma versão de regra.</p></article><article class="panel"><p class="panel-kicker">GOVERNANÇA</p><h2>Sem caixa-preta</h2><p>Análise gerencial determinística, sem IA. Todos os indicadores podem ser conferidos na memória de cálculo e no log de exclusões.</p></article></div>
+        <article class="panel pipeline-panel"><div class="panel-heading"><div><p class="panel-kicker">PIPELINE</p><h2>Fluxo de dados</h2><p>Etapas executadas a cada competência.</p></div></div><ol class="pipeline"><li><span>01</span><strong>Importar</strong><p>CSV ou Excel</p></li><li><span>02</span><strong>Padronizar</strong><p>colunas e tipos</p></li><li><span>03</span><strong>Validar</strong><p>regras versionadas</p></li><li><span>04</span><strong>Calcular</strong><p>KPIs e ranking</p></li><li><span>05</span><strong>Auditar</strong><p>linha e motivo</p></li><li><span>06</span><strong>Comunicar</strong><p>dashboard, Excel e PPTX</p></li></ol></article>
+        <div class="dashboard-grid two-columns"><article class="panel"><p class="panel-kicker">TECNOLOGIA</p><h2>Arquitetura enxuta</h2><div class="tech-list"><span>Python</span><span>Pandas</span><span>SQLite</span><span>JavaScript</span><span>SVG</span><span>OpenPyXL</span><span>PptxGenJS</span><span>Render</span></div></article><article class="panel"><p class="panel-kicker">LIMITES DA FONTE</p><h2>O que ainda não pode ser afirmado</h2><ul class="limitations"><li>Produtividade por hora, sem jornada disponível.</li><li>SLA de primeira resposta e backlog, ausentes na exportação atual.</li><li>Comparação justa por complexidade, sem categoria ou tipo de caso.</li><li>Reabertura e transferência, sem eventos detalhados na fonte.</li></ul></article></div>
+      </section>
+
+      <section id="view-automaticos" class="legacy-view hidden" aria-hidden="true"></section>
     </main>
   </div>
+  <div class="chart-tooltip" id="chart-tooltip"></div>
   <script src="/dashboard.js" defer></script>
 </body>
 </html>
