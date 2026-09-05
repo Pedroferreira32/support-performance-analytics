@@ -6,11 +6,13 @@ Aplicação web desenvolvida em Python para transformar dados brutos de atendime
 
 ## Demonstração
 
+### [Acessar o dashboard ao vivo →](https://performance-analytics-demo.onrender.com)
+
+> A hospedagem utiliza uma instância gratuita. Se estiver inativa, a primeira abertura pode levar cerca de um minuto.
+
 A aplicação inicia preenchida com três competências fictícias. A competência mais recente contém **2.477 registros sintéticos**, permitindo navegar por um cenário próximo da escala analisada no projeto original.
 
 Na hospedagem pública, o ambiente funciona em modo somente leitura. Importações e alterações de feedback permanecem visíveis para demonstrar o fluxo completo, mas ficam bloqueadas para visitantes.
-
-<!-- Após a publicação no Render, inserir aqui o endereço da demonstração. -->
 
 ## Problema de negócio
 
