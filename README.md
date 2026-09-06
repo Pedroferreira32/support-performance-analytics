@@ -36,12 +36,22 @@ Cada exclusão preserva o motivo, a linha de origem e os campos necessários par
 
 ## Visões executivas
 
+- **Visão do projeto:** propósito, decisão apoiada, KPIs, regra vigente e limites de interpretação antes dos resultados;
 - **Resumo executivo:** resultado, risco e próxima decisão em uma única tela;
 - **Operação do suporte:** volume observado, TMA mediano/P90, CSAT, cobertura e exceções;
 - **Performance e premiação:** regra oficial, teto efetivo, elegibilidade, Top 3 e memória de cálculo;
 - **Pessoas e histórico:** evolução individual com representatividade das avaliações;
-- **Qualidade e auditoria:** separação entre erros de dados, fora do escopo, exceções operacionais e encerramentos automáticos;
-- **Sobre o projeto:** problema de negócio, pipeline, governança, tecnologia e limites da fonte.
+- **Qualidade e auditoria:** separação entre erros de dados, fora do escopo, exceções operacionais e encerramentos automáticos.
+
+## Design executivo e storytelling
+
+A versão **Executive 3.0** organiza a navegação na ordem em que um gestor toma a decisão: entender o projeto, ler o resultado, investigar os direcionadores e consultar o detalhe. O dashboard evita gráficos agrupados ou empilhados na leitura principal e usa:
+
+- dot plot para posição individual em relação ao corte de 85 pontos;
+- ponte aditiva para explicar a formação da nota;
+- fotografias mensais quando mudanças de regra impedem uma tendência contínua;
+- linha horária para revelar o perfil da demanda;
+- tabelas somente quando o objetivo é conferência exata ou auditoria.
 
 ## Indicadores apresentados
 
@@ -52,7 +62,7 @@ Cada exclusão preserva o motivo, a linha de origem e os campos necessários par
 - Aproveitamento e taxa de exclusão da base;
 - Pontuação por componente;
 - Nota consolidada, elegibilidade e Top 3;
-- Evolução mensal da equipe e de cada profissional;
+- Fechamentos mensais da equipe e de cada profissional, com mudança de regra explicitada;
 - Volume observado versus qualidade, sem inferir produtividade quando jornada e complexidade não estão disponíveis;
 - Concentração de volume e oportunidades de melhoria.
 
