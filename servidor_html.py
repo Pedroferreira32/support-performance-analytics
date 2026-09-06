@@ -988,7 +988,7 @@ class PainelHandler(BaseHTTPRequestHandler):
                 self.enviar_json(
                     {
                         "ok": True,
-                        "versao": "Executive 2.0",
+                        "versao": "Executive 3.0",
                         "meta_elegibilidade": core.META_PADRAO,
                         "demonstracao": DEMO_MODE,
                     }
