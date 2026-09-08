@@ -116,7 +116,7 @@ function showView(name) {
   $$(".nav-item").forEach((item) => item.classList.toggle("active", item.dataset.view === name));
   const view = $(`#view-${name}`);
   $("#page-title").textContent = view?.dataset.title || "Support Performance";
-  $("#global-filter-wrap").classList.toggle("hidden", ["importacao", "historico", "sobre"].includes(name));
+  $("#global-filter-wrap").classList.toggle("hidden", ["importacao", "historico"].includes(name));
   $("#header-excel").classList.toggle("hidden", name === "sobre");
   $("#header-ppt").classList.toggle("hidden", name === "sobre");
   $("#sidebar").classList.remove("open");
@@ -218,10 +218,6 @@ function renderDashboard(data) {
 function renderProjectOverview(data, context) {
   const info = data.info || {};
   const config = info.configuracao || {};
-  const stats = info.estatisticas || {};
-  const validos = Number(info.validos || 0);
-  const avaliacoes = Number(stats.AVALIACOES_VALIDAS || (data.ranking || []).reduce((sum, row) => sum + Number(row.avaliacoes || 0), 0));
-  const coverage = validos ? avaliacoes / validos * 100 : 0;
   const fixedRule = Boolean(config.pontuacao_tempo_tma_fixa);
   const automaticText = config.incluir_finalizados_automaticamente
     ? (config.neutralizar_tempo_automaticos
@@ -238,7 +234,7 @@ function renderProjectOverview(data, context) {
     : `Segunda a sábado · ${config.hora_inicio || "08:00"}–${config.hora_fim || "19:59"}`;
   $("#overview-duration").textContent = `${nfmt(config.max_horas, 0)} horas no máximo`;
   $("#overview-automatic").textContent = automaticText;
-  $("#overview-eligibility").textContent = `Índice ≥ ${nfmt(context.meta, 2)}`;
+  $("#overview-eligibility").textContent = `Nota final ≥ ${nfmt(context.meta, 2)}`;
 
   const formula = $("#overview-formula");
   if (fixedRule) {
@@ -246,12 +242,6 @@ function renderProjectOverview(data, context) {
   } else {
     formula.innerHTML = `<span><small>Quantidade</small><strong>${nfmt(config.peso_quantidade, 2)}</strong></span><b>+</b><span><small>Tempo + TMA</small><strong>${nfmt(Number(config.peso_tempo || 0) + Number(config.peso_tma || 0), 2)}</strong></span><b>+</b><span><small>Avaliação</small><strong>${nfmt(config.peso_avaliacao, 2)}</strong></span><b>=</b><span class="formula-total"><small>Teto da regra</small><strong>${nfmt(context.effectiveCeiling, 2)}</strong></span>`;
   }
-
-  $("[data-overview-kpi='score']").textContent = `0–${nfmt(context.effectiveCeiling, 2)}`;
-  $("[data-overview-kpi='awards']").textContent = `${nfmt(context.premiados)} de ${nfmt(context.elegiveis)}`;
-  $("[data-overview-kpi='drivers']").textContent = `${nfmt(config.peso_quantidade, 0)} + ${nfmt(config.peso_avaliacao, 0)} pts`;
-  $("[data-overview-kpi='coverage']").textContent = `${nfmt(coverage, 1)}%`;
-  $("[data-overview-kpi='validation']").textContent = `${nfmt(context.taxa, 1)}%`;
 }
 
 function renderRankingTable(rows, search = "", meta = META_ELEGIBILIDADE) {
@@ -281,14 +271,14 @@ function renderRankingChart(host, rows, meta = META_ELEGIBILIDADE, maxScore = 10
   const values = rows.map((row) => Number(row.nota_final || 0));
   const domainMin = Math.max(0, Math.floor((Math.min(...values, meta) - 3) / 5) * 5);
   const domainMax = Math.ceil((Math.max(...values, maxScore, meta) + 1) / 5) * 5;
-  const width = 860, left = 165, right = 165, top = 38, rowHeight = 46;
+  const width = 980, left = 190, right = 205, top = 46, rowHeight = 54;
   const height = top + rows.length * rowHeight + 48;
   const bottom = height - 40, plot = width - left - right;
   const x = (value) => left + ((Number(value) - domainMin) / (domainMax - domainMin || 1)) * plot;
   const metaX = x(meta);
   const ticks = [];
   for (let tick = domainMin; tick <= domainMax; tick += 5) ticks.push(tick);
-  const grid = ticks.map((tick) => `<line x1="${x(tick)}" y1="${top - 6}" x2="${x(tick)}" y2="${bottom}" stroke="${tick === meta ? "#9b5f43" : "#e6e9eb"}" stroke-width="${tick === meta ? 1.5 : 1}" ${tick === meta ? 'stroke-dasharray="5 5"' : ""}/><text x="${x(tick)}" y="${height - 15}" text-anchor="middle" fill="#71808c" font-size="10">${nfmt(tick)}</text>`).join("");
+  const grid = ticks.map((tick) => `<line x1="${x(tick)}" y1="${top - 6}" x2="${x(tick)}" y2="${bottom}" stroke="${tick === meta ? "#a8663f" : "#dfe6eb"}" stroke-width="${tick === meta ? 2 : 1}" ${tick === meta ? 'stroke-dasharray="6 5"' : ""}/><text x="${x(tick)}" y="${height - 15}" text-anchor="middle" fill="#566b7a" font-size="12">${nfmt(tick)}</text>`).join("");
   const marks = rows.map((row, index) => {
     const y = top + index * rowHeight + 15;
     const note = Number(row.nota_final || 0);
@@ -297,14 +287,14 @@ function renderRankingChart(host, rows, meta = META_ELEGIBILIDADE, maxScore = 10
     const eligible = Number(row.elegivel) === 1;
     const fill = awarded ? "#173b58" : eligible ? "#c28a2c" : "#ffffff";
     const stroke = awarded ? "#173b58" : eligible ? "#c28a2c" : "#7d8993";
-    const radius = awarded ? 10 : 7;
+    const radius = awarded ? 11 : 8;
     const status = awarded ? `Premiado · ${nfmt(row.rank)}º` : eligible ? "Elegível · fora do Top 3" : "Abaixo da meta";
     const scoreAnchor = pointX > width - right - 42 ? "end" : "start";
     const scoreX = pointX > width - right - 42 ? pointX - 13 : pointX + 13;
     const tooltip = `${row.atendente}|Índice: ${nfmt(note, 2)}|Quantidade: ${nfmt(row.pontos_quantidade, 2)} pts|Avaliação: ${nfmt(row.pontos_avaliacao, 2)} pts|${status}`;
-    return `<text x="${left - 14}" y="${y + 4}" text-anchor="end" fill="#2f414f" font-size="11" font-weight="600">${esc(truncate(row.atendente, 23))}</text><line x1="${left}" y1="${y}" x2="${width - right}" y2="${y}" stroke="#e5e9ec"/><circle cx="${pointX}" cy="${y}" r="${radius}" fill="${fill}" stroke="${stroke}" stroke-width="2" data-tooltip="${esc(tooltip)}"/>${awarded ? `<text x="${pointX}" y="${y + 3.5}" text-anchor="middle" fill="#fff" font-size="9" font-weight="800">${nfmt(row.rank)}</text>` : ""}<text x="${scoreX}" y="${y + 4}" text-anchor="${scoreAnchor}" fill="#173b58" font-size="11" font-weight="800">${nfmt(note, 2)}</text><text x="${width - right + 18}" y="${y + 4}" fill="${awarded ? "#173b58" : eligible ? "#8d621f" : "#74818b"}" font-size="9" font-weight="700">${esc(status)}</text>`;
+    return `<text x="${left - 16}" y="${y + 5}" text-anchor="end" fill="#263b4b" font-size="13" font-weight="650">${esc(truncate(row.atendente, 25))}</text><line x1="${left}" y1="${y}" x2="${width - right}" y2="${y}" stroke="#dfe6eb"/><circle cx="${pointX}" cy="${y}" r="${radius}" fill="${fill}" stroke="${stroke}" stroke-width="2.5" data-tooltip="${esc(tooltip)}"/>${awarded ? `<text x="${pointX}" y="${y + 4}" text-anchor="middle" fill="#fff" font-size="10" font-weight="800">${nfmt(row.rank)}</text>` : ""}<text x="${scoreX}" y="${y + 5}" text-anchor="${scoreAnchor}" fill="#173b58" font-size="13" font-weight="800">${nfmt(note, 2)}</text><text x="${width - right + 20}" y="${y + 5}" fill="${awarded ? "#173b58" : eligible ? "#8d621f" : "#647684"}" font-size="11" font-weight="700">${esc(status)}</text>`;
   }).join("");
-  host.innerHTML = `<svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Índice oficial por funcionário em relação à meta"><rect x="${metaX}" y="${top - 8}" width="${width - right - metaX}" height="${bottom - top + 8}" fill="#f3f7f5"/><text x="${metaX + 7}" y="${top - 17}" fill="#48685d" font-size="9" font-weight="800">FAIXA ELEGÍVEL · ${nfmt(meta, 0)}+</text>${grid}${marks}</svg>`;
+  host.innerHTML = `<svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Nota final por funcionário em relação à meta"><rect x="${metaX}" y="${top - 8}" width="${width - right - metaX}" height="${bottom - top + 8}" fill="#eef6f2"/><text x="${metaX + 9}" y="${top - 19}" fill="#3d6759" font-size="11" font-weight="800">FAIXA ELEGÍVEL · ${nfmt(meta, 0)}+</text>${grid}${marks}</svg>`;
   activateTooltips(host);
 }
 
@@ -411,7 +401,7 @@ function renderGerencialComponents(host, rows) {
   const mainDriver = [...variable].sort((a, b) => Number(b.gap_medio || 0) - Number(a.gap_medio || 0))[0];
   host.innerHTML = `<div class="driver-ledger">${items.map((row) => {
     const utilization = Number(row.peso) ? Number(row.media_pontos || 0) / Number(row.peso) * 100 : 0;
-    return `<article class="driver-row ${row.protegido ? "fixed" : "variable"}"><div><span>${row.protegido ? "BASE COMUM" : "CRITÉRIO VARIÁVEL"}</span><strong>${esc(row.indicador)}</strong><p>${row.protegido ? "Mesma pontuação para todos; não altera a posição." : `${nfmt(row.gap_medio, 2)} ponto(s) médios ainda disponíveis.`}</p></div><div class="driver-value"><strong>${nfmt(row.media_pontos, 2)} <small>/ ${nfmt(row.peso, 2)}</small></strong><span>${nfmt(utilization, 1)}% do máximo</span></div></article>`;
+    return `<article class="driver-row ${row.protegido ? "fixed" : "variable"}"><div><span>${row.protegido ? "BASE COMUM" : "CRITÉRIO VARIÁVEL"}</span><strong>${esc(row.indicador)}</strong><p>${row.protegido ? "Mesma pontuação para todos; não altera a posição." : `${nfmt(row.gap_medio, 2)} ponto(s) médios ainda disponíveis.`}</p><div class="driver-bar" aria-hidden="true"><i style="width:${Math.max(0, Math.min(100, utilization))}%"></i></div></div><div class="driver-value"><strong>${nfmt(row.media_pontos, 2)} <small>/ ${nfmt(row.peso, 2)}</small></strong><span>${nfmt(utilization, 1)}% do máximo</span></div></article>`;
   }).join("")}</div>${mainDriver ? `<div class="driver-conclusion"><span>PRINCIPAL ALAVANCA</span><strong>${esc(mainDriver.indicador)}</strong><p>É o componente variável com maior distância média para o máximo: ${nfmt(mainDriver.gap_medio, 2)} pontos.</p></div>` : ""}`;
 }
 
@@ -514,7 +504,7 @@ function renderOperationalTrend(host, rows) {
 
 function renderOperationalHours(host, rows) {
   if (!rows.length) return chartEmpty(host);
-  const width = 760, height = 335, left = 48, right = 28, top = 34, bottom = 50;
+  const width = 820, height = 360, left = 58, right = 34, top = 42, bottom = 56;
   const plotWidth = width - left - right, plotHeight = height - top - bottom;
   const max = Math.max(...rows.map((row) => Number(row.atendimentos || 0)), 1);
   const step = rows.length > 1 ? plotWidth / (rows.length - 1) : plotWidth;
@@ -530,10 +520,10 @@ function renderOperationalHours(host, rows) {
   const grid = [0, .5, 1].map((ratio) => {
     const value = yMax * ratio;
     const yy = y(value);
-    return `<line x1="${left}" y1="${yy}" x2="${width - right}" y2="${yy}" stroke="#e6eaed"/><text x="${left - 9}" y="${yy + 4}" text-anchor="end" fill="#76838d" font-size="9">${nfmt(value)}</text>`;
+    return `<line x1="${left}" y1="${yy}" x2="${width - right}" y2="${yy}" stroke="#dfe6eb"/><text x="${left - 11}" y="${yy + 4}" text-anchor="end" fill="#566b7a" font-size="11">${nfmt(value)}</text>`;
   }).join("");
-  const marks = points.map((point) => `<circle cx="${point.x}" cy="${point.y}" r="4.5" fill="#fff" stroke="#255f87" stroke-width="2.5" data-tooltip="${esc(`${String(point.row.hora).padStart(2, "0")}:00|Entradas: ${nfmt(point.row.atendimentos)}`)}"/><text x="${point.x}" y="${height - 24}" text-anchor="middle" fill="#647584" font-size="9">${String(point.row.hora).padStart(2, "0")}h</text>`).join("");
-  host.innerHTML = `<svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Entradas por hora ao longo do expediente">${grid}<path d="${area}" fill="#eaf2f7"/><path d="${path}" fill="none" stroke="#255f87" stroke-width="2.5" stroke-linejoin="round"/>${marks}<text x="${points.find((point) => point.row === peak).x}" y="${points.find((point) => point.row === peak).y - 13}" text-anchor="middle" fill="#173b58" font-size="10" font-weight="800">Pico ${nfmt(peak.atendimentos)}</text></svg>`;
+  const marks = points.map((point) => `<circle cx="${point.x}" cy="${point.y}" r="5" fill="#fff" stroke="#255f87" stroke-width="2.5" data-tooltip="${esc(`${String(point.row.hora).padStart(2, "0")}:00|Entradas: ${nfmt(point.row.atendimentos)}`)}"/><text x="${point.x}" y="${height - 25}" text-anchor="middle" fill="#4d6272" font-size="11">${String(point.row.hora).padStart(2, "0")}h</text>`).join("");
+  host.innerHTML = `<svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Entradas por hora ao longo do expediente">${grid}<path d="${area}" fill="#e8f2f8"/><path d="${path}" fill="none" stroke="#255f87" stroke-width="3" stroke-linejoin="round"/>${marks}<text x="${points.find((point) => point.row === peak).x}" y="${points.find((point) => point.row === peak).y - 15}" text-anchor="middle" fill="#173b58" font-size="12" font-weight="800">Pico ${nfmt(peak.atendimentos)}</text></svg>`;
   activateTooltips(host);
 }
 
@@ -666,21 +656,21 @@ function renderHistorico(atendente, rows) {
 
 function renderHistoryChart(host, rows) {
   if (!rows.length) return chartEmpty(host);
-  const width = 900, height = 340, left = 60, right = 30, top = 25, bottom = 55;
+  const width = 960, height = 370, left = 66, right = 34, top = 36, bottom = 62;
   const plotW = width - left - right, plotH = height - top - bottom;
   const step = plotW / Math.max(rows.length, 1);
   const y = (value) => top + (1 - Math.max(0, Math.min(100, Number(value || 0))) / 100) * plotH;
   const grid = [0, 20, 40, 60, 80, 100].map((tick) => {
     const yy = y(tick);
-    return `<line x1="${left}" y1="${yy}" x2="${width - right}" y2="${yy}" stroke="#e7edf1"/><text x="${left - 10}" y="${yy + 4}" text-anchor="end" fill="#7b8995" font-size="10">${tick}</text>`;
+    return `<line x1="${left}" y1="${yy}" x2="${width - right}" y2="${yy}" stroke="#dfe6eb"/><text x="${left - 11}" y="${yy + 4}" text-anchor="end" fill="#566b7a" font-size="12">${tick}</text>`;
   }).join("");
   const metaY = y(META_ELEGIBILIDADE);
   const points = rows.map((row, i) => ({ x: left + (i + .5) * step, y: y(row.nota_final), row }));
   const marks = points.map((point) => {
     const eligible = Number(point.row.nota_final) >= META_ELEGIBILIDADE;
-    return `<line x1="${point.x}" y1="${top}" x2="${point.x}" y2="${top + plotH}" stroke="#eef1f3"/><circle cx="${point.x}" cy="${point.y}" r="8" fill="${eligible ? "#173b58" : "#fff"}" stroke="${eligible ? "#173b58" : "#7d8993"}" stroke-width="2.5" data-tooltip="${esc(`${compBr(point.row.competencia)}|Índice: ${nfmt(point.row.nota_final, 2)}|Rank: ${nfmt(point.row.rank)}º|Atendimentos: ${nfmt(point.row.atendimentos)}`)}"/><text x="${point.x}" y="${point.y - 15}" text-anchor="middle" fill="#173b58" font-size="11" font-weight="800">${nfmt(point.row.nota_final, 2)}</text><text x="${point.x}" y="${height - 25}" text-anchor="middle" fill="#4c5e6d" font-size="10" font-weight="700">${esc(compBr(point.row.competencia))}</text><text x="${point.x}" y="${height - 10}" text-anchor="middle" fill="#84919b" font-size="9">${nfmt(point.row.rank)}º lugar</text>`;
+    return `<line x1="${point.x}" y1="${top}" x2="${point.x}" y2="${top + plotH}" stroke="#e9eef2"/><circle cx="${point.x}" cy="${point.y}" r="9" fill="${eligible ? "#173b58" : "#fff"}" stroke="${eligible ? "#173b58" : "#7d8993"}" stroke-width="2.5" data-tooltip="${esc(`${compBr(point.row.competencia)}|Nota: ${nfmt(point.row.nota_final, 2)}|Rank: ${nfmt(point.row.rank)}º|Atendimentos: ${nfmt(point.row.atendimentos)}`)}"/><text x="${point.x}" y="${point.y - 17}" text-anchor="middle" fill="#173b58" font-size="13" font-weight="800">${nfmt(point.row.nota_final, 2)}</text><text x="${point.x}" y="${height - 28}" text-anchor="middle" fill="#3f5565" font-size="12" font-weight="700">${esc(compBr(point.row.competencia))}</text><text x="${point.x}" y="${height - 11}" text-anchor="middle" fill="#71818d" font-size="11">${nfmt(point.row.rank)}º lugar</text>`;
   }).join("");
-  host.innerHTML = `<svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Fechamentos mensais do índice individual">${grid}<line x1="${left}" y1="${metaY}" x2="${width-right}" y2="${metaY}" stroke="#9b5f43" stroke-width="1.5" stroke-dasharray="6 5"/><text x="${width-right}" y="${metaY - 7}" text-anchor="end" fill="#8f593f" font-size="9" font-weight="700">Corte 85</text>${marks}</svg>`;
+  host.innerHTML = `<svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Fechamentos mensais da nota individual">${grid}<line x1="${left}" y1="${metaY}" x2="${width-right}" y2="${metaY}" stroke="#a8663f" stroke-width="2" stroke-dasharray="6 5"/><text x="${width-right}" y="${metaY - 9}" text-anchor="end" fill="#8f593f" font-size="11" font-weight="700">Meta 85</text>${marks}</svg>`;
   activateTooltips(host);
 }
 
@@ -818,11 +808,11 @@ function renderAuditoria(data) {
 function renderExclusionChart(host, rows) {
   if (!rows.length) return chartEmpty(host, "Nenhuma exclusão registrada nesta competência.");
   const top = rows.slice(0, 10), max = Math.max(...top.map((row) => Number(row.size || 0)), 1);
-  const width = 760, left = 235, right = 55, topY = 12, rowHeight = 40;
+  const width = 860, left = 270, right = 70, topY = 14, rowHeight = 46;
   const height = topY + top.length * rowHeight + 28, plot = width - left - right;
   const marks = top.map((row, i) => {
     const y = topY + i * rowHeight + 6, value = Number(row.size || 0), barW = value / max * plot;
-    return `<text x="${left - 10}" y="${y + 15}" text-anchor="end" fill="#334657" font-size="11">${esc(truncate(row.motivo, 34))}</text><rect x="${left}" y="${y}" width="${plot}" height="22" rx="3" fill="#f0f3f5"/><rect x="${left}" y="${y}" width="${barW}" height="22" rx="3" fill="#1e5f8f" stroke="#164b72" data-tooltip="${esc(`${row.motivo}|Registros excluídos: ${nfmt(value)}`)}"/><text x="${Math.min(left + barW + 7, width - 25)}" y="${y + 15}" fill="#173e5d" font-size="10" font-weight="700">${nfmt(value)}</text>`;
+    return `<text x="${left - 12}" y="${y + 18}" text-anchor="end" fill="#263b4b" font-size="12">${esc(truncate(row.motivo, 39))}</text><rect x="${left}" y="${y}" width="${plot}" height="26" rx="4" fill="#edf2f5"/><rect x="${left}" y="${y}" width="${barW}" height="26" rx="4" fill="#2d709d" stroke="#1d5b84" data-tooltip="${esc(`${row.motivo}|Registros excluídos: ${nfmt(value)}`)}"/><text x="${Math.min(left + barW + 9, width - 28)}" y="${y + 18}" fill="#173e5d" font-size="12" font-weight="800">${nfmt(value)}</text>`;
   }).join("");
   host.innerHTML = `<svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Exclusões por motivo">${marks}</svg>`;
   activateTooltips(host);
@@ -1072,7 +1062,7 @@ function initializeEvents() {
 }
 
 async function init() {
-  let version = "Executive 3.0";
+  let version = "Versão 4.0";
   try {
     const saude = await api("/api/saude");
     state.demo = Boolean(saude?.demonstracao);

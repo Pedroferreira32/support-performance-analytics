@@ -1,12 +1,12 @@
-# Mapa de visualizações — Executive 3.0
+# Mapa de visualizações — versão 4.0
 
 Este arquivo registra a pergunta analítica de cada visual e evita a repetição de gráficos sem função clara.
 
 | Seção | Pergunta | Forma | Campos principais | Leitura suportada |
 | --- | --- | --- | --- | --- |
-| Resumo executivo | Quem atingiu o corte e quem integra o Top 3? | Dot plot com referência | funcionário, índice, meta, rank, elegibilidade | posição individual na mesma escala e distância visual para 85 |
-| Resumo executivo | Como os últimos fechamentos devem ser lidos? | Fotografias mensais | competência, média, mediana, líder, elegíveis, premiados, perfil de regra | contexto histórico sem sugerir continuidade entre regras diferentes |
-| Resumo executivo | Qual componente oferece maior oportunidade? | Ledger de direcionadores | média de pontos, peso, gap médio, proteção da parcela | separação entre base fixa e componentes variáveis |
+| Resumo gerencial | Quem atingiu o corte e quem integra o Top 3? | Dot plot com referência | funcionário, nota, meta, rank, elegibilidade | posição individual na mesma escala e distância visual para 85 |
+| Resumo gerencial | Como os últimos fechamentos devem ser lidos? | Fotografias mensais | competência, média, mediana, líder, elegíveis, premiados, perfil de regra | contexto histórico sem sugerir continuidade entre regras diferentes |
+| Resumo gerencial | Qual componente oferece maior oportunidade? | Barras de aproveitamento e valores diretos | média de pontos, peso, gap médio, proteção da parcela | separação entre base fixa e componentes variáveis |
 | Operação | Como volume, tempo e qualidade mudaram entre fechamentos? | Tabela comparativa compacta | competência, base observada, TMA mediano, P90, CSAT, cobertura, qualidade | comparação exata de poucos períodos |
 | Operação | Existe concentração de entradas em alguma hora? | Linha horária | hora, atendimentos | perfil da demanda em 11 pontos horários e amplitude entre mínimo e pico |
 | Premiação | Como a equipe se posiciona diante da meta? | Dot plot com referência | funcionário, índice, meta, rank, elegibilidade | ranking e corte sem barras agrupadas ou empilhadas |

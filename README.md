@@ -36,16 +36,16 @@ Cada exclusão preserva o motivo, a linha de origem e os campos necessários par
 
 ## Visões executivas
 
-- **Visão do projeto:** propósito, decisão apoiada, KPIs, regra vigente e limites de interpretação antes dos resultados;
-- **Resumo executivo:** resultado, risco e próxima decisão em uma única tela;
-- **Operação do suporte:** volume observado, TMA mediano/P90, CSAT, cobertura e exceções;
-- **Performance e premiação:** regra oficial, teto efetivo, elegibilidade, Top 3 e memória de cálculo;
-- **Pessoas e histórico:** evolução individual com representatividade das avaliações;
-- **Qualidade e auditoria:** separação entre erros de dados, fora do escopo, exceções operacionais e encerramentos automáticos.
+- **Visão do projeto:** descrição breve, fluxo de engenharia de dados e catálogo completo das regras e validações;
+- **Resumo gerencial:** resultado, risco e próxima decisão em uma única tela;
+- **Operação:** volume observado, TMA mediano/P90, CSAT, cobertura e exceções;
+- **Premiação:** regra oficial, teto efetivo, elegibilidade, Top 3 e memória de cálculo;
+- **Histórico:** evolução individual com representatividade das avaliações;
+- **Auditoria:** separação entre erros de dados, fora do escopo, exceções operacionais e encerramentos automáticos.
 
-## Design executivo e storytelling
+## Interface e visualizações
 
-A versão **Executive 3.0** organiza a navegação na ordem em que um gestor toma a decisão: entender o projeto, ler o resultado, investigar os direcionadores e consultar o detalhe. O dashboard evita gráficos agrupados ou empilhados na leitura principal e usa:
+A **versão 4.0** adota uma interface gerencial direta, com tipografia única, hierarquia previsível, cartões claros e rótulos legíveis. A navegação acompanha a sequência de análise: entender o processo, ler o resultado, investigar os direcionadores e consultar o detalhe. O dashboard usa:
 
 - dot plot para posição individual em relação ao corte de 85 pontos;
 - ponte aditiva para explicar a formação da nota;
@@ -68,8 +68,8 @@ A versão **Executive 3.0** organiza a navegação na ordem em que um gestor tom
 
 ## Funcionalidades
 
-- Resumo executivo orientado a decisão;
-- Análise gerencial com leitura determinística dos resultados, sem IA;
+- Resumo gerencial orientado a decisão;
+- Análise gerencial baseada em cálculos reproduzíveis e evidências da própria base;
 - Visão operacional independente da regra de premiação;
 - Ranking e memória de cálculo detalhada;
 - Histórico mensal e individual;
