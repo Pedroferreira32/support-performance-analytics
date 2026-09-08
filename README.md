@@ -2,6 +2,8 @@
 
 Aplicação web desenvolvida em Python para transformar dados brutos de atendimento em uma visão executiva de operação, qualidade, desempenho, ranking e premiação auditável.
 
+**Versão atual:** 4.0 — interface gerencial redesenhada e visualizações com maior legibilidade.
+
 > **Privacidade:** esta edição de portfólio utiliza somente dados sintéticos. Nomes, protocolos, avaliações e atendimentos foram gerados artificialmente e não representam pessoas ou operações reais.
 
 ## Demonstração
