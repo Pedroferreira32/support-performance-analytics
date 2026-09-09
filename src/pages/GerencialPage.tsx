@@ -1,12 +1,4 @@
 import { AppShell } from "@/components/layout/app-shell";
-import { type IconName } from "@/components/ui-ext/app-icon";
-import { Delta } from "@/components/ui-ext/delta";
-import { KpiCard } from "@/components/ui-ext/kpi-card";
-import { ProgressRatio } from "@/components/ui-ext/progress-ratio";
-import { RankingDotPlot } from "@/components/ui-ext/ranking-dot-plot";
-import { SectionCard } from "@/components/ui-ext/section-card";
-import { StatusBadge } from "@/components/ui-ext/status-badge";
-import { prioridadeTone, situacaoTone } from "@/lib/status-tones";
 import {
   Accordion,
   AccordionContent,
@@ -21,58 +13,74 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Delta } from "@/components/ui-ext/delta";
+import { MonthlyComparison } from "@/components/ui-ext/monthly-comparison";
+import { ProgressRatio } from "@/components/ui-ext/progress-ratio";
+import { RankingChart } from "@/components/ui-ext/ranking-chart";
+import { SectionCard } from "@/components/ui-ext/section-card";
+import { StatusBadge } from "@/components/ui-ext/status-badge";
 import {
   actionPlan,
   gestorLeituras,
   individualComparisons,
-  monthlyClosures,
   principalAlavanca,
   resultado,
   scoreComposition,
 } from "@/data/support-data";
-import { cn } from "@/lib/utils";
 import { fmtBR } from "@/lib/format";
+import { prioridadeTone, situacaoTone } from "@/lib/status-tones";
 
 export default function GerencialPage() {
   return (
     <AppShell breadcrumb="Painel de performance" title="Resumo gerencial">
       <div className="animate-fade-in-up space-y-5">
-        {/* Resultado da competência */}
-        <SectionCard
-          eyebrow="Resultado da competência"
-          title={resultado.titulo}
-          description={resultado.descricao}
-          contentClassName="pt-6"
-        >
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {/* Faixa de KPIs — leitura de cima para baixo */}
+        <section className="rounded-2xl border border-border/60 bg-card/50 p-5 sm:p-6">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                Resultado da competência
+              </p>
+              <h2 className="mt-1 text-lg font-bold tracking-tight">
+                {resultado.titulo}
+              </h2>
+            </div>
+            <span className="inline-flex items-center gap-2 rounded-full border border-emerald-400/25 bg-emerald-400/10 px-3 py-1 text-xs font-semibold text-emerald-300">
+              <span className="size-1.5 rounded-full bg-emerald-400" />
+              Fechamento Top 3 confirmado
+            </span>
+          </div>
+
+          <div className="mt-5 grid grid-cols-2 gap-x-6 gap-y-5 sm:grid-cols-3 lg:grid-cols-6 lg:divide-x lg:divide-border/60">
             {resultado.kpis.map((kpi) => (
-              <KpiCard
-                key={kpi.label}
-                label={kpi.label}
-                value={kpi.value}
-                hint={kpi.hint}
-                icon={kpi.icon as IconName}
-                tone={
-                  kpi.icon === "trophy"
-                    ? "success"
-                    : kpi.icon === "check"
-                      ? "primary"
-                      : "default"
-                }
-              />
+              <div key={kpi.label} className="min-w-0">
+                <p className="truncate text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  {kpi.label}
+                </p>
+                <p className="tnum mt-1.5 text-2xl font-bold tracking-tight sm:text-3xl">
+                  {kpi.value}
+                </p>
+                <p className="mt-1 truncate text-[11px] text-muted-foreground">
+                  {kpi.hint}
+                </p>
+              </div>
             ))}
           </div>
-        </SectionCard>
+
+          <p className="mt-5 max-w-4xl text-[13px] leading-relaxed text-muted-foreground">
+            {resultado.descricao}
+          </p>
+        </section>
 
         {/* Ranking + leitura do gestor */}
         <div className="grid gap-5 lg:grid-cols-3">
           <SectionCard
-            eyebrow="Ranking da equipe"
+            eyebrow="Ranking"
             title="Nota final por funcionário"
-            description="A linha marca a meta de 85 pontos. Os círculos preenchidos identificam os premiados."
+            description="A linha marca a meta de 85 pontos. As barras destacam as posições premiadas."
             className="lg:col-span-2"
           >
-            <RankingDotPlot />
+            <RankingChart />
           </SectionCard>
 
           <SectionCard
@@ -82,8 +90,11 @@ export default function GerencialPage() {
           >
             <ol>
               {gestorLeituras.map((g) => (
-                <li key={g.numero} className="flex gap-4 border-b py-4 first:pt-0 last:border-0 last:pb-0">
-                  <span className="tnum shrink-0 text-lg font-bold text-primary/40">
+                <li
+                  key={g.numero}
+                  className="flex gap-4 border-b border-border/60 py-4 first:pt-0 last:border-0 last:pb-0"
+                >
+                  <span className="tnum shrink-0 bg-gradient-to-br from-cyan-400 to-blue-500 bg-clip-text text-lg font-bold text-transparent">
                     {g.numero}
                   </span>
                   <div className="min-w-0">
@@ -108,67 +119,7 @@ export default function GerencialPage() {
             title="Fechamentos por competência"
             description="Média, mediana e liderança apresentadas separadamente para respeitar a regra de cada mês."
           >
-            <div className="grid gap-4 sm:grid-cols-3">
-              {monthlyClosures.map((m) => (
-                <div
-                  key={m.competencia}
-                  className={cn(
-                    "rounded-xl border p-4",
-                    m.status === "ATUAL"
-                      ? "border-primary/40 bg-primary-soft/40 ring-1 ring-primary/20"
-                      : "bg-card"
-                  )}
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-bold">{m.competencia}</span>
-                    <span
-                      className={cn(
-                        "rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide",
-                        m.status === "ATUAL"
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-muted text-muted-foreground"
-                      )}
-                    >
-                      {m.status}
-                    </span>
-                  </div>
-                  <p className="tnum mt-3 text-3xl font-bold">
-                    {fmtBR(m.indice, 2)}
-                  </p>
-                  <p className="text-xs text-muted-foreground">índice médio</p>
-                  <dl className="mt-4 space-y-1.5 text-xs">
-                    <div className="flex justify-between">
-                      <dt className="text-muted-foreground">Mediana</dt>
-                      <dd className="tnum font-semibold">
-                        {fmtBR(m.mediana, 2)}
-                      </dd>
-                    </div>
-                    <div className="flex justify-between">
-                      <dt className="text-muted-foreground">Liderança</dt>
-                      <dd className="tnum font-semibold">
-                        {fmtBR(m.lideranca, 2)}
-                      </dd>
-                    </div>
-                    <div className="flex justify-between">
-                      <dt className="text-muted-foreground">Elegíveis</dt>
-                      <dd className="tnum font-semibold">{m.elegiveis}</dd>
-                    </div>
-                    <div className="flex justify-between">
-                      <dt className="text-muted-foreground">Premiados</dt>
-                      <dd className="tnum font-semibold">{m.premiados}</dd>
-                    </div>
-                  </dl>
-                  <p className="mt-3 text-[11px] leading-snug text-muted-foreground">
-                    {m.nota}
-                  </p>
-                  {m.tag && (
-                    <span className="mt-2 inline-block rounded-full bg-warning-soft px-2 py-0.5 text-[10px] font-bold text-warning-foreground">
-                      {m.tag}
-                    </span>
-                  )}
-                </div>
-              ))}
-            </div>
+            <MonthlyComparison />
           </SectionCard>
 
           <SectionCard
@@ -190,8 +141,8 @@ export default function GerencialPage() {
                 />
               ))}
             </div>
-            <div className="mt-6 rounded-xl border border-warning/30 bg-warning-soft/60 p-4">
-              <p className="text-[11px] font-bold uppercase tracking-wide text-warning-foreground">
+            <div className="mt-6 rounded-xl border border-amber-400/25 bg-amber-400/[0.07] p-4">
+              <p className="text-[11px] font-bold uppercase tracking-wide text-amber-300">
                 Principal alavanca
               </p>
               <p className="mt-1 text-sm font-bold">{principalAlavanca.label}</p>

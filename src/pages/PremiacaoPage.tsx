@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { AppShell } from "@/components/layout/app-shell";
 import { type IconName } from "@/components/ui-ext/app-icon";
 import { KpiCard } from "@/components/ui-ext/kpi-card";
-import { RankingDotPlot } from "@/components/ui-ext/ranking-dot-plot";
+import { RankingChart } from "@/components/ui-ext/ranking-chart";
 import { SectionCard } from "@/components/ui-ext/section-card";
 import { StatusBadge } from "@/components/ui-ext/status-badge";
 import { situacaoTone } from "@/lib/status-tones";
@@ -101,7 +101,7 @@ export default function PremiacaoPage() {
           title="Nota final e meta de elegibilidade"
           description="Escala única por funcionário; a linha vertical representa os 85 pontos."
         >
-          <RankingDotPlot scale="Nota final" />
+          <RankingChart />
         </SectionCard>
 
         {/* Formação da nota + liderança */}
@@ -139,7 +139,7 @@ export default function PremiacaoPage() {
                 </div>
               ))}
               <Equal className="mx-auto my-1 size-4 text-muted-foreground" />
-              <div className="flex items-center justify-between rounded-xl bg-primary p-4 text-primary-foreground shadow-glow">
+              <div className="flex items-center justify-between rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 p-4 text-white shadow-glow">
                 <div>
                   <p className="text-sm font-bold">{leaderTotal.label}</p>
                   <p className="text-xs opacity-80">{leaderTotal.hint}</p>

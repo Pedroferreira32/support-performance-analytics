@@ -37,13 +37,13 @@ export function AppShell({ breadcrumb, title, children }: AppShellProps) {
   return (
     <div className="min-h-screen bg-background">
       {/* Sidebar desktop */}
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 border-r bg-sidebar lg:block">
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 border-r border-sidebar-border bg-sidebar lg:block">
         <SidebarContent />
       </aside>
 
       {/* Sidebar mobile */}
       <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent side="left" className="w-72 p-0">
+        <SheetContent side="left" className="w-72 border-r border-sidebar-border p-0">
           <SheetTitle className="sr-only">Menu de navegação</SheetTitle>
           <SheetDescription className="sr-only">
             Navegação principal do dashboard
@@ -54,7 +54,7 @@ export function AppShell({ breadcrumb, title, children }: AppShellProps) {
 
       <div className="flex min-h-screen flex-col lg:pl-64">
         {/* Header */}
-        <header className="sticky top-0 z-20 border-b bg-background/85 backdrop-blur">
+        <header className="sticky top-0 z-20 border-b border-border/60 bg-background/75 backdrop-blur-xl">
           <div className="flex items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
             <div className="flex min-w-0 items-center gap-3">
               <Button
@@ -67,7 +67,7 @@ export function AppShell({ breadcrumb, title, children }: AppShellProps) {
                 <Menu className="size-5" />
               </Button>
               <div className="min-w-0">
-                <p className="truncate text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
+                <p className="truncate text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                   {breadcrumb}
                 </p>
                 <h1 className="truncate text-lg font-bold tracking-tight">
@@ -79,7 +79,7 @@ export function AppShell({ breadcrumb, title, children }: AppShellProps) {
             <div className="flex shrink-0 items-center gap-2">
               <div className="hidden sm:block">
                 <Select defaultValue={competencia.label}>
-                  <SelectTrigger className="h-9 gap-2 pr-2 text-xs">
+                  <SelectTrigger className="h-9 gap-2 border-border/70 bg-card/60 pr-2 text-xs">
                     <CalendarDays className="size-4 text-muted-foreground" />
                     <SelectValue placeholder="Competência" />
                   </SelectTrigger>
@@ -93,7 +93,7 @@ export function AppShell({ breadcrumb, title, children }: AppShellProps) {
               <Button
                 variant="outline"
                 size="sm"
-                className="hidden md:inline-flex"
+                className="hidden border-border/70 bg-card/60 text-muted-foreground hover:text-foreground md:inline-flex"
                 onClick={demoNotice}
               >
                 <FileDown className="size-4" />
@@ -101,7 +101,7 @@ export function AppShell({ breadcrumb, title, children }: AppShellProps) {
               </Button>
               <Button
                 size="sm"
-                className="hidden md:inline-flex"
+                className="hidden bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 md:inline-flex"
                 onClick={demoNotice}
               >
                 <Presentation className="size-4" />
@@ -115,12 +115,12 @@ export function AppShell({ breadcrumb, title, children }: AppShellProps) {
         </header>
 
         {/* Conteúdo */}
-        <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8">
+        <main className="flex-1 bg-[radial-gradient(1100px_380px_at_50%_-120px,rgba(56,189,248,0.07),transparent)] px-4 py-6 sm:px-6 lg:px-8">
           <div className="mx-auto w-full max-w-6xl">
             {/* Faixa de demonstração */}
-            <div className="mb-5 rounded-xl border bg-card px-4 py-3 shadow-card">
+            <div className="mb-5 rounded-xl border border-border/60 bg-card/50 px-4 py-3">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="rounded-full bg-primary-soft px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary">
+                <span className="rounded-full border border-cyan-400/30 bg-cyan-400/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-cyan-300">
                   Demonstração
                 </span>
                 <p className="text-xs text-muted-foreground">

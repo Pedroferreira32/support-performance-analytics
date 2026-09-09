@@ -11,19 +11,19 @@ export type StatusTone =
   | "primary";
 
 const toneClasses: Record<StatusTone, string> = {
-  success: "border-transparent bg-success-soft text-success",
-  warning: "border-transparent bg-warning-soft text-warning-foreground",
-  danger: "border-transparent bg-danger-soft text-danger",
-  neutral: "border-transparent bg-muted text-muted-foreground",
-  primary: "border-transparent bg-primary-soft text-primary",
+  success: "border-emerald-400/25 bg-emerald-400/10 text-emerald-300",
+  warning: "border-amber-400/25 bg-amber-400/10 text-amber-300",
+  danger: "border-rose-400/25 bg-rose-400/10 text-rose-300",
+  neutral: "border-slate-500/25 bg-slate-500/10 text-slate-400",
+  primary: "border-blue-400/25 bg-blue-400/10 text-blue-300",
 };
 
 const dotClasses: Record<StatusTone, string> = {
-  success: "bg-success",
-  warning: "bg-warning",
-  danger: "bg-danger",
-  neutral: "bg-muted-foreground",
-  primary: "bg-primary",
+  success: "bg-emerald-400",
+  warning: "bg-amber-400",
+  danger: "bg-rose-400",
+  neutral: "bg-slate-400",
+  primary: "bg-blue-400",
 };
 
 interface StatusBadgeProps {

@@ -86,9 +86,9 @@ export default {
 				sm: 'calc(var(--radius) - 4px)'
 			},
 			boxShadow: {
-				card: '0 1px 2px 0 rgb(15 23 42 / 0.04), 0 1px 3px 0 rgb(15 23 42 / 0.06)',
-				elevated: '0 4px 12px -2px rgb(15 23 42 / 0.08), 0 2px 6px -1px rgb(15 23 42 / 0.06)',
-				glow: '0 0 0 1px hsl(var(--primary) / 0.12), 0 8px 24px -6px hsl(var(--primary) / 0.25)'
+				card: '0 1px 2px 0 rgb(0 0 0 / 0.25)',
+				elevated: '0 8px 24px -8px rgb(0 0 0 / 0.5)',
+				glow: '0 0 0 1px hsl(var(--primary) / 0.25), 0 8px 24px -6px hsl(var(--primary) / 0.35)'
 			},
 			keyframes: {
 				'accordion-down': {

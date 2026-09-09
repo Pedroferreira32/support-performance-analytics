@@ -23,17 +23,32 @@ export function SectionCard({
   children,
 }: SectionCardProps) {
   return (
-    <Card className={cn("overflow-hidden shadow-card", className)}>
-      <div className="flex flex-col gap-3 border-b bg-card px-6 py-5 sm:flex-row sm:items-start sm:justify-between">
+    <Card
+      className={cn(
+        "overflow-hidden border-border/60 bg-card/50 shadow-none",
+        className
+      )}
+    >
+      <div className="flex flex-col gap-3 px-6 pt-6 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
-          {eyebrow && (
-            <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-primary">
-              {eyebrow}
-            </p>
-          )}
-          <h2 className="mt-1 text-lg font-bold tracking-tight">{title}</h2>
+          <div className="flex items-start gap-2.5">
+            <span
+              aria-hidden
+              className="mt-1 h-4 w-1 shrink-0 rounded-full bg-gradient-to-b from-cyan-400 to-blue-600"
+            />
+            <div className="min-w-0">
+              {eyebrow && (
+                <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground/70">
+                  {eyebrow}
+                </p>
+              )}
+              <h2 className="mt-0.5 text-base font-bold tracking-tight">
+                {title}
+              </h2>
+            </div>
+          </div>
           {description && (
-            <p className="mt-1 max-w-3xl text-sm leading-relaxed text-muted-foreground">
+            <p className="mt-2 max-w-3xl text-[13px] leading-relaxed text-muted-foreground">
               {description}
             </p>
           )}

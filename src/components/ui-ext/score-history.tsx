@@ -1,7 +1,7 @@
 import {
+  Area,
+  AreaChart,
   CartesianGrid,
-  Line,
-  LineChart,
   ReferenceLine,
   ResponsiveContainer,
   Tooltip,
@@ -18,21 +18,23 @@ export interface HistoryPoint {
 
 interface ScoreHistoryProps {
   data: HistoryPoint[];
-  color?: string;
 }
 
-export function ScoreHistory({
-  data,
-  color = "hsl(var(--chart-1))",
-}: ScoreHistoryProps) {
+export function ScoreHistory({ data }: ScoreHistoryProps) {
   const safe = data.filter((d) => d.nota != null);
   return (
     <div className="h-60 w-full">
       <ResponsiveContainer width="100%" height="100%">
-        <LineChart
+        <AreaChart
           data={safe}
           margin={{ top: 8, right: 12, left: -18, bottom: 0 }}
         >
+          <defs>
+            <linearGradient id="scoreGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="hsl(var(--chart-1))" stopOpacity={0.35} />
+              <stop offset="100%" stopColor="hsl(var(--chart-1))" stopOpacity={0} />
+            </linearGradient>
+          </defs>
           <CartesianGrid
             strokeDasharray="3 3"
             vertical={false}
@@ -55,31 +57,34 @@ export function ScoreHistory({
             contentStyle={{
               borderRadius: 10,
               border: "1px solid hsl(var(--border))",
+              background: "hsl(var(--popover))",
+              color: "hsl(var(--popover-foreground))",
               fontSize: 12,
-              boxShadow: "0 8px 24px -8px rgb(15 23 42 / 0.15)",
+              boxShadow: "0 8px 24px -8px rgb(0 0 0 / 0.5)",
             }}
             formatter={(value) => [fmtBR(Number(value), 2), "Nota final"]}
           />
           <ReferenceLine
             y={85}
-            stroke="hsl(var(--danger) / 0.6)"
+            stroke="hsl(var(--warning) / 0.7)"
             strokeDasharray="4 4"
             label={{
               value: "Meta 85",
               position: "insideTopRight",
               fontSize: 10,
-              fill: "hsl(var(--danger))",
+              fill: "hsl(var(--warning))",
             }}
           />
-          <Line
+          <Area
             type="monotone"
             dataKey="nota"
-            stroke={color}
+            stroke="hsl(var(--chart-1))"
             strokeWidth={2.5}
-            dot={{ r: 5, fill: color, strokeWidth: 2, stroke: "hsl(var(--card))" }}
+            fill="url(#scoreGrad)"
+            dot={{ r: 5, fill: "hsl(var(--chart-1))", strokeWidth: 2, stroke: "hsl(var(--card))" }}
             activeDot={{ r: 6 }}
           />
-        </LineChart>
+        </AreaChart>
       </ResponsiveContainer>
     </div>
   );

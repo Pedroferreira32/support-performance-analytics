@@ -179,7 +179,7 @@ export const resultado = {
     { label: "Mediana", value: "86,08", hint: "centro das notas", icon: "medal" },
     { label: "Elegíveis", value: "4", hint: "nota a partir de 85", icon: "check" },
     { label: "Premiados", value: "3", hint: "3 de 4 elegíveis", icon: "trophy" },
-    { label: "Base validada", value: "94,9%", hint: "5,1% da base foi excluída", icon: "shield" },
+    { label: "Base validada", value: "94,9%", hint: "5,1% excluída da base", icon: "shield" },
     { label: "Cobertura CSAT", value: "88,5%", hint: "média ponderada 4,55", icon: "star" },
   ],
 };

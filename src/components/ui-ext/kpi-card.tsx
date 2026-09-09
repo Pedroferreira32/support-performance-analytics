@@ -13,12 +13,12 @@ interface KpiCardProps {
   className?: string;
 }
 
-const toneStyles: Record<KpiTone, string> = {
-  default: "bg-muted text-muted-foreground",
-  primary: "bg-primary-soft text-primary",
-  success: "bg-success-soft text-success",
-  warning: "bg-warning-soft text-warning-foreground",
-  danger: "bg-danger-soft text-danger",
+const dotTones: Record<KpiTone, string> = {
+  default: "bg-muted-foreground",
+  primary: "bg-primary",
+  success: "bg-success",
+  warning: "bg-warning",
+  danger: "bg-danger",
 };
 
 export function KpiCard({
@@ -30,30 +30,31 @@ export function KpiCard({
   className,
 }: KpiCardProps) {
   return (
-    <Card className={cn("p-5 shadow-card", className)}>
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="truncate text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            {label}
-          </p>
-          <p className="tnum mt-2 text-3xl font-bold tracking-tight">{value}</p>
-          {hint && (
-            <p className="mt-1.5 truncate text-xs text-muted-foreground">
-              {hint}
-            </p>
-          )}
-        </div>
-        {icon && (
-          <div
+    <Card
+      className={cn(
+        "border-border/60 bg-card/50 p-5 shadow-none",
+        className
+      )}
+    >
+      <div className="flex items-center justify-between gap-3">
+        <p className="truncate text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+          {label}
+        </p>
+        {icon ? (
+          <AppIcon name={icon} className={cn("size-3.5 shrink-0", dotTones[tone])} />
+        ) : (
+          <span
             className={cn(
-              "grid size-10 shrink-0 place-items-center rounded-xl",
-              toneStyles[tone]
+              "size-1.5 shrink-0 rounded-full",
+              dotTones[tone]
             )}
-          >
-            <AppIcon name={icon} className="size-5" />
-          </div>
+          />
         )}
       </div>
+      <p className="tnum mt-2 text-3xl font-bold tracking-tight">{value}</p>
+      {hint && (
+        <p className="mt-1 text-xs leading-snug text-muted-foreground">{hint}</p>
+      )}
     </Card>
   );
 }
