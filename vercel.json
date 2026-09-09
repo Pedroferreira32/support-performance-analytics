@@ -1,0 +1,9 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "functions": {
+    "app.py": {
+      "maxDuration": 60,
+      "includeFiles": "{dashboard.html,dashboard.css,dashboard.js,powerpoint.js,social-preview.svg,vendor/**}"
+    }
+  }
+}

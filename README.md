@@ -8,9 +8,8 @@ Aplicação web desenvolvida em Python para transformar dados brutos de atendime
 
 ## Demonstração
 
-### [Acessar o dashboard ao vivo →](https://performance-analytics-demo.onrender.com)
-
-> A hospedagem utiliza uma instância gratuita. Se estiver inativa, a primeira abertura pode levar cerca de um minuto.
+O dashboard público é distribuído pela **Vercel** a partir da branch `main`. O endereço
+de produção é informado no painel da Vercel depois da primeira implantação.
 
 A aplicação inicia preenchida com três competências fictícias. A competência mais recente contém **2.477 registros sintéticos**, permitindo navegar por um cenário próximo da escala analisada no projeto original.
 
@@ -100,21 +99,24 @@ Encerramentos automáticos permanecem identificados no volume e são retirados d
 - **OpenPyXL e xlrd:** leitura e exportação de planilhas;
 - **PptxGenJS e JSZip:** geração do relatório PowerPoint;
 - **unittest:** validação das regras de negócio e das APIs;
-- **Render:** configuração da demonstração pública.
+- **Flask e Vercel Functions:** camada WSGI da demonstração pública;
+- **Vercel:** hospedagem e implantação contínua a partir do GitHub.
 
 ## Estrutura principal
 
 ```text
 .
-├── servidor_html.py          # servidor HTTP e APIs
+├── app.py                    # entrada Flask/WSGI usada pela Vercel
+├── servidor_html.py          # servidor HTTP local e funções compartilhadas
 ├── motor_premiacao.py        # regras, qualidade, KPIs e persistência
 ├── dados_demonstracao.py     # geração determinística dos dados sintéticos
 ├── dashboard.html            # estrutura da interface
 ├── dashboard.css             # apresentação responsiva
-├── dashboard-app.js          # comportamento e visualizações
+├── dashboard.js              # comportamento e visualizações
 ├── powerpoint.js             # relatório executivo em PPTX
 ├── package.json              # dependência usada no teste do PowerPoint
-├── render.yaml               # configuração de hospedagem
+├── vercel.json               # configuração da Vercel Function
+├── .python-version           # runtime Python da publicação
 ├── .github/workflows/        # integração contínua no GitHub Actions
 └── test_*.py                 # testes automatizados
 ```
@@ -149,6 +151,18 @@ python servidor_html.py
 Acesse `http://localhost:8501`.
 
 Para executar o fluxo operacional local, com importação habilitada, defina `PREMIACAO_DEMO=0` antes de iniciar. Arquivos reais e o banco local estão ignorados pelo Git.
+
+## Publicação na Vercel
+
+1. Importe este repositório do GitHub em um novo projeto da Vercel;
+2. Mantenha o diretório raiz e as configurações de build detectadas automaticamente;
+3. Faça a implantação sem cadastrar banco ou credenciais;
+4. Confirme a publicação acessando `/api/saude` no domínio criado.
+
+A Vercel detecta `app.py` como aplicação Flask. A demonstração recria uma base
+sintética em `/tmp`, bloqueia requisições de escrita e não recebe arquivos reais.
+O histórico operacional permanece somente na versão local, no arquivo
+`historico_premiacao.db`.
 
 ## Testes
 
