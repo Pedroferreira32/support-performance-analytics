@@ -3,6 +3,7 @@ import { Equal, Plus } from "lucide-react";
 import { AppShell } from "@/components/layout/app-shell";
 import { type IconName } from "@/components/ui-ext/app-icon";
 import { KpiCard } from "@/components/ui-ext/kpi-card";
+import { ScatterTeam } from "@/components/ui-ext/scatter-team";
 import { SectionCard } from "@/components/ui-ext/section-card";
 import { WeeklyHeatmap } from "@/components/ui-ext/weekly-heatmap";
 import {
@@ -121,24 +122,24 @@ export default function OperacaoPage() {
           </div>
         </SectionCard>
 
-        {/* Distribuição horária + comparação mensal */}
-        <div className="grid gap-5 lg:grid-cols-2">
-          <SectionCard
-            eyebrow="Mapa de calor"
-            title="Demanda por hora e dia da semana"
-            description="Intensidade de atendimentos por faixa de início, de segunda a sábado."
-          >
-            <WeeklyHeatmap />
-          </SectionCard>
+        {/* Mapa de calor */}
+        <SectionCard
+          eyebrow="Mapa de calor"
+          title="Demanda por hora e dia da semana"
+          description="Intensidade de atendimentos por faixa de início, de segunda a sábado."
+        >
+          <WeeklyHeatmap />
+        </SectionCard>
 
-          <SectionCard
-            eyebrow="Comparação mensal"
-            title="Indicadores por competência"
-            description="Valores exatos de volume, TMA, satisfação, cobertura e qualidade."
-            contentClassName="p-0"
-          >
+        {/* Comparação mensal */}
+        <SectionCard
+          eyebrow="Comparação mensal"
+          title="Indicadores por competência"
+          description="Valores exatos de volume, TMA, satisfação, cobertura e qualidade."
+          contentClassName="p-0"
+        >
             <div className="overflow-x-auto">
-              <Table className="min-w-[720px]">
+              <Table className="min-w-[520px]">
                 <TableHeader>
                   <TableRow className="hover:bg-transparent">
                     <TableHead className="pl-6">Competência</TableHead>
@@ -191,16 +192,17 @@ export default function OperacaoPage() {
               </Table>
             </div>
           </SectionCard>
-        </div>
 
         {/* Detalhe da equipe */}
         <SectionCard
           eyebrow="Detalhe da equipe"
           title="Volume, tempo e cobertura da avaliação"
           description="A fonte não contém jornada, categoria ou complexidade para cálculo de produtividade por hora."
-          contentClassName="p-0"
         >
-          <div className="overflow-x-auto">
+          <div className="rounded-sm border border-border/60 bg-card/30 p-4">
+            <ScatterTeam />
+          </div>
+          <div className="mt-4 overflow-x-auto">
             <Table className="min-w-[860px]">
               <TableHeader>
                 <TableRow className="hover:bg-transparent">

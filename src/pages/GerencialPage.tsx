@@ -14,8 +14,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { AnimatedValue } from "@/components/ui-ext/animated-value";
+import { ComboMonthly } from "@/components/ui-ext/combo-monthly";
 import { Delta } from "@/components/ui-ext/delta";
-import { MonthlyComparison } from "@/components/ui-ext/monthly-comparison";
 import { ProgressRatio } from "@/components/ui-ext/progress-ratio";
 import { RadarComposition } from "@/components/ui-ext/radar-composition";
 import { RankingChart } from "@/components/ui-ext/ranking-chart";
@@ -127,9 +127,9 @@ export default function GerencialPage() {
           <SectionCard
             eyebrow="Comparação mensal"
             title="Fechamentos por competência"
-            description="Média, mediana e liderança apresentadas separadamente para respeitar a regra de cada mês."
+            description="Índice médio em barras, mediana em linha e a meta de 85 como referência."
           >
-            <MonthlyComparison />
+            <ComboMonthly />
           </SectionCard>
 
           <SectionCard

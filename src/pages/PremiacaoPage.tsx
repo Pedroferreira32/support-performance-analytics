@@ -3,12 +3,14 @@ import { toast } from "sonner";
 
 import { AppShell } from "@/components/layout/app-shell";
 import { type IconName } from "@/components/ui-ext/app-icon";
-import { GapChart } from "@/components/ui-ext/gap-chart";
+import { Funnel } from "@/components/ui-ext/funnel";
 import { KpiCard } from "@/components/ui-ext/kpi-card";
 import { RankingChart } from "@/components/ui-ext/ranking-chart";
 import { ScoreGauge } from "@/components/ui-ext/score-gauge";
 import { SectionCard } from "@/components/ui-ext/section-card";
+import { StackedFormation } from "@/components/ui-ext/stacked-formation";
 import { StatusBadge } from "@/components/ui-ext/status-badge";
+import { WaterfallLeader } from "@/components/ui-ext/waterfall-leader";
 import { situacaoTone } from "@/lib/status-tones";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,13 +21,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  employees,
-  leaderBreakdown,
-  leaderTotal,
-  premiacaoResumo,
-} from "@/data/support-data";
-import { cn } from "@/lib/utils";
+import { employees, premiacaoResumo } from "@/data/support-data";
 import { fmtBR } from "@/lib/format";
 
 export default function PremiacaoPage() {
@@ -111,46 +107,9 @@ export default function PremiacaoPage() {
           <SectionCard
             eyebrow="Formação da nota"
             title="Componentes do primeiro colocado"
-            description="Contribuição de cada parcela até a nota final da liderança."
+            description="Cascata da nota final da liderança: base fixa + variáveis até o índice de 91,09."
           >
-            <div className="space-y-2">
-              {leaderBreakdown.map((b, i) => (
-                <div key={b.label}>
-                  <div
-                    className={cn(
-                      "flex items-center justify-between rounded-sm border p-4",
-                      b.color === "primary" ? "bg-primary-soft/50" : "bg-muted/40"
-                    )}
-                  >
-                    <div>
-                      <p className="text-sm font-semibold">{b.label}</p>
-                      <p className="text-xs text-muted-foreground">{b.hint}</p>
-                    </div>
-                    <span
-                      className={cn(
-                        "tnum text-lg font-bold",
-                        b.color === "primary" && "text-primary"
-                      )}
-                    >
-                      {b.value}
-                    </span>
-                  </div>
-                  {i < leaderBreakdown.length - 1 && (
-                    <Plus className="mx-auto my-1 size-4 text-muted-foreground" />
-                  )}
-                </div>
-              ))}
-              <Equal className="mx-auto my-1 size-4 text-muted-foreground" />
-              <div className="flex items-center justify-between rounded-sm bg-gradient-to-r from-cyan-500 to-blue-600 p-4 text-primary-foreground shadow-glow">
-                <div>
-                  <p className="text-sm font-bold">{leaderTotal.label}</p>
-                  <p className="text-xs opacity-80">{leaderTotal.hint}</p>
-                </div>
-                <span className="tnum text-2xl font-bold">
-                  {leaderTotal.value}
-                </span>
-              </div>
-            </div>
+            <WaterfallLeader />
           </SectionCard>
 
           <SectionCard
@@ -173,14 +132,24 @@ export default function PremiacaoPage() {
           </SectionCard>
         </div>
 
-        {/* Distância até a meta */}
-        <SectionCard
-          eyebrow="Distância até a meta"
-          title="Posição em relação aos 85 pontos"
-          description="As barras partem da meta: para a direita quem superou os 85, para a esquerda quem precisa recuperar pontos."
-        >
-          <GapChart />
-        </SectionCard>
+        {/* Formação por funcionário + funil */}
+        <div className="grid gap-5 lg:grid-cols-2">
+          <SectionCard
+            eyebrow="Formação da nota"
+            title="Composição da nota por funcionário"
+            description="Parcela fixa e variáveis empilhadas; a linha marca a meta de 85."
+          >
+            <StackedFormation />
+          </SectionCard>
+
+          <SectionCard
+            eyebrow="Funil de elegibilidade"
+            title="Da avaliação à premiação"
+            description="Queda de aproveitamento entre as etapas do processo."
+          >
+            <Funnel />
+          </SectionCard>
+        </div>
 
         {/* Memória de cálculo */}
         <SectionCard
