@@ -1,5 +1,6 @@
-import { useState, type ReactNode } from "react";
-import { CalendarDays, FileDown, Menu, Presentation } from "lucide-react";
+import { useEffect, useState, type ReactNode } from "react";
+import { CalendarDays, FileDown, Menu, Moon, Presentation, Sun } from "lucide-react";
+import { useTheme } from "next-themes";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -27,6 +28,10 @@ interface AppShellProps {
 
 export function AppShell({ breadcrumb, title, children }: AppShellProps) {
   const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const { resolvedTheme, setTheme } = useTheme();
+
+  useEffect(() => setMounted(true), []);
 
   const demoNotice = () =>
     toast("Disponível na versão completa", {
@@ -107,6 +112,21 @@ export function AppShell({ breadcrumb, title, children }: AppShellProps) {
                 <Presentation className="size-4" />
                 PowerPoint
               </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                className="size-9 shrink-0 border-border/70 bg-card/60 text-muted-foreground hover:text-foreground"
+                onClick={() =>
+                  setTheme(resolvedTheme === "dark" ? "light" : "dark")
+                }
+                aria-label="Alternar tema"
+              >
+                {mounted && resolvedTheme === "dark" ? (
+                  <Sun className="size-4" />
+                ) : (
+                  <Moon className="size-4" />
+                )}
+              </Button>
               <span className="hidden text-xs text-muted-foreground xl:block">
                 09 de set. de 2026
               </span>
@@ -120,7 +140,7 @@ export function AppShell({ breadcrumb, title, children }: AppShellProps) {
             {/* Faixa de demonstração */}
             <div className="mb-5 rounded-xl border border-border/60 bg-card/50 px-4 py-3">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="rounded-full border border-cyan-400/30 bg-cyan-400/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-cyan-300">
+                <span className="rounded-full border border-cyan-600/25 bg-cyan-600/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-cyan-700 dark:border-cyan-400/30 dark:bg-cyan-400/10 dark:text-cyan-300">
                   Demonstração
                 </span>
                 <p className="text-xs text-muted-foreground">

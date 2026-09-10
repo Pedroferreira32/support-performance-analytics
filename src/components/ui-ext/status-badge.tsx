@@ -11,19 +11,24 @@ export type StatusTone =
   | "primary";
 
 const toneClasses: Record<StatusTone, string> = {
-  success: "border-emerald-400/25 bg-emerald-400/10 text-emerald-300",
-  warning: "border-amber-400/25 bg-amber-400/10 text-amber-300",
-  danger: "border-rose-400/25 bg-rose-400/10 text-rose-300",
-  neutral: "border-slate-500/25 bg-slate-500/10 text-slate-400",
-  primary: "border-blue-400/25 bg-blue-400/10 text-blue-300",
+  success:
+    "border-emerald-600/25 bg-emerald-600/10 text-emerald-700 dark:border-emerald-400/25 dark:bg-emerald-400/10 dark:text-emerald-300",
+  warning:
+    "border-amber-600/25 bg-amber-600/10 text-amber-700 dark:border-amber-400/25 dark:bg-amber-400/10 dark:text-amber-300",
+  danger:
+    "border-rose-600/25 bg-rose-600/10 text-rose-700 dark:border-rose-400/25 dark:bg-rose-400/10 dark:text-rose-300",
+  neutral:
+    "border-slate-500/25 bg-slate-500/10 text-slate-600 dark:border-slate-500/25 dark:bg-slate-500/10 dark:text-slate-400",
+  primary:
+    "border-blue-600/25 bg-blue-600/10 text-blue-700 dark:border-blue-400/25 dark:bg-blue-400/10 dark:text-blue-300",
 };
 
 const dotClasses: Record<StatusTone, string> = {
-  success: "bg-emerald-400",
-  warning: "bg-amber-400",
-  danger: "bg-rose-400",
-  neutral: "bg-slate-400",
-  primary: "bg-blue-400",
+  success: "bg-emerald-600 dark:bg-emerald-400",
+  warning: "bg-amber-600 dark:bg-amber-400",
+  danger: "bg-rose-600 dark:bg-rose-400",
+  neutral: "bg-slate-500 dark:bg-slate-400",
+  primary: "bg-blue-600 dark:bg-blue-400",
 };
 
 interface StatusBadgeProps {

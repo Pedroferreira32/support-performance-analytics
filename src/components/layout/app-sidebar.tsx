@@ -63,7 +63,10 @@ function SidebarLink({
             />
           )}
           <item.icon
-            className={cn("size-4 shrink-0", isActive && "text-cyan-300")}
+            className={cn(
+              "size-4 shrink-0",
+              isActive && "text-primary dark:text-cyan-300"
+            )}
           />
           {item.label}
         </>

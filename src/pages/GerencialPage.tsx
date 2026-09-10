@@ -45,8 +45,8 @@ export default function GerencialPage() {
                 {resultado.titulo}
               </h2>
             </div>
-            <span className="inline-flex items-center gap-2 rounded-full border border-emerald-400/25 bg-emerald-400/10 px-3 py-1 text-xs font-semibold text-emerald-300">
-              <span className="size-1.5 rounded-full bg-emerald-400" />
+            <span className="inline-flex items-center gap-2 rounded-full border border-emerald-600/25 bg-emerald-600/10 px-3 py-1 text-xs font-semibold text-emerald-700 dark:border-emerald-400/25 dark:bg-emerald-400/10 dark:text-emerald-300">
+              <span className="size-1.5 rounded-full bg-emerald-600 dark:bg-emerald-400" />
               Fechamento Top 3 confirmado
             </span>
           </div>
@@ -141,8 +141,8 @@ export default function GerencialPage() {
                 />
               ))}
             </div>
-            <div className="mt-6 rounded-xl border border-amber-400/25 bg-amber-400/[0.07] p-4">
-              <p className="text-[11px] font-bold uppercase tracking-wide text-amber-300">
+            <div className="mt-6 rounded-xl border border-amber-600/25 bg-amber-600/[0.07] p-4 dark:border-amber-400/25 dark:bg-amber-400/[0.07]">
+              <p className="text-[11px] font-bold uppercase tracking-wide text-amber-700 dark:text-amber-300">
                 Principal alavanca
               </p>
               <p className="mt-1 text-sm font-bold">{principalAlavanca.label}</p>

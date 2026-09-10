@@ -18,7 +18,7 @@ export function RankingChart() {
         <div className="w-40 shrink-0 pr-3" aria-hidden />
         <div className="relative h-7 flex-1">
           <span
-            className="absolute top-0 -translate-x-1/2 whitespace-nowrap rounded-full border border-amber-400/30 bg-amber-400/10 px-2 py-0.5 text-[10px] font-bold text-amber-300"
+            className="absolute top-0 -translate-x-1/2 whitespace-nowrap rounded-full border border-amber-600/30 bg-amber-600/10 px-2 py-0.5 text-[10px] font-bold text-amber-700 dark:border-amber-400/30 dark:bg-amber-400/10 dark:text-amber-300"
             style={{ left: `${pos(85)}%` }}
           >
             Meta 85
@@ -86,7 +86,7 @@ export function RankingChart() {
                 <span
                   className={cn(
                     "tnum text-sm font-bold",
-                    premiado && "text-cyan-300"
+                    premiado && "text-blue-600 dark:text-cyan-300"
                   )}
                 >
                   {fmtBR(e.note, 2)}

@@ -42,7 +42,9 @@ export function MonthlyComparison() {
             <p
               className={cn(
                 "text-[10px] font-semibold",
-                m.status === "ATUAL" ? "text-cyan-300" : "text-muted-foreground"
+                m.status === "ATUAL"
+                  ? "text-blue-600 dark:text-cyan-300"
+                  : "text-muted-foreground"
               )}
             >
               {m.status === "ATUAL" ? "ATUAL" : "FECHAMENTO"}

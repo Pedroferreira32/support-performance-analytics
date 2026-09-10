@@ -5,8 +5,69 @@
 @tailwind utilities;
 
 @layer base {
+  /* ===== Opção 1 — Light Editorial (claro) ===== */
   :root {
-    /* Dark premium data theme (default) */
+    --background: 40 33% 97%;
+    --foreground: 222 47% 8%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 8%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 8%;
+
+    --primary: 221 83% 53%;
+    --primary-foreground: 0 0% 100%;
+    --primary-soft: 219 86% 95%;
+
+    --secondary: 40 20% 93%;
+    --secondary-foreground: 222 47% 8%;
+
+    --muted: 40 20% 94%;
+    --muted-foreground: 215 14% 42%;
+
+    --accent: 220 40% 95%;
+    --accent-foreground: 222 47% 8%;
+
+    --destructive: 0 72% 48%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 160 84% 30%;
+    --success-foreground: 0 0% 100%;
+    --success-soft: 152 50% 93%;
+
+    --warning: 38 92% 46%;
+    --warning-foreground: 33 90% 28%;
+    --warning-soft: 42 100% 91%;
+
+    --danger: 347 77% 50%;
+    --danger-foreground: 0 0% 100%;
+    --danger-soft: 350 100% 94%;
+
+    --border: 220 18% 88%;
+    --input: 220 18% 85%;
+    --ring: 221 83% 53%;
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 222 34% 24%;
+    --sidebar-primary: 221 83% 53%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 219 86% 95%;
+    --sidebar-accent-foreground: 221 76% 40%;
+    --sidebar-border: 220 18% 90%;
+    --sidebar-ring: 221 83% 53%;
+
+    --chart-1: 199 100% 45%;
+    --chart-2: 217 91% 55%;
+    --chart-3: 38 95% 46%;
+    --chart-4: 262 83% 60%;
+    --chart-5: 160 84% 34%;
+  }
+
+  /* ===== Opção 2 — Dark Premium de dados (escuro) ===== */
+  .dark {
     --background: 226 42% 5%;
     --foreground: 210 25% 92%;
 
@@ -96,7 +157,7 @@ body,
   }
 }
 
-/* Scrollbar sutil para o tema escuro */
+/* Scrollbar sutil que acompanha o tema */
 * {
   scrollbar-width: thin;
   scrollbar-color: hsl(var(--border)) transparent;
