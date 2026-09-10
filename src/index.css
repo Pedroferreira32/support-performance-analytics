@@ -1,0 +1,117 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Dark premium data theme (default) */
+    --background: 226 42% 5%;
+    --foreground: 210 25% 92%;
+
+    --card: 226 34% 9%;
+    --card-foreground: 210 25% 92%;
+
+    --popover: 226 36% 11%;
+    --popover-foreground: 210 25% 92%;
+
+    --primary: 217 91% 60%;
+    --primary-foreground: 0 0% 100%;
+    --primary-soft: 217 60% 18%;
+
+    --secondary: 217 30% 15%;
+    --secondary-foreground: 210 25% 92%;
+
+    --muted: 217 28% 13%;
+    --muted-foreground: 216 16% 67%;
+
+    --accent: 217 34% 15%;
+    --accent-foreground: 210 25% 92%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 152 60% 45%;
+    --success-foreground: 0 0% 100%;
+    --success-soft: 152 40% 15%;
+
+    --warning: 38 95% 56%;
+    --warning-foreground: 40 100% 88%;
+    --warning-soft: 38 40% 15%;
+
+    --danger: 350 80% 58%;
+    --danger-foreground: 0 0% 100%;
+    --danger-soft: 350 45% 16%;
+
+    --border: 217 25% 16%;
+    --input: 217 25% 18%;
+    --ring: 217 91% 60%;
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 226 44% 4%;
+    --sidebar-foreground: 210 20% 80%;
+    --sidebar-primary: 199 100% 55%;
+    --sidebar-primary-foreground: 226 40% 6%;
+    --sidebar-accent: 217 36% 12%;
+    --sidebar-accent-foreground: 210 25% 92%;
+    --sidebar-border: 217 28% 13%;
+    --sidebar-ring: 199 100% 55%;
+
+    --chart-1: 199 100% 55%;
+    --chart-2: 217 91% 60%;
+    --chart-3: 38 95% 56%;
+    --chart-4: 262 83% 66%;
+    --chart-5: 152 60% 45%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+      Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+}
+
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
+}
+
+@layer utilities {
+  .tnum {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+/* Scrollbar sutil para o tema escuro */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--border)) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: hsl(var(--border));
+  border-radius: 9999px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}

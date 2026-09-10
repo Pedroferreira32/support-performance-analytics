@@ -1,9 +1,12 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "functions": {
-    "app.py": {
-      "maxDuration": 60,
-      "includeFiles": "{dashboard.html,dashboard.css,dashboard.js,powerpoint.js,social-preview.svg,vendor/**}"
+  "framework": "vite",
+  "buildCommand": "pnpm run build:prod",
+  "outputDirectory": "dist",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
-  }
+  ]
 }

@@ -1,194 +1,151 @@
-# Performance Analytics: validação e premiação do suporte
+# Welcome to your Enter project
 
-Aplicação web desenvolvida em Python para transformar dados brutos de atendimento em uma visão executiva de operação, qualidade, desempenho, ranking e premiação auditável.
+[![Built with enter.pro](https://img.shields.io/badge/Build%20with-Enter.pro-FC5776?style=for-the-badge&labelColor=1F1F1F)](https://enter.pro)
 
-**Versão atual:** 4.0 — interface gerencial redesenhada e visualizações com maior legibilidade.
+*Automatically synced with your [enter.pro](https://enter.pro) workspace* 
 
-> **Privacidade:** esta edição de portfólio utiliza somente dados sintéticos. Nomes, protocolos, avaliações e atendimentos foram gerados artificialmente e não representam pessoas ou operações reais.
+---
 
-## Demonstração
+## Overview
 
-O dashboard público é distribuído pela **Vercel** a partir da branch `main`. O endereço
-de produção é informado no painel da Vercel depois da primeira implantação.
+This repository is automatically linked to your app on [enter.pro](https://enter.pro).  
+Every change you make in Enter will be reflected here — and any updates you push to this repo will sync back seamlessly.  
 
-A aplicação inicia preenchida com três competências fictícias. A competência mais recente contém **2.477 registros sintéticos**, permitindo navegar por um cenário próximo da escala analisada no projeto original.
+Enter.pro helps you **build, edit, and deploy full-stack web apps by prompting**.  
+Just describe what you want — Enter turns ideas into production-ready code.
 
-Na hospedagem pública, o ambiente funciona em modo somente leitura. Importações e alterações de feedback permanecem visíveis para demonstrar o fluxo completo, mas ficam bloqueadas para visitantes.
+---
 
-## Problema de negócio
+## Project URLs
 
-A apuração de uma campanha de desempenho dependia de várias regras aplicadas sobre arquivos mensais de atendimento: período válido, área responsável, duração, qualidade das avaliações, encerramentos automáticos e critérios de elegibilidade. Um processo manual tornava difícil explicar por que cada registro havia sido aceito ou excluído.
+**Live app:** https://<project-id>-latest.preview.enter.pro  
+**Edit & build in Enter:** https://enter.pro/project/<project-id>
 
-## Solução desenvolvida
 
-O sistema implementa um pipeline completo de dados:
+---
 
-1. Importação de arquivos CSV e Excel;
-2. Reconhecimento e padronização de colunas;
-3. Conversão e validação de datas e valores;
-4. Aplicação das regras de negócio por competência;
-5. Detecção de registros inválidos e encerramentos automáticos;
-6. Cálculo e normalização dos indicadores;
-7. Geração do ranking e validação da elegibilidade;
-8. Persistência do histórico em SQLite;
-9. Apresentação dos resultados em dashboard e relatórios executivos.
+## Continue building
 
-Cada exclusão preserva o motivo, a linha de origem e os campos necessários para auditoria. O reprocessamento substitui apenas a competência selecionada, evitando duplicidades no histórico.
+Keep developing your app directly in [Enter.pro](https://enter.pro/project/<project-id>).  
+Prompt new features, refine the UI, or connect integrations — all changes are versioned and synced automatically to GitHub.
 
-## Visões executivas
+---
 
-- **Visão do projeto:** descrição breve, fluxo de engenharia de dados e catálogo completo das regras e validações;
-- **Resumo gerencial:** resultado, risco e próxima decisão em uma única tela;
-- **Operação:** volume observado, TMA mediano/P90, CSAT, cobertura e exceções;
-- **Premiação:** regra oficial, teto efetivo, elegibilidade, Top 3 e memória de cálculo;
-- **Histórico:** evolução individual com representatividade das avaliações;
-- **Auditoria:** separação entre erros de dados, fora do escopo, exceções operacionais e encerramentos automáticos.
+## Local development
 
-## Interface e visualizações
-
-A **versão 4.0** adota uma interface gerencial direta, com tipografia única, hierarquia previsível, cartões claros e rótulos legíveis. A navegação acompanha a sequência de análise: entender o processo, ler o resultado, investigar os direcionadores e consultar o detalhe. O dashboard usa:
-
-- dot plot para posição individual em relação ao corte de 85 pontos;
-- ponte aditiva para explicar a formação da nota;
-- fotografias mensais quando mudanças de regra impedem uma tendência contínua;
-- linha horária para revelar o perfil da demanda;
-- tabelas somente quando o objetivo é conferência exata ou auditoria.
-
-## Indicadores apresentados
-
-- Volume de atendimentos válidos;
-- Tempo Médio de Atendimento (média, mediana e P90 na leitura operacional);
-- Horas totais absorvidas;
-- Avaliação média e cobertura das avaliações;
-- Aproveitamento e taxa de exclusão da base;
-- Pontuação por componente;
-- Nota consolidada, elegibilidade e Top 3;
-- Fechamentos mensais da equipe e de cada profissional, com mudança de regra explicitada;
-- Volume observado versus qualidade, sem inferir produtividade quando jornada e complexidade não estão disponíveis;
-- Concentração de volume e oportunidades de melhoria.
-
-## Funcionalidades
-
-- Resumo gerencial orientado a decisão;
-- Análise gerencial baseada em cálculos reproduzíveis e evidências da própria base;
-- Visão operacional independente da regra de premiação;
-- Ranking e memória de cálculo detalhada;
-- Histórico mensal e individual;
-- Auditoria dos registros aceitos e excluídos;
-- Análise dos encerramentos automáticos;
-- Exportação da auditoria para Excel;
-- Geração de apresentação PowerPoint no navegador;
-- Perfis de regras versionados por competência;
-- Modo público protegido e preenchido com dados sintéticos.
-
-## Bases analíticas
-
-A interface distingue três universos para evitar interpretações incorretas:
-
-1. **Base premiável:** registros que atendem a todos os critérios da campanha;
-2. **Base operacional observada:** base premiável mais casos acima do limite de duração;
-3. **Qualidade e escopo:** erros de preenchimento/coerência e exclusões legítimas da campanha são apresentados separadamente.
-
-Encerramentos automáticos permanecem identificados no volume e são retirados da leitura operacional de tempo. O volume é apresentado como observado; não equivale a produtividade por hora sem jornada e complexidade na fonte.
-
-## Tecnologias
-
-- **Python e Pandas:** ingestão, limpeza, validação e cálculo;
-- **SQLite:** histórico e rastreabilidade;
-- **HTML, CSS e JavaScript:** interface responsiva e visualizações;
-- **OpenPyXL e xlrd:** leitura e exportação de planilhas;
-- **PptxGenJS e JSZip:** geração do relatório PowerPoint;
-- **unittest:** validação das regras de negócio e das APIs;
-- **Flask e Vercel Functions:** camada WSGI da demonstração pública;
-- **Vercel:** hospedagem e implantação contínua a partir do GitHub.
-
-## Estrutura principal
-
-```text
-.
-├── app.py                    # entrada Flask/WSGI usada pela Vercel
-├── servidor_html.py          # servidor HTTP local e funções compartilhadas
-├── motor_premiacao.py        # regras, qualidade, KPIs e persistência
-├── dados_demonstracao.py     # geração determinística dos dados sintéticos
-├── dashboard.html            # estrutura da interface
-├── dashboard.css             # apresentação responsiva
-├── dashboard.js              # comportamento e visualizações
-├── powerpoint.js             # relatório executivo em PPTX
-├── package.json              # dependência usada no teste do PowerPoint
-├── vercel.json               # configuração da Vercel Function
-├── .python-version           # runtime Python da publicação
-├── .github/workflows/        # integração contínua no GitHub Actions
-└── test_*.py                 # testes automatizados
-```
-
-## Executando localmente
-
-Requer Python 3.11 ou superior.
+Prefer to work locally? You can clone this repo and start developing right away:
 
 ```bash
-python -m venv .venv
+# Step 1: Clone your project repository
+git clone <YOUR_GIT_URL>
+
+# Step 2: Navigate into the project folder
+cd <YOUR_PROJECT_NAME>
+
+# Step 3: Install all dependencies
+pnpm install
+
+# Step 4: Start the local development server
+pnpm dev
 ```
 
-No Windows:
+Push your commits — Enter.pro will automatically detect and sync your latest changes.
 
-```bash
-.venv\Scripts\activate
+---
+
+## i18n
+
+This template ships a minimal browser-side i18n baseline built on:
+
+- `i18next`
+- `react-i18next`
+- `i18next-http-backend`
+- `i18next-browser-languagedetector`
+
+### Source-of-truth files
+
+The template only owns three pieces of i18n data:
+
+- `i18n.config.json` — language manifest (`fallbackLng`, `languages[].{code,label,detect,dir}`)
+- `public/locales/{code}.json` — flat dotted-key translations, one file per language
+- `src/i18n/config.ts` + `src/i18n/util.ts` — runtime entry and pure helpers
+- `src/components/language-switcher.tsx` — neutral-themed UI sample
+
+### Runtime behavior
+
+- reads the manifest from `i18n.config.json`
+- loads translations from `public/locales/{code}.json` via `i18next-http-backend`
+- detects language from cookie, browser, then html tag; caches in the `i18next` cookie
+- normalizes unsupported languages to `fallbackLng` (no invalid values stored in cookies)
+- syncs `<html lang>` and `<html dir>` on init and on `languageChanged`
+- treats keys as flat strings: both `keySeparator` and `nsSeparator` are disabled
+
+### Using translations in components
+
+Import directly from `react-i18next`. No project-specific hook or cast is needed.
+
+```tsx
+import { useTranslation } from "react-i18next";
+
+const Title = () => {
+  const { t } = useTranslation();
+  return <h1>{t("home.hero.title")}</h1>;
+};
 ```
 
-No Linux ou macOS:
+For language switching, the `i18n` instance also comes from `useTranslation()`:
 
-```bash
-source .venv/bin/activate
+```tsx
+const { i18n } = useTranslation();
+void i18n.changeLanguage("zh-CN");
 ```
 
-Instale as dependências e inicie o servidor:
+`languageOptions`, `normalizeLanguage`, `getLanguageDirection`, and `fallbackLng` can be imported from `@/i18n/config` (re-exports from `util.ts`).
 
-```bash
-pip install -r requirements.txt
-python servidor_html.py
-```
+### Adding a language
 
-Acesse `http://localhost:8501`.
+1. Add an entry under `languages` in `i18n.config.json` with `code`, `label`, `detect`, `dir`.
+2. Create `public/locales/{code}.json` with the same key set as `public/locales/{fallbackLng}.json`.
+3. Translate values, preserving any `{{variables}}` and `<tag>...</tag>` structures.
 
-Para executar o fluxo operacional local, com importação habilitada, defina `PREMIACAO_DEMO=0` antes de iniciar. Arquivos reais e o banco local estão ignorados pelo Git.
+### Adding a translation key
 
-## Publicação na Vercel
+1. Add the key to `public/locales/{fallbackLng}.json` first.
+2. Add the same key to every other locale file with its translated value.
+3. Use it via `t("group.key")` in components.
 
-1. Importe este repositório do GitHub em um novo projeto da Vercel;
-2. Mantenha o diretório raiz e as configurações de build detectadas automaticamente;
-3. Faça a implantação sem cadastrar banco ou credenciais;
-4. Confirme a publicação acessando `/api/saude` no domínio criado.
+### Backend handoff (temporary in-repo files)
 
-A Vercel detecta `app.py` como aplicação Flask. A demonstração recria uma base
-sintética em `/tmp`, bloqueia requisições de escrita e não recebe arquivos reais.
-O histórico operacional permanece somente na versão local, no arquivo
-`historico_premiacao.db`.
+The following files are **temporary copies kept in the repo only until backend integration is complete**. The backend will eventually own validation, statistics, completion-rate dashboards, scan-for-new-strings, and auto-translate. After that integration lands, these files (and the corresponding `package.json` scripts) will be removed:
 
-## Testes
+- `scripts/check-i18n.mjs`, `scripts/scan-i18n.mjs`, `scripts/i18n-utils.mjs`, `scripts/i18n-source-usage.mjs`
+- `i18n.scan.json`
+- `reports/i18n/`
+- `docs/i18n-agent-spec.md`, `docs/i18n-contract.md`
+- `package.json` scripts: `i18n:check`, `i18n:scan`, and the `check` aggregate
 
-```bash
-python -m unittest discover -v
-```
+Until removed, you can still run `pnpm i18n:check` and `pnpm i18n:scan` locally; the canonical computation is the backend's responsibility.
 
-Os testes cobrem filtros, perfis históricos, cálculo dos indicadores, Top 3, migração da meta, reprocessamento, endpoints, auditoria e exportação.
+---
 
-Cada envio para a branch `main` também executa essa suíte automaticamente no GitHub Actions.
+## Tech stack
 
-Para validar também a geração do PowerPoint localmente:
+This project uses:
 
-```bash
-npm install
-npm run test:pptx
-```
+- Vite
+- TypeScript
+- React
+- shadcn-ui
+- Tailwind CSS
 
-## Decisões de engenharia
+---
 
-- A camada de cálculo foi separada da antiga interface desktop para permitir execução em servidores Linux sem dependências gráficas.
-- O dashboard usa JavaScript nativo e gráficos SVG, reduzindo dependências no navegador.
-- O modo demonstrativo bloqueia alterações no servidor e recria uma base sintética determinística.
-- As análises gerenciais são calculadas por regras explícitas e podem ser conferidas na memória de cálculo.
+## Deployment
 
-## Autor
+To deploy, open your Enter.pro project and click "Publish"
 
-**Pedro Aurélio Gonçalves Ferreira**  
-Projeto de portfólio em Análise de Dados, Business Intelligence e automação de processos.
+Your app will automatically build and go live at your production URL.
+
+---
+
+✨ Keep prompting, keep building — Enter.pro handles the rest.
