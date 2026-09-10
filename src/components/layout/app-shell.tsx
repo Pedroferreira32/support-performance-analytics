@@ -47,8 +47,8 @@ export function AppShell({ breadcrumb, title, children }: AppShellProps) {
               <Activity className="size-4" strokeWidth={2.5} />
             </span>
             <div className="leading-tight">
-              <p className="mono text-sm font-bold tracking-tight">
-                PERF<span className="text-primary">/SUPORTE</span>
+              <p className="text-sm font-bold tracking-tight">
+                Performance do Suporte
               </p>
               <p className="mono text-[9px] uppercase tracking-[0.2em] text-muted-foreground">
                 Validação e premiação
