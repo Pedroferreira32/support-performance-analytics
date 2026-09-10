@@ -2,9 +2,9 @@ import { Equal, Plus } from "lucide-react";
 
 import { AppShell } from "@/components/layout/app-shell";
 import { type IconName } from "@/components/ui-ext/app-icon";
-import { HourlyDistribution } from "@/components/ui-ext/hourly-distribution";
 import { KpiCard } from "@/components/ui-ext/kpi-card";
 import { SectionCard } from "@/components/ui-ext/section-card";
+import { WeeklyHeatmap } from "@/components/ui-ext/weekly-heatmap";
 import {
   Table,
   TableBody,
@@ -124,11 +124,11 @@ export default function OperacaoPage() {
         {/* Distribuição horária + comparação mensal */}
         <div className="grid gap-5 lg:grid-cols-2">
           <SectionCard
-            eyebrow="Distribuição horária"
-            title="Entradas por hora"
-            description="Atendimentos válidos pelo horário de início."
+            eyebrow="Mapa de calor"
+            title="Demanda por hora e dia da semana"
+            description="Intensidade de atendimentos por faixa de início, de segunda a sábado."
           >
-            <HourlyDistribution />
+            <WeeklyHeatmap />
           </SectionCard>
 
           <SectionCard

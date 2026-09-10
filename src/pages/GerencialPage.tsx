@@ -13,11 +13,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { AnimatedValue } from "@/components/ui-ext/animated-value";
 import { Delta } from "@/components/ui-ext/delta";
 import { MonthlyComparison } from "@/components/ui-ext/monthly-comparison";
 import { ProgressRatio } from "@/components/ui-ext/progress-ratio";
+import { RadarComposition } from "@/components/ui-ext/radar-composition";
 import { RankingChart } from "@/components/ui-ext/ranking-chart";
 import { SectionCard } from "@/components/ui-ext/section-card";
+import { Sparkline } from "@/components/ui-ext/sparkline";
 import { StatusBadge } from "@/components/ui-ext/status-badge";
 import {
   actionPlan,
@@ -53,16 +56,23 @@ export default function GerencialPage() {
 
           <div className="mt-5 grid grid-cols-2 gap-x-6 gap-y-5 sm:grid-cols-3 lg:grid-cols-6 lg:divide-x lg:divide-border/60">
             {resultado.kpis.map((kpi) => (
-              <div key={kpi.label} className="min-w-0">
+              <div key={kpi.label} className="flex min-w-0 flex-col">
                 <p className="truncate text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                   {kpi.label}
                 </p>
-                <p className="tnum mt-1.5 text-2xl font-bold tracking-tight sm:text-3xl">
-                  {kpi.value}
-                </p>
+                <AnimatedValue
+                  value={kpi.value}
+                  className="mt-1.5 text-2xl font-bold tracking-tight sm:text-3xl"
+                />
                 <p className="mt-1 truncate text-[11px] text-muted-foreground">
                   {kpi.hint}
                 </p>
+                {kpi.trend && kpi.trend.length >= 2 && (
+                  <Sparkline
+                    data={kpi.trend}
+                    className="mt-2 h-6 w-full max-w-[96px] text-muted-foreground/70"
+                  />
+                )}
               </div>
             ))}
           </div>
@@ -127,7 +137,8 @@ export default function GerencialPage() {
             title="Aproveitamento médio por critério"
             description="Pontos obtidos em relação ao peso máximo; critérios fixos aparecem identificados."
           >
-            <div className="space-y-6">
+            <RadarComposition />
+            <div className="mt-6 space-y-6">
               {scoreComposition.map((c) => (
                 <ProgressRatio
                   key={c.label}

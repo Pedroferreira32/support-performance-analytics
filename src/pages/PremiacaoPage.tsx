@@ -3,8 +3,10 @@ import { toast } from "sonner";
 
 import { AppShell } from "@/components/layout/app-shell";
 import { type IconName } from "@/components/ui-ext/app-icon";
+import { GapChart } from "@/components/ui-ext/gap-chart";
 import { KpiCard } from "@/components/ui-ext/kpi-card";
 import { RankingChart } from "@/components/ui-ext/ranking-chart";
+import { ScoreGauge } from "@/components/ui-ext/score-gauge";
 import { SectionCard } from "@/components/ui-ext/section-card";
 import { StatusBadge } from "@/components/ui-ext/status-badge";
 import { situacaoTone } from "@/lib/status-tones";
@@ -156,21 +158,13 @@ export default function PremiacaoPage() {
             title="Marina Costa"
             className="h-fit"
           >
-            <div className="rounded-xl border bg-gradient-to-br from-primary-soft/70 to-card p-5">
-              <p className="text-[11px] font-bold uppercase tracking-wide text-primary">
-                Nota da liderança
-              </p>
-              <p className="tnum mt-2 text-4xl font-bold text-primary">
-                91,09
-              </p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                de 91,50 pontos possíveis
-              </p>
-              <div className="mt-4 rounded-lg bg-card px-3 py-2.5 text-xs text-muted-foreground">
-                A nota ficou{" "}
-                <span className="tnum font-bold text-foreground">0,41</span>{" "}
-                ponto(s) abaixo do teto.
-              </div>
+            <div className="rounded-xl border bg-gradient-to-br from-primary-soft/60 to-card p-5">
+              <ScoreGauge
+                value={91.09}
+                max={91.5}
+                label="Índice final"
+                sublabel="A nota ficou 0,41 ponto(s) abaixo do teto"
+              />
             </div>
             <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
               Cálculo reproduzível e memória de cálculo disponível para
@@ -178,6 +172,15 @@ export default function PremiacaoPage() {
             </p>
           </SectionCard>
         </div>
+
+        {/* Distância até a meta */}
+        <SectionCard
+          eyebrow="Distância até a meta"
+          title="Posição em relação aos 85 pontos"
+          description="As barras partem da meta: para a direita quem superou os 85, para a esquerda quem precisa recuperar pontos."
+        >
+          <GapChart />
+        </SectionCard>
 
         {/* Memória de cálculo */}
         <SectionCard
