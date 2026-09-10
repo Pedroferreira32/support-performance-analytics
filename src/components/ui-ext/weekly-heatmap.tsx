@@ -14,7 +14,7 @@ export function WeeklyHeatmap() {
         {heatDayKeys.map((d) => (
           <div
             key={d}
-            className="text-center text-[10px] font-semibold text-muted-foreground"
+            className="mono text-center text-[10px] font-semibold text-muted-foreground"
           >
             {heatDayLabels[d]}
           </div>
@@ -22,7 +22,7 @@ export function WeeklyHeatmap() {
 
         {weeklyHeatmap.map((row) => (
           <Fragment key={row.hora}>
-            <div className="flex items-center justify-end pr-1 text-[10px] font-medium text-muted-foreground">
+            <div className="mono flex items-center justify-end pr-1 text-[10px] font-medium text-muted-foreground">
               {row.hora}
             </div>
             {heatDayKeys.map((d) => {
@@ -43,7 +43,7 @@ export function WeeklyHeatmap() {
         ))}
       </div>
 
-      <div className="mt-3 flex items-center gap-2 text-[10px] text-muted-foreground">
+      <div className="mono mt-3 flex items-center gap-2 text-[10px] text-muted-foreground">
         <span>Menor demanda</span>
         <div className="flex gap-0.5">
           {[0, 0.2, 0.4, 0.6, 0.8, 1].map((a) => (

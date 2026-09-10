@@ -42,8 +42,8 @@ export function ScoreGauge({ value, max, label, sublabel }: ScoreGaugeProps) {
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="tnum text-3xl font-bold">{fmtBR(value, 2)}</span>
-          <span className="text-[11px] text-muted-foreground">
+          <span className="mono text-3xl font-bold">{fmtBR(value, 2)}</span>
+          <span className="mono text-[11px] text-muted-foreground">
             de {fmtBR(max, 2)}
           </span>
         </div>

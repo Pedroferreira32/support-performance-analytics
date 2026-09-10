@@ -25,37 +25,35 @@ export function SectionCard({
   return (
     <Card
       className={cn(
-        "overflow-hidden border-border/60 bg-card/50 shadow-none",
+        "overflow-hidden rounded-sm border-border/70 bg-card/40 shadow-none",
         className
       )}
     >
-      <div className="flex flex-col gap-3 px-6 pt-6 sm:flex-row sm:items-start sm:justify-between">
-        <div className="min-w-0">
-          <div className="flex items-start gap-2.5">
-            <span
-              aria-hidden
-              className="mt-1 h-4 w-1 shrink-0 rounded-full bg-gradient-to-b from-cyan-400 to-blue-600"
-            />
-            <div className="min-w-0">
-              {eyebrow && (
-                <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground/70">
-                  {eyebrow}
-                </p>
-              )}
-              <h2 className="mt-0.5 text-base font-bold tracking-tight">
-                {title}
-              </h2>
-            </div>
+      <div className="flex items-start justify-between gap-3 border-b border-border/60 bg-card/30 px-4 py-3">
+        <div className="flex min-w-0 items-start gap-2.5">
+          <span
+            aria-hidden
+            className="mt-0.5 h-3.5 w-1 shrink-0 rounded-[1px] bg-primary"
+          />
+          <div className="min-w-0">
+            {eyebrow && (
+              <p className="mono text-[9px] uppercase tracking-[0.2em] text-muted-foreground">
+                {eyebrow}
+              </p>
+            )}
+            <h2 className="text-sm font-bold tracking-tight">{title}</h2>
           </div>
-          {description && (
-            <p className="mt-2 max-w-3xl text-[13px] leading-relaxed text-muted-foreground">
-              {description}
-            </p>
-          )}
         </div>
         {action && <div className="shrink-0">{action}</div>}
       </div>
-      <CardContent className={cn("p-6", contentClassName)}>
+
+      {description && (
+        <p className="border-b border-border/40 px-4 py-2 text-[12px] leading-relaxed text-muted-foreground">
+          {description}
+        </p>
+      )}
+
+      <CardContent className={cn("p-4 sm:p-5", contentClassName)}>
         {children}
       </CardContent>
     </Card>

@@ -159,8 +159,8 @@ export default function HistoricoPage() {
                       <span
                         className={
                           m.situacao === "ATUAL"
-                            ? "rounded-full bg-primary-soft px-2 py-0.5 text-[10px] font-bold text-primary"
-                            : "rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold text-muted-foreground"
+                            ? "rounded-sm bg-primary-soft px-2 py-0.5 text-[10px] font-bold text-primary"
+                            : "rounded-sm bg-muted px-2 py-0.5 text-[10px] font-bold text-muted-foreground"
                         }
                       >
                         {m.situacao}

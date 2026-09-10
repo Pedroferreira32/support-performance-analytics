@@ -63,7 +63,7 @@ export default function ProjectPage() {
             {engineeringSteps.map((s) => (
               <div
                 key={s.numero}
-                className="relative rounded-xl border bg-muted/40 p-4 transition-shadow hover:shadow-elevated"
+                className="relative rounded-sm border bg-muted/40 p-4 transition-shadow hover:shadow-elevated"
               >
                 <span className="tnum text-2xl font-bold text-primary/40">
                   {s.numero}
@@ -94,7 +94,7 @@ export default function ProjectPage() {
             ))}
           </dl>
 
-          <div className="mt-6 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl bg-primary-soft px-4 py-3.5">
+          <div className="mt-6 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-sm bg-primary-soft px-4 py-3.5">
             <span className="text-sm">
               <span className="font-semibold">Base fixa </span>
               <span className="tnum font-bold">31,50</span>
@@ -134,7 +134,7 @@ export default function ProjectPage() {
             {validationGroups.map((g) => (
               <div
                 key={g.titulo}
-                className="rounded-xl border bg-muted/40 p-5"
+                className="rounded-sm border bg-muted/40 p-5"
               >
                 <h3 className="text-sm font-bold">{g.titulo}</h3>
                 <ul className="mt-3 space-y-2">

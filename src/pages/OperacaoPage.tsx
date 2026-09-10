@@ -38,7 +38,7 @@ function ReconBox({
   return (
     <div
       className={cn(
-        "flex-1 rounded-xl border p-4 text-center",
+        "flex-1 rounded-sm border p-4 text-center",
         highlight ? "border-primary/40 bg-primary-soft/50 ring-1 ring-primary/20" : "bg-muted/40"
       )}
     >
@@ -174,7 +174,7 @@ export default function OperacaoPage() {
                       <TableCell className="pr-6">
                         <span
                           className={cn(
-                            "rounded-full px-2 py-0.5 text-[10px] font-bold",
+                            "rounded-sm px-2 py-0.5 text-[10px] font-bold",
                             m.validade === "Atual"
                               ? "bg-primary-soft text-primary"
                               : m.validade === "Validado"

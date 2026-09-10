@@ -44,7 +44,7 @@ export default function PremiacaoPage() {
           title="Composição da nota final"
           description="O perfil da competência define os pesos e identifica quais parcelas são fixas ou comparativas."
         >
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl bg-primary-soft px-4 py-3.5">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-sm bg-primary-soft px-4 py-3.5">
             <span className="text-sm">
               <span className="font-semibold">Base fixa </span>
               <span className="tnum font-bold">31,50</span>
@@ -72,7 +72,7 @@ export default function PremiacaoPage() {
             <span className="text-sm font-bold">
               Teto efetivo <span className="tnum">91,50</span>
             </span>
-            <span className="ml-1 rounded-full bg-warning-soft px-2 py-0.5 text-[11px] font-bold text-warning-foreground">
+            <span className="ml-1 rounded-sm bg-warning-soft px-2 py-0.5 mono text-[11px] font-bold text-warning-foreground">
               meta 85,00
             </span>
           </div>
@@ -118,7 +118,7 @@ export default function PremiacaoPage() {
                 <div key={b.label}>
                   <div
                     className={cn(
-                      "flex items-center justify-between rounded-xl border p-4",
+                      "flex items-center justify-between rounded-sm border p-4",
                       b.color === "primary" ? "bg-primary-soft/50" : "bg-muted/40"
                     )}
                   >
@@ -141,7 +141,7 @@ export default function PremiacaoPage() {
                 </div>
               ))}
               <Equal className="mx-auto my-1 size-4 text-muted-foreground" />
-              <div className="flex items-center justify-between rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 p-4 text-white shadow-glow">
+              <div className="flex items-center justify-between rounded-sm bg-gradient-to-r from-cyan-500 to-blue-600 p-4 text-primary-foreground shadow-glow">
                 <div>
                   <p className="text-sm font-bold">{leaderTotal.label}</p>
                   <p className="text-xs opacity-80">{leaderTotal.hint}</p>
@@ -158,7 +158,7 @@ export default function PremiacaoPage() {
             title="Marina Costa"
             className="h-fit"
           >
-            <div className="rounded-xl border bg-gradient-to-br from-primary-soft/60 to-card p-5">
+            <div className="rounded-sm border bg-gradient-to-br from-primary-soft/60 to-card p-5">
               <ScoreGauge
                 value={91.09}
                 max={91.5}

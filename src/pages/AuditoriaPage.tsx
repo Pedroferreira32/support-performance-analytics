@@ -65,7 +65,7 @@ export default function AuditoriaPage() {
             {rastreabilidade.map((r) => (
               <div
                 key={r.titulo}
-                className="rounded-xl border bg-muted/40 p-4 transition-shadow hover:shadow-elevated"
+                className="rounded-sm border bg-muted/40 p-4 transition-shadow hover:shadow-elevated"
               >
                 <p className="text-sm font-bold">{r.titulo}</p>
                 <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
@@ -126,9 +126,9 @@ export default function AuditoriaPage() {
                     </TableCell>
                     <TableCell className="tnum">{l.quantidade}</TableCell>
                     <TableCell>
-                      <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+                      <div className="h-2 w-full overflow-hidden rounded-[2px] bg-muted">
                         <div
-                          className="h-full rounded-full bg-primary"
+                          className="h-full rounded-[2px] bg-primary"
                           style={{ width: l.percentual }}
                         />
                       </div>

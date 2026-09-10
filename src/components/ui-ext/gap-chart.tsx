@@ -22,10 +22,10 @@ export function GapChart() {
           return (
             <div
               key={e.id}
-              className="flex items-center gap-3 rounded-lg px-2 py-1.5 transition-colors hover:bg-muted/40"
+              className="flex items-center gap-3 rounded-sm px-2 py-1.5 transition-colors hover:bg-muted/40"
             >
               <div className="flex w-40 shrink-0 items-center gap-2 pr-3">
-                <span className="tnum text-[11px] font-bold text-muted-foreground">
+                <span className="mono text-[11px] font-bold text-muted-foreground">
                   {e.rank}º
                 </span>
                 <span className="truncate text-sm font-medium">{e.name}</span>
@@ -33,12 +33,10 @@ export function GapChart() {
 
               <div className="relative h-6 flex-1">
                 <div className="absolute left-0 right-0 top-1/2 h-px -translate-y-1/2 bg-border/60" />
-                {/* linha da meta */}
                 <div
-                  className="absolute inset-y-0 w-0 border-l-2 border-dashed border-amber-500/70"
+                  className="absolute inset-y-0 w-0 border-l border-dashed border-amber-400/70"
                   style={{ left: `${center}%` }}
                 />
-                {/* barra divergente a partir da meta */}
                 <div
                   className="absolute inset-y-0 flex items-center"
                   style={{
@@ -48,10 +46,10 @@ export function GapChart() {
                 >
                   <div
                     className={cn(
-                      "h-3.5 w-full rounded-full",
+                      "h-3.5 w-full rounded-[2px]",
                       acima
                         ? "bg-gradient-to-r from-cyan-400 to-blue-500"
-                        : "bg-rose-500/50"
+                        : "bg-rose-400/50"
                     )}
                   />
                 </div>
@@ -60,8 +58,8 @@ export function GapChart() {
               <div className="w-16 shrink-0 text-right">
                 <span
                   className={cn(
-                    "tnum text-sm font-bold",
-                    !acima && "text-rose-600 dark:text-rose-400"
+                    "mono text-sm font-bold",
+                    !acima && "text-rose-300"
                   )}
                 >
                   {fmtBR(e.note, 2)}
@@ -72,18 +70,18 @@ export function GapChart() {
         })}
       </div>
 
-      <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-border/60 pt-3 text-[11px] text-muted-foreground">
+      <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-border/60 pt-3 mono text-[10px] uppercase tracking-wider text-muted-foreground">
         <span className="flex items-center gap-1.5">
-          <span className="h-2 w-4 rounded-full bg-gradient-to-r from-cyan-400 to-blue-500" />
+          <span className="h-2 w-4 rounded-[2px] bg-gradient-to-r from-cyan-400 to-blue-500" />
           Acima da meta
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="h-2 w-4 rounded-full bg-rose-500/50" />
+          <span className="h-2 w-4 rounded-[2px] bg-rose-400/50" />
           Abaixo da meta
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="h-3 border-l-2 border-dashed border-amber-500/70" />
-          Meta de 85 pontos
+          <span className="h-3 border-l border-dashed border-amber-400/70" />
+          Meta 85
         </span>
       </div>
     </div>

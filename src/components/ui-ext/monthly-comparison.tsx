@@ -19,14 +19,14 @@ export function MonthlyComparison() {
             key={m.competencia}
             className="flex h-full flex-1 flex-col items-center justify-end gap-2"
           >
-            <span className="tnum text-lg font-bold">
+            <span className="mono text-lg font-bold">
               {fmtBR(m.indice, 2)}
             </span>
             <div
               className={cn(
-                "w-full max-w-14 rounded-t-md",
+                "w-full max-w-14 rounded-t-[2px]",
                 m.status === "ATUAL"
-                  ? "bg-gradient-to-t from-blue-600 to-cyan-400 shadow-glow"
+                  ? "bg-gradient-to-t from-blue-600 to-cyan-400"
                   : "bg-slate-600/50"
               )}
               style={{ height: `${pct(m.indice) * 0.92}px` }}
@@ -38,18 +38,16 @@ export function MonthlyComparison() {
       <div className="mt-2 grid grid-cols-3 gap-4 border-t border-border/60 pt-2.5">
         {monthlyClosures.map((m) => (
           <div key={m.competencia} className="text-center">
-            <p className="tnum text-xs font-bold">{m.competencia}</p>
+            <p className="mono text-xs font-bold">{m.competencia}</p>
             <p
               className={cn(
-                "text-[10px] font-semibold",
-                m.status === "ATUAL"
-                  ? "text-blue-600 dark:text-cyan-300"
-                  : "text-muted-foreground"
+                "mono text-[10px] font-semibold",
+                m.status === "ATUAL" ? "text-cyan-300" : "text-muted-foreground"
               )}
             >
               {m.status === "ATUAL" ? "ATUAL" : "FECHAMENTO"}
             </p>
-            <p className="tnum mt-0.5 text-[10px] text-muted-foreground">
+            <p className="mono mt-0.5 text-[10px] text-muted-foreground">
               {m.elegiveis} · {m.premiados} premiados
             </p>
           </div>

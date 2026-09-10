@@ -31,7 +31,7 @@ export function AnimatedValue({
   });
 
   return (
-    <span className={cn("tnum", className)}>
+    <span className={cn("mono", className)}>
       {parsed.prefix}
       {text}
       {parsed.suffix}

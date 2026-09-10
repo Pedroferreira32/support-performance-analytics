@@ -1,6 +1,6 @@
-import { useEffect, useState, type ReactNode } from "react";
-import { CalendarDays, FileDown, Menu, Moon, Presentation, Sun } from "lucide-react";
-import { useTheme } from "next-themes";
+import type { ReactNode } from "react";
+import { Activity, CalendarDays, Download, FileDown, Presentation, Upload } from "lucide-react";
+import { NavLink } from "react-router-dom";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -11,14 +11,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetTitle,
-} from "@/components/ui/sheet";
 import { competencia } from "@/data/support-data";
-import { SidebarContent } from "./app-sidebar";
+import { cn } from "@/lib/utils";
+
+const paineis = [
+  { to: "/projeto", label: "Projeto" },
+  { to: "/gerencial", label: "Gerencial" },
+  { to: "/operacao", label: "Operação" },
+  { to: "/premiacao", label: "Premiação" },
+  { to: "/historico", label: "Histórico" },
+  { to: "/auditoria", label: "Auditoria" },
+];
 
 interface AppShellProps {
   breadcrumb: string;
@@ -27,12 +30,6 @@ interface AppShellProps {
 }
 
 export function AppShell({ breadcrumb, title, children }: AppShellProps) {
-  const [open, setOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
-  const { resolvedTheme, setTheme } = useTheme();
-
-  useEffect(() => setMounted(true), []);
-
   const demoNotice = () =>
     toast("Disponível na versão completa", {
       description:
@@ -41,131 +38,130 @@ export function AppShell({ breadcrumb, title, children }: AppShellProps) {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Sidebar desktop */}
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 border-r border-sidebar-border bg-sidebar lg:block">
-        <SidebarContent />
-      </aside>
-
-      {/* Sidebar mobile */}
-      <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent side="left" className="w-72 border-r border-sidebar-border p-0">
-          <SheetTitle className="sr-only">Menu de navegação</SheetTitle>
-          <SheetDescription className="sr-only">
-            Navegação principal do dashboard
-          </SheetDescription>
-          <SidebarContent onNavigate={() => setOpen(false)} />
-        </SheetContent>
-      </Sheet>
-
-      <div className="flex min-h-screen flex-col lg:pl-64">
-        {/* Header */}
-        <header className="sticky top-0 z-20 border-b border-border/60 bg-background/75 backdrop-blur-xl">
-          <div className="flex items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
-            <div className="flex min-w-0 items-center gap-3">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="lg:hidden"
-                aria-label="Abrir menu"
-                onClick={() => setOpen(true)}
-              >
-                <Menu className="size-5" />
-              </Button>
-              <div className="min-w-0">
-                <p className="truncate text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                  {breadcrumb}
-                </p>
-                <h1 className="truncate text-lg font-bold tracking-tight">
-                  {title}
-                </h1>
-              </div>
+      {/* Cabeçalho com navegação no topo */}
+      <header className="sticky top-0 z-30 border-b border-border/70 bg-background/85 backdrop-blur-xl">
+        {/* Linha 1 — identidade e ações */}
+        <div className="flex items-center justify-between gap-3 border-b border-border/50 px-4 py-2 sm:px-6">
+          <div className="flex items-center gap-2.5">
+            <span className="grid size-7 shrink-0 place-items-center rounded-sm bg-primary text-primary-foreground">
+              <Activity className="size-4" strokeWidth={2.5} />
+            </span>
+            <div className="leading-tight">
+              <p className="mono text-sm font-bold tracking-tight">
+                PERF<span className="text-primary">/SUPORTE</span>
+              </p>
+              <p className="mono text-[9px] uppercase tracking-[0.2em] text-muted-foreground">
+                Validação e premiação
+              </p>
             </div>
+          </div>
 
-            <div className="flex shrink-0 items-center gap-2">
-              <div className="hidden sm:block">
-                <Select defaultValue={competencia.label}>
-                  <SelectTrigger className="h-9 gap-2 border-border/70 bg-card/60 pr-2 text-xs">
-                    <CalendarDays className="size-4 text-muted-foreground" />
-                    <SelectValue placeholder="Competência" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="08/2026">Competência 08/2026</SelectItem>
-                    <SelectItem value="07/2026">Competência 07/2026</SelectItem>
-                    <SelectItem value="06/2026">Competência 06/2026</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                className="hidden border-border/70 bg-card/60 text-muted-foreground hover:text-foreground md:inline-flex"
-                onClick={demoNotice}
-              >
-                <FileDown className="size-4" />
-                Exportar Excel
-              </Button>
-              <Button
-                size="sm"
-                className="hidden bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 md:inline-flex"
-                onClick={demoNotice}
-              >
-                <Presentation className="size-4" />
-                PowerPoint
-              </Button>
-              <Button
-                variant="outline"
-                size="icon"
-                className="size-9 shrink-0 border-border/70 bg-card/60 text-muted-foreground hover:text-foreground"
-                onClick={() =>
-                  setTheme(resolvedTheme === "dark" ? "light" : "dark")
+          <div className="flex shrink-0 items-center gap-2">
+            <Select defaultValue={competencia.label}>
+              <SelectTrigger className="h-8 gap-2 border-border/70 bg-card/60 px-2 mono text-[11px]">
+                <CalendarDays className="size-3.5 text-muted-foreground" />
+                <SelectValue placeholder="Competência" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="08/2026">08/2026</SelectItem>
+                <SelectItem value="07/2026">07/2026</SelectItem>
+                <SelectItem value="06/2026">06/2026</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button
+              variant="outline"
+              size="sm"
+              className="hidden h-8 border-border/70 bg-card/60 px-2.5 mono text-[11px] text-muted-foreground hover:text-foreground md:inline-flex"
+              onClick={demoNotice}
+            >
+              <FileDown className="size-3.5" />
+              Excel
+            </Button>
+            <Button
+              size="sm"
+              className="hidden h-8 bg-primary px-2.5 mono text-[11px] font-semibold text-primary-foreground hover:bg-primary/90 md:inline-flex"
+              onClick={demoNotice}
+            >
+              <Presentation className="size-3.5" />
+              PPT
+            </Button>
+            <span className="mono hidden text-[11px] text-muted-foreground lg:block">
+              09/09/26
+            </span>
+          </div>
+        </div>
+
+        {/* Linha 2 — navegação */}
+        <nav className="flex items-center justify-between gap-4 overflow-x-auto px-4 sm:px-6">
+          <div className="flex shrink-0 items-center gap-1">
+            {paineis.map((p) => (
+              <NavLink
+                key={p.to}
+                to={p.to}
+                className={({ isActive }) =>
+                  cn(
+                    "border-b-2 px-3 py-2.5 mono text-[11px] font-semibold uppercase tracking-[0.14em] transition-colors",
+                    isActive
+                      ? "border-primary text-primary"
+                      : "border-transparent text-muted-foreground hover:text-foreground"
+                  )
                 }
-                aria-label="Alternar tema"
               >
-                {mounted && resolvedTheme === "dark" ? (
-                  <Sun className="size-4" />
-                ) : (
-                  <Moon className="size-4" />
-                )}
-              </Button>
-              <span className="hidden text-xs text-muted-foreground xl:block">
-                09 de set. de 2026
-              </span>
-            </div>
+                {p.label}
+              </NavLink>
+            ))}
           </div>
-        </header>
-
-        {/* Conteúdo */}
-        <main className="flex-1 bg-[radial-gradient(1100px_380px_at_50%_-120px,rgba(56,189,248,0.07),transparent)] px-4 py-6 sm:px-6 lg:px-8">
-          <div className="mx-auto w-full max-w-6xl">
-            {/* Faixa de demonstração */}
-            <div className="mb-5 rounded-xl border border-border/60 bg-card/50 px-4 py-3">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="rounded-full border border-cyan-600/25 bg-cyan-600/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-cyan-700 dark:border-cyan-400/30 dark:bg-cyan-400/10 dark:text-cyan-300">
-                  Demonstração
-                </span>
-                <p className="text-xs text-muted-foreground">
-                  Dados sintéticos e navegação pública em modo somente leitura.
-                </p>
-              </div>
-              <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
-                <span className="font-semibold text-foreground">
-                  Competência {competencia.label}
-                </span>
-                <span aria-hidden>·</span>
-                <span>Fonte: {competencia.fonte}</span>
-                <span aria-hidden>·</span>
-                <span>Comparação: {competencia.anterior}</span>
-                <span aria-hidden>·</span>
-                <span>Atualizado em {competencia.atualizadoEm}</span>
-                <span aria-hidden>·</span>
-                <span>{competencia.regra}</span>
-              </div>
-            </div>
-
-            {children}
+          <div className="hidden shrink-0 items-center gap-1 md:flex">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 px-2 mono text-[11px] uppercase tracking-wider text-muted-foreground hover:text-foreground"
+              onClick={demoNotice}
+            >
+              <Upload className="size-3.5" />
+              Atualizar base
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 px-2 mono text-[11px] uppercase tracking-wider text-muted-foreground hover:text-foreground"
+              onClick={demoNotice}
+            >
+              <Download className="size-3.5" />
+              Relatório
+            </Button>
           </div>
-        </main>
-      </div>
+        </nav>
+      </header>
+
+      {/* Conteúdo */}
+      <main className="bg-grid px-4 py-6 sm:px-6 lg:px-8">
+        <div className="mx-auto w-full max-w-6xl">
+          {/* Faixa de demonstração */}
+          <div className="mb-5 flex flex-wrap items-center gap-x-2 gap-y-1 rounded-sm border border-border/70 bg-card/50 px-3 py-2 mono text-[11px] text-muted-foreground">
+            <span className="rounded-sm bg-success/15 px-1.5 py-0.5 font-bold text-success">
+              DEMO
+            </span>
+            <span>Competência {competencia.label}</span>
+            <span aria-hidden>·</span>
+            <span>{competencia.fonte}</span>
+            <span aria-hidden>·</span>
+            <span>vs {competencia.anterior}</span>
+            <span aria-hidden>·</span>
+            <span className="hidden sm:inline">{competencia.regra}</span>
+          </div>
+
+          {/* Cabeçalho da página */}
+          <div className="mb-5">
+            <p className="mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
+              {breadcrumb}
+            </p>
+            <h1 className="mt-1 text-xl font-bold tracking-tight">{title}</h1>
+          </div>
+
+          {children}
+        </div>
+      </main>
     </div>
   );
 }

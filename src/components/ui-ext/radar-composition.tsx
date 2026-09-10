@@ -29,7 +29,11 @@ export function RadarComposition() {
           <PolarGrid stroke="hsl(var(--border))" />
           <PolarAngleAxis
             dataKey="criterio"
-            tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
+            tick={{
+              fontSize: 10,
+              fontFamily: "'JetBrains Mono', monospace",
+              fill: "hsl(var(--muted-foreground))",
+            }}
           />
           <Radar
             dataKey="pct"
