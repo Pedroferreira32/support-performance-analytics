@@ -175,12 +175,12 @@ export const resultado = {
   descricao:
     "3 profissionais ocupam as posições premiadas e 3 ficaram abaixo de 85. O índice médio fechou em 85,36 de 91,50 possíveis; Quantidade é a principal alavanca observada.",
   kpis: [
-    { label: "Nota média", value: "85,36", hint: "teto efetivo 91,50", icon: "gauge" },
-    { label: "Mediana", value: "86,08", hint: "centro das notas", icon: "medal" },
-    { label: "Elegíveis", value: "4", hint: "nota a partir de 85", icon: "check" },
-    { label: "Premiados", value: "3", hint: "3 de 4 elegíveis", icon: "trophy" },
+    { label: "Nota média", value: "85,36", hint: "teto efetivo 91,50", icon: "gauge", trend: [87.52, 85.71, 85.36] },
+    { label: "Mediana", value: "86,08", hint: "centro das notas", icon: "medal", trend: [86.54, 86.16, 86.08] },
+    { label: "Elegíveis", value: "4", hint: "nota a partir de 85", icon: "check", trend: [5, 4, 4] },
+    { label: "Premiados", value: "3", hint: "3 de 4 elegíveis", icon: "trophy", trend: [3, 3, 3] },
     { label: "Base validada", value: "94,9%", hint: "5,1% excluída da base", icon: "shield" },
-    { label: "Cobertura CSAT", value: "88,5%", hint: "média ponderada 4,55", icon: "star" },
+    { label: "Cobertura CSAT", value: "88,5%", hint: "média ponderada 4,55", icon: "star", trend: [88.1, 88.5] },
   ],
 };
 
@@ -497,7 +497,7 @@ export const engineeringSteps = [
   {
     numero: "05",
     titulo: "Persistência",
-    descricao: "Gravação no SQLite sem duplicar competências reprocessadas.",
+    descricao: "Histórico comprimido no navegador, substituindo a competência reprocessada sem duplicidade.",
   },
 ];
 
@@ -539,6 +539,54 @@ export const hourlyDistribution = [
   { hora: "18h", total: 150 },
   { hora: "19h", total: 90 },
 ];
+
+export const heatDayKeys = ["seg", "ter", "qua", "qui", "sex", "sab"] as const;
+
+export const heatDayLabels: Record<string, string> = {
+  seg: "Seg",
+  ter: "Ter",
+  qua: "Qua",
+  qui: "Qui",
+  sex: "Sex",
+  sab: "Sáb",
+};
+
+export interface WeeklyHeatRow {
+  hora: string;
+  seg: number;
+  ter: number;
+  qua: number;
+  qui: number;
+  sex: number;
+  sab: number;
+}
+
+// Matriz sintética dia × hora que respeita os totais por hora da base.
+const dayWeights = [0.16, 0.17, 0.18, 0.17, 0.16, 0.16];
+
+export const weeklyHeatmap: WeeklyHeatRow[] = hourlyDistribution.map((h) => {
+  const assigned = dayWeights.map((w) => Math.round(h.total * w));
+  let diff = h.total - assigned.reduce((a, b) => a + b, 0);
+  let i = 0;
+  while (diff !== 0) {
+    assigned[i] += diff > 0 ? 1 : -1;
+    diff += diff > 0 ? -1 : 1;
+    i = (i + 1) % assigned.length;
+  }
+  const row: WeeklyHeatRow = {
+    hora: h.hora,
+    seg: 0,
+    ter: 0,
+    qua: 0,
+    qui: 0,
+    sex: 0,
+    sab: 0,
+  };
+  heatDayKeys.forEach((d, idx) => {
+    row[d] = assigned[idx];
+  });
+  return row;
+});
 
 export interface OperationalMonth {
   competencia: string;

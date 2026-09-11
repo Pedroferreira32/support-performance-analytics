@@ -2,9 +2,10 @@ import { Equal, Plus } from "lucide-react";
 
 import { AppShell } from "@/components/layout/app-shell";
 import { type IconName } from "@/components/ui-ext/app-icon";
-import { HourlyDistribution } from "@/components/ui-ext/hourly-distribution";
 import { KpiCard } from "@/components/ui-ext/kpi-card";
+import { ScatterTeam } from "@/components/ui-ext/scatter-team";
 import { SectionCard } from "@/components/ui-ext/section-card";
+import { WeeklyHeatmap } from "@/components/ui-ext/weekly-heatmap";
 import {
   Table,
   TableBody,
@@ -15,14 +16,13 @@ import {
 } from "@/components/ui/table";
 import {
   baseReconciliation,
+  currentSnapshot,
   employees,
   operationalKpis,
   operationalMonths,
-} from "@/data/support-data";
+} from "@/data/support-data-runtime";
 import { cn } from "@/lib/utils";
 import { fmtBR } from "@/lib/format";
-
-const BASE_PREMIAVEL = 2350;
 
 function ReconBox({
   title,
@@ -38,7 +38,7 @@ function ReconBox({
   return (
     <div
       className={cn(
-        "flex-1 rounded-xl border p-4 text-center",
+        "flex-1 rounded-sm border p-4 text-center",
         highlight ? "border-primary/40 bg-primary-soft/50 ring-1 ring-primary/20" : "bg-muted/40"
       )}
     >
@@ -50,6 +50,8 @@ function ReconBox({
 }
 
 export default function OperacaoPage() {
+  const basePremiavel = currentSnapshot?.validos.length ?? employees.reduce((sum, employee) => sum + employee.volume, 0);
+  const maxHours = currentSnapshot?.config.maxHoras ?? 9;
   return (
     <AppShell breadcrumb="Painel de performance" title="Operação">
       <div className="animate-fade-in-up space-y-5">
@@ -83,7 +85,7 @@ export default function OperacaoPage() {
         <SectionCard
           eyebrow="Reconciliação da base"
           title="Do arquivo importado à demanda observada"
-          description="Casos acima de 9 horas ficam fora da campanha, mas continuam visíveis na análise operacional."
+          description={`Casos regulares acima de ${maxHours} horas ficam fora da campanha, mas continuam visíveis na análise operacional.`}
         >
           <div className="flex flex-col gap-3 lg:flex-row lg:items-stretch">
             <ReconBox
@@ -121,24 +123,24 @@ export default function OperacaoPage() {
           </div>
         </SectionCard>
 
-        {/* Distribuição horária + comparação mensal */}
-        <div className="grid gap-5 lg:grid-cols-2">
-          <SectionCard
-            eyebrow="Distribuição horária"
-            title="Entradas por hora"
-            description="Atendimentos válidos pelo horário de início."
-          >
-            <HourlyDistribution />
-          </SectionCard>
+        {/* Mapa de calor */}
+        <SectionCard
+          eyebrow="Mapa de calor"
+          title="Demanda por hora e dia da semana"
+          description="Intensidade de atendimentos por faixa de início, de segunda a sábado."
+        >
+          <WeeklyHeatmap />
+        </SectionCard>
 
-          <SectionCard
-            eyebrow="Comparação mensal"
-            title="Indicadores por competência"
-            description="Valores exatos de volume, TMA, satisfação, cobertura e qualidade."
-            contentClassName="p-0"
-          >
+        {/* Comparação mensal */}
+        <SectionCard
+          eyebrow="Comparação mensal"
+          title="Indicadores por competência"
+          description="Valores exatos de volume, TMA, satisfação, cobertura e qualidade."
+          contentClassName="p-0"
+        >
             <div className="overflow-x-auto">
-              <Table className="min-w-[720px]">
+              <Table className="min-w-[520px]">
                 <TableHeader>
                   <TableRow className="hover:bg-transparent">
                     <TableHead className="pl-6">Competência</TableHead>
@@ -174,7 +176,7 @@ export default function OperacaoPage() {
                       <TableCell className="pr-6">
                         <span
                           className={cn(
-                            "rounded-full px-2 py-0.5 text-[10px] font-bold",
+                            "rounded-sm px-2 py-0.5 text-[10px] font-bold",
                             m.validade === "Atual"
                               ? "bg-primary-soft text-primary"
                               : m.validade === "Validado"
@@ -191,16 +193,17 @@ export default function OperacaoPage() {
               </Table>
             </div>
           </SectionCard>
-        </div>
 
         {/* Detalhe da equipe */}
         <SectionCard
           eyebrow="Detalhe da equipe"
           title="Volume, tempo e cobertura da avaliação"
           description="A fonte não contém jornada, categoria ou complexidade para cálculo de produtividade por hora."
-          contentClassName="p-0"
         >
-          <div className="overflow-x-auto">
+          <div className="rounded-sm border border-border/60 bg-card/30 p-4">
+            <ScatterTeam />
+          </div>
+          <div className="mt-4 overflow-x-auto">
             <Table className="min-w-[860px]">
               <TableHeader>
                 <TableRow className="hover:bg-transparent">
@@ -221,7 +224,7 @@ export default function OperacaoPage() {
                     <TableCell className="pl-6 font-medium">{e.name}</TableCell>
                     <TableCell className="tnum">{e.volume}</TableCell>
                     <TableCell className="tnum">
-                      {fmtBR((e.volume / BASE_PREMIAVEL) * 100, 1)}%
+                      {fmtBR(basePremiavel ? (e.volume / basePremiavel) * 100 : 0, 1)}%
                     </TableCell>
                     <TableCell className="tnum">
                       {fmtBR(e.tmaMediano, 1)} min

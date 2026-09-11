@@ -13,20 +13,25 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { AnimatedValue } from "@/components/ui-ext/animated-value";
+import { ComboMonthly } from "@/components/ui-ext/combo-monthly";
 import { Delta } from "@/components/ui-ext/delta";
-import { MonthlyComparison } from "@/components/ui-ext/monthly-comparison";
 import { ProgressRatio } from "@/components/ui-ext/progress-ratio";
+import { RadarComposition } from "@/components/ui-ext/radar-composition";
 import { RankingChart } from "@/components/ui-ext/ranking-chart";
 import { SectionCard } from "@/components/ui-ext/section-card";
+import { Sparkline } from "@/components/ui-ext/sparkline";
 import { StatusBadge } from "@/components/ui-ext/status-badge";
 import {
   actionPlan,
+  competencia,
+  currentSnapshot,
   gestorLeituras,
   individualComparisons,
   principalAlavanca,
   resultado,
   scoreComposition,
-} from "@/data/support-data";
+} from "@/data/support-data-runtime";
 import { fmtBR } from "@/lib/format";
 import { prioridadeTone, situacaoTone } from "@/lib/status-tones";
 
@@ -35,34 +40,41 @@ export default function GerencialPage() {
     <AppShell breadcrumb="Painel de performance" title="Resumo gerencial">
       <div className="animate-fade-in-up space-y-5">
         {/* Faixa de KPIs — leitura de cima para baixo */}
-        <section className="rounded-2xl border border-border/60 bg-card/50 p-5 sm:p-6">
+        <section className="rounded-sm border border-border/70 bg-card/40 p-4 sm:p-5">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+              <p className="mono text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
                 Resultado da competência
               </p>
-              <h2 className="mt-1 text-lg font-bold tracking-tight">
+              <h2 className="mt-1 text-base font-bold tracking-tight">
                 {resultado.titulo}
               </h2>
             </div>
-            <span className="inline-flex items-center gap-2 rounded-full border border-emerald-400/25 bg-emerald-400/10 px-3 py-1 text-xs font-semibold text-emerald-300">
+            <span className="mono inline-flex items-center gap-2 rounded-sm border border-emerald-400/25 bg-emerald-400/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-emerald-300">
               <span className="size-1.5 rounded-full bg-emerald-400" />
-              Fechamento Top 3 confirmado
+              Top 3 confirmado
             </span>
           </div>
 
-          <div className="mt-5 grid grid-cols-2 gap-x-6 gap-y-5 sm:grid-cols-3 lg:grid-cols-6 lg:divide-x lg:divide-border/60">
+          <div className="mt-4 grid grid-cols-2 gap-x-6 gap-y-5 sm:grid-cols-3 lg:grid-cols-6 lg:divide-x lg:divide-border/60">
             {resultado.kpis.map((kpi) => (
-              <div key={kpi.label} className="min-w-0">
-                <p className="truncate text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              <div key={kpi.label} className="flex min-w-0 flex-col">
+                <p className="mono truncate text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                   {kpi.label}
                 </p>
-                <p className="tnum mt-1.5 text-2xl font-bold tracking-tight sm:text-3xl">
-                  {kpi.value}
-                </p>
+                <AnimatedValue
+                  value={kpi.value}
+                  className="mt-1.5 text-2xl font-bold tracking-tight sm:text-3xl"
+                />
                 <p className="mt-1 truncate text-[11px] text-muted-foreground">
                   {kpi.hint}
                 </p>
+                {kpi.trend && kpi.trend.length >= 2 && (
+                  <Sparkline
+                    data={kpi.trend}
+                    className="mt-2 h-6 w-full max-w-[96px] text-muted-foreground/70"
+                  />
+                )}
               </div>
             ))}
           </div>
@@ -94,7 +106,7 @@ export default function GerencialPage() {
                   key={g.numero}
                   className="flex gap-4 border-b border-border/60 py-4 first:pt-0 last:border-0 last:pb-0"
                 >
-                  <span className="tnum shrink-0 bg-gradient-to-br from-cyan-400 to-blue-500 bg-clip-text text-lg font-bold text-transparent">
+                  <span className="mono shrink-0 bg-primary/20 text-lg font-bold text-primary">
                     {g.numero}
                   </span>
                   <div className="min-w-0">
@@ -117,9 +129,9 @@ export default function GerencialPage() {
           <SectionCard
             eyebrow="Comparação mensal"
             title="Fechamentos por competência"
-            description="Média, mediana e liderança apresentadas separadamente para respeitar a regra de cada mês."
+            description="Índice médio em barras, mediana em linha e a meta de 85 como referência."
           >
-            <MonthlyComparison />
+            <ComboMonthly />
           </SectionCard>
 
           <SectionCard
@@ -127,7 +139,8 @@ export default function GerencialPage() {
             title="Aproveitamento médio por critério"
             description="Pontos obtidos em relação ao peso máximo; critérios fixos aparecem identificados."
           >
-            <div className="space-y-6">
+            <RadarComposition />
+            <div className="mt-6 space-y-6">
               {scoreComposition.map((c) => (
                 <ProgressRatio
                   key={c.label}
@@ -141,8 +154,8 @@ export default function GerencialPage() {
                 />
               ))}
             </div>
-            <div className="mt-6 rounded-xl border border-amber-400/25 bg-amber-400/[0.07] p-4">
-              <p className="text-[11px] font-bold uppercase tracking-wide text-amber-300">
+            <div className="mt-6 rounded-sm border border-amber-400/25 bg-amber-400/[0.07] p-4">
+              <p className="mono text-[10px] font-bold uppercase tracking-[0.18em] text-amber-300">
                 Principal alavanca
               </p>
               <p className="mt-1 text-sm font-bold">{principalAlavanca.label}</p>
@@ -217,8 +230,8 @@ export default function GerencialPage() {
         {/* Comparação individual */}
         <SectionCard
           eyebrow="Comparação individual"
-          title="08/2026 versus 07/2026"
-          description="Atenção: as competências usam perfis de regra diferentes; as variações são descritivas e não devem ser tratadas como comparação direta de performance."
+          title={`${competencia.label} versus ${competencia.anterior}`}
+          description={currentSnapshot && competencia.anterior === "sem histórico anterior" ? "Esta é a primeira competência armazenada; as variações individuais serão exibidas após o próximo fechamento." : "As variações são descritivas e devem ser lidas junto com o perfil de regra de cada competência."}
           contentClassName="p-0"
         >
           <Accordion type="single" collapsible>

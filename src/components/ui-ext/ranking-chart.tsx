@@ -1,13 +1,15 @@
-import { employees } from "@/data/support-data";
+import { competencia, employees } from "@/data/support-data-runtime";
 import { cn } from "@/lib/utils";
 import { fmtBR } from "@/lib/format";
 
-const MIN = 70;
-const MAX = 95;
-const TICKS = [70, 75, 80, 85, 90, 95];
+const lowest = Math.min(competencia.meta, ...employees.map((item) => item.note));
+const highest = Math.max(competencia.teto, ...employees.map((item) => item.note));
+const MIN = Math.max(0, Math.floor((lowest - 5) / 5) * 5);
+const MAX = Math.ceil((highest + 1) / 5) * 5;
+const TICKS = Array.from({ length: Math.round((MAX - MIN) / 5) + 1 }, (_, index) => MIN + index * 5);
 
 function pos(note: number) {
-  return ((note - MIN) / (MAX - MIN)) * 100;
+  return Math.max(0, Math.min(100, ((note - MIN) / (MAX - MIN || 1)) * 100));
 }
 
 export function RankingChart() {
@@ -18,15 +20,15 @@ export function RankingChart() {
         <div className="w-40 shrink-0 pr-3" aria-hidden />
         <div className="relative h-7 flex-1">
           <span
-            className="absolute top-0 -translate-x-1/2 whitespace-nowrap rounded-full border border-amber-400/30 bg-amber-400/10 px-2 py-0.5 text-[10px] font-bold text-amber-300"
-            style={{ left: `${pos(85)}%` }}
+            className="mono absolute top-0 -translate-x-1/2 whitespace-nowrap rounded-sm border border-amber-400/30 bg-amber-400/10 px-1.5 py-0.5 text-[10px] font-bold text-amber-300"
+            style={{ left: `${pos(competencia.meta)}%` }}
           >
-            Meta 85
+            META {competencia.meta}
           </span>
           {TICKS.map((t) => (
             <span
               key={t}
-              className="tnum absolute bottom-0 -translate-x-1/2 text-[10px] font-medium text-muted-foreground/70"
+              className="mono absolute bottom-0 -translate-x-1/2 text-[10px] font-medium text-muted-foreground/70"
               style={{ left: `${pos(t)}%` }}
             >
               {t}
@@ -43,14 +45,14 @@ export function RankingChart() {
           return (
             <div
               key={e.id}
-              className="flex items-center gap-3 rounded-lg px-2 py-1.5 transition-colors hover:bg-muted/40"
+              className="flex items-center gap-3 rounded-sm px-2 py-1.5 transition-colors hover:bg-muted/40"
             >
               <div className="flex w-40 shrink-0 items-center gap-2 pr-3">
                 <span
                   className={cn(
-                    "tnum grid size-5 shrink-0 place-items-center rounded-md text-[10px] font-bold",
+                    "mono grid size-5 shrink-0 place-items-center rounded-sm text-[10px] font-bold",
                     premiado
-                      ? "bg-gradient-to-br from-cyan-400 to-blue-500 text-background"
+                      ? "bg-primary text-primary-foreground"
                       : "bg-muted text-muted-foreground"
                   )}
                 >
@@ -63,7 +65,7 @@ export function RankingChart() {
                 <div className="absolute inset-y-1/2 left-0 right-0 h-px -translate-y-1/2 bg-border/60" />
                 <div
                   className="absolute inset-y-0 w-px border-l border-dashed border-amber-400/60"
-                  style={{ left: `${pos(85)}%` }}
+                  style={{ left: `${pos(competencia.meta)}%` }}
                 />
                 <div
                   className="absolute inset-y-0 flex items-center"
@@ -71,11 +73,11 @@ export function RankingChart() {
                 >
                   <div
                     className={cn(
-                      "h-3.5 w-full rounded-full transition-shadow group-hover:shadow-glow",
+                      "h-3.5 w-full rounded-[2px]",
                       premiado
                         ? "bg-gradient-to-r from-cyan-400 to-blue-500"
                         : elegivel
-                          ? "bg-gradient-to-r from-amber-400/70 to-amber-500/40"
+                          ? "bg-amber-400/50"
                           : "bg-slate-500/40"
                     )}
                   />
@@ -85,7 +87,7 @@ export function RankingChart() {
               <div className="w-16 shrink-0 text-right">
                 <span
                   className={cn(
-                    "tnum text-sm font-bold",
+                    "mono text-sm font-bold",
                     premiado && "text-cyan-300"
                   )}
                 >
@@ -98,22 +100,22 @@ export function RankingChart() {
       </div>
 
       {/* Legenda */}
-      <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-border/60 pt-3 text-[11px] text-muted-foreground">
+      <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-border/60 pt-3 mono text-[10px] uppercase tracking-wider text-muted-foreground">
         <span className="flex items-center gap-1.5">
-          <span className="h-2 w-4 rounded-full bg-gradient-to-r from-cyan-400 to-blue-500" />
-          Premiado (Top 3)
+          <span className="h-2 w-4 rounded-[2px] bg-gradient-to-r from-cyan-400 to-blue-500" />
+          Premiado
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="h-2 w-4 rounded-full bg-amber-400/60" />
+          <span className="h-2 w-4 rounded-[2px] bg-amber-400/50" />
           Elegível
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="h-2 w-4 rounded-full bg-slate-500/40" />
+          <span className="h-2 w-4 rounded-[2px] bg-slate-500/40" />
           Abaixo da meta
         </span>
         <span className="flex items-center gap-1.5">
           <span className="h-3 border-l border-dashed border-amber-400/60" />
-          Meta de 85 pontos
+          Meta {competencia.meta}
         </span>
       </div>
     </div>

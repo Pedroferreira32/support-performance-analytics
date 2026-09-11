@@ -1,21 +1,15 @@
-import { defineConfig, PluginOption } from "vite";
-import { enterDevPlugin, enterProdPlugin } from 'vite-plugin-enter-dev';
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
 import path from "path";
 
 // https://vitejs.dev/config/
-export default defineConfig(({ mode }) => {
-  const plugins = [
-    ...enterProdPlugin(),
-  ];
-  if (mode === 'development') {
-    plugins.push(...enterDevPlugin());
-  }
+export default defineConfig(() => {
   return {
     server: {
       host: "::",
       port: 8080,
     },
-    plugins: plugins.filter(Boolean) as PluginOption[],
+    plugins: [react()],
     resolve: {
       alias: {
         "@": path.resolve(__dirname, "./src"),

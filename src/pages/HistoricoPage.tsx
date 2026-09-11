@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { AppShell } from "@/components/layout/app-shell";
@@ -27,24 +27,41 @@ import {
   employees,
   historySeries,
   monthlyResults,
-} from "@/data/support-data";
+  currentSnapshot,
+  hasOperationalData,
+} from "@/data/support-data-runtime";
+import { updateFeedback } from "@/lib/dashboard-store";
 import { fmtBR } from "@/lib/format";
 
 export default function HistoricoPage() {
-  const [selectedId, setSelectedId] = useState(employees[0].id);
+  const [selectedId, setSelectedId] = useState(employees[0]?.id ?? "");
   const [feedback, setFeedback] = useState("");
 
   const emp = employees.find((e) => e.id === selectedId) ?? employees[0];
-  const series = historySeries.find((h) => h.nome === emp.name)!;
-  const points = series.pontos
+  const series = historySeries.find((h) => h.nome === emp?.name);
+  const points = (series?.pontos ?? [])
     .filter((p) => p.nota != null)
     .map((p) => ({ competencia: p.competencia, nota: p.nota as number }));
 
-  const saveFeedback = () =>
-    toast("Edição bloqueada na demonstração", {
-      description:
-        "O registro de gestão fica disponível na versão completa do sistema.",
-    });
+  useEffect(() => {
+    const row = currentSnapshot?.ranking.find((item) => item.atendente === emp?.name);
+    setFeedback(row?.feedback ?? "");
+  }, [emp?.name]);
+
+  const saveFeedback = () => {
+    if (!currentSnapshot || !emp || !hasOperationalData) {
+      toast.info("Importe uma base para registrar feedbacks.");
+      return;
+    }
+    if (!feedback.trim()) {
+      toast.error("Escreva o feedback antes de salvar.");
+      return;
+    }
+    updateFeedback(currentSnapshot.competencia, emp.name, feedback);
+    toast.success("Feedback salvo no histórico local");
+  };
+
+  if (!emp) return null;
 
   return (
     <AppShell breadcrumb="Painel de performance" title="Histórico">
@@ -103,7 +120,7 @@ export default function HistoricoPage() {
             />
             <KpiCard
               label="Competências"
-              value="2"
+              value={String(points.length)}
               hint="meses registrados"
               icon="calendar"
             />
@@ -159,8 +176,8 @@ export default function HistoricoPage() {
                       <span
                         className={
                           m.situacao === "ATUAL"
-                            ? "rounded-full bg-primary-soft px-2 py-0.5 text-[10px] font-bold text-primary"
-                            : "rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold text-muted-foreground"
+                            ? "rounded-sm bg-primary-soft px-2 py-0.5 text-[10px] font-bold text-primary"
+                            : "rounded-sm bg-muted px-2 py-0.5 text-[10px] font-bold text-muted-foreground"
                         }
                       >
                         {m.situacao}
@@ -183,12 +200,12 @@ export default function HistoricoPage() {
             <Textarea
               value={feedback}
               onChange={(e) => setFeedback(e.target.value)}
-              placeholder={`Escreva o feedback de ${emp.name} para a competência 08/2026…`}
+              placeholder={`Escreva o feedback de ${emp.name} para a competência ${currentSnapshot?.competenciaBr ?? "selecionada"}…`}
               rows={4}
             />
             <div className="flex items-center justify-between gap-3">
               <p className="text-xs text-muted-foreground">
-                Edição bloqueada na demonstração pública.
+                {hasOperationalData ? "O texto fica vinculado à competência selecionada neste navegador." : "Importe uma base para habilitar a edição."}
               </p>
               <Button size="sm" onClick={saveFeedback}>
                 Salvar feedback

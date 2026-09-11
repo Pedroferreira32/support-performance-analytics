@@ -1,69 +1,130 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap");
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
+  /* ===== Terminal de dados (tema único) ===== */
   :root {
-    /* Dark premium data theme (default) */
-    --background: 226 42% 5%;
-    --foreground: 210 25% 92%;
+    --background: 220 26% 6%;
+    --foreground: 210 28% 92%;
 
-    --card: 226 34% 9%;
-    --card-foreground: 210 25% 92%;
+    --card: 220 26% 8%;
+    --card-foreground: 210 28% 92%;
 
-    --popover: 226 36% 11%;
-    --popover-foreground: 210 25% 92%;
+    --popover: 220 26% 10%;
+    --popover-foreground: 210 28% 92%;
 
-    --primary: 217 91% 60%;
-    --primary-foreground: 0 0% 100%;
-    --primary-soft: 217 60% 18%;
+    --primary: 187 100% 52%;
+    --primary-foreground: 220 30% 6%;
+    --primary-soft: 187 60% 15%;
 
-    --secondary: 217 30% 15%;
-    --secondary-foreground: 210 25% 92%;
+    --secondary: 220 24% 13%;
+    --secondary-foreground: 210 28% 92%;
 
-    --muted: 217 28% 13%;
-    --muted-foreground: 216 16% 67%;
+    --muted: 220 22% 12%;
+    --muted-foreground: 215 16% 64%;
 
-    --accent: 217 34% 15%;
-    --accent-foreground: 210 25% 92%;
+    --accent: 220 24% 14%;
+    --accent-foreground: 210 28% 92%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --success: 152 60% 45%;
-    --success-foreground: 0 0% 100%;
-    --success-soft: 152 40% 15%;
+    --success: 160 84% 50%;
+    --success-foreground: 220 30% 6%;
+    --success-soft: 160 50% 13%;
 
-    --warning: 38 95% 56%;
-    --warning-foreground: 40 100% 88%;
-    --warning-soft: 38 40% 15%;
+    --warning: 42 100% 60%;
+    --warning-foreground: 42 100% 88%;
+    --warning-soft: 42 45% 13%;
 
-    --danger: 350 80% 58%;
+    --danger: 350 90% 60%;
     --danger-foreground: 0 0% 100%;
-    --danger-soft: 350 45% 16%;
+    --danger-soft: 350 50% 14%;
 
-    --border: 217 25% 16%;
-    --input: 217 25% 18%;
-    --ring: 217 91% 60%;
+    --border: 220 22% 16%;
+    --input: 220 22% 18%;
+    --ring: 187 100% 52%;
 
-    --radius: 0.75rem;
+    --radius: 0.25rem;
 
-    --sidebar-background: 226 44% 4%;
-    --sidebar-foreground: 210 20% 80%;
-    --sidebar-primary: 199 100% 55%;
-    --sidebar-primary-foreground: 226 40% 6%;
-    --sidebar-accent: 217 36% 12%;
-    --sidebar-accent-foreground: 210 25% 92%;
-    --sidebar-border: 217 28% 13%;
-    --sidebar-ring: 199 100% 55%;
+    --sidebar-background: 220 26% 5%;
+    --sidebar-foreground: 210 20% 82%;
+    --sidebar-primary: 187 100% 52%;
+    --sidebar-primary-foreground: 220 30% 6%;
+    --sidebar-accent: 220 24% 12%;
+    --sidebar-accent-foreground: 210 28% 92%;
+    --sidebar-border: 220 22% 13%;
+    --sidebar-ring: 187 100% 52%;
 
-    --chart-1: 199 100% 55%;
-    --chart-2: 217 91% 60%;
-    --chart-3: 38 95% 56%;
-    --chart-4: 262 83% 66%;
-    --chart-5: 152 60% 45%;
+    --chart-1: 187 100% 55%;
+    --chart-2: 217 91% 62%;
+    --chart-3: 42 100% 60%;
+    --chart-4: 262 80% 68%;
+    --chart-5: 160 84% 52%;
+  }
+
+  /* Mantido por compatibilidade — o tema é único */
+  .dark {
+    --background: 220 26% 6%;
+    --foreground: 210 28% 92%;
+
+    --card: 220 26% 8%;
+    --card-foreground: 210 28% 92%;
+
+    --popover: 220 26% 10%;
+    --popover-foreground: 210 28% 92%;
+
+    --primary: 187 100% 52%;
+    --primary-foreground: 220 30% 6%;
+    --primary-soft: 187 60% 15%;
+
+    --secondary: 220 24% 13%;
+    --secondary-foreground: 210 28% 92%;
+
+    --muted: 220 22% 12%;
+    --muted-foreground: 215 16% 64%;
+
+    --accent: 220 24% 14%;
+    --accent-foreground: 210 28% 92%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 160 84% 50%;
+    --success-foreground: 220 30% 6%;
+    --success-soft: 160 50% 13%;
+
+    --warning: 42 100% 60%;
+    --warning-foreground: 42 100% 88%;
+    --warning-soft: 42 45% 13%;
+
+    --danger: 350 90% 60%;
+    --danger-foreground: 0 0% 100%;
+    --danger-soft: 350 50% 14%;
+
+    --border: 220 22% 16%;
+    --input: 220 22% 18%;
+    --ring: 187 100% 52%;
+
+    --radius: 0.25rem;
+
+    --sidebar-background: 220 26% 5%;
+    --sidebar-foreground: 210 20% 82%;
+    --sidebar-primary: 187 100% 52%;
+    --sidebar-primary-foreground: 220 30% 6%;
+    --sidebar-accent: 220 24% 12%;
+    --sidebar-accent-foreground: 210 28% 92%;
+    --sidebar-border: 220 22% 13%;
+    --sidebar-ring: 187 100% 52%;
+
+    --chart-1: 187 100% 55%;
+    --chart-2: 217 91% 62%;
+    --chart-3: 42 100% 60%;
+    --chart-4: 262 80% 68%;
+    --chart-5: 160 84% 52%;
   }
 }
 
@@ -91,12 +152,25 @@ body,
     font-variant-numeric: tabular-nums;
   }
 
+  .mono {
+    font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-variant-numeric: tabular-nums;
+  }
+
   .text-balance {
     text-wrap: balance;
   }
+
+  /* Fundo quadriculado sutil de terminal */
+  .bg-grid {
+    background-image:
+      linear-gradient(to right, hsl(var(--border) / 0.22) 1px, transparent 1px),
+      linear-gradient(to bottom, hsl(var(--border) / 0.22) 1px, transparent 1px);
+    background-size: 36px 36px;
+  }
 }
 
-/* Scrollbar sutil para o tema escuro */
+/* Scrollbar sutil */
 * {
   scrollbar-width: thin;
   scrollbar-color: hsl(var(--border)) transparent;

@@ -13,10 +13,12 @@ import {
 } from "@/components/ui/table";
 import {
   engineeringSteps,
+  competencia,
+  currentSnapshot,
   selectedRule,
   validationGroups,
   versionedRules,
-} from "@/data/support-data";
+} from "@/data/support-data-runtime";
 
 export default function ProjectPage() {
   return (
@@ -31,14 +33,14 @@ export default function ProjectPage() {
           <div className="grid gap-4 sm:grid-cols-3">
             <KpiCard
               label="Competência"
-              value="08/2026"
+              value={competencia.label}
               hint="competência vigente"
               icon="calendar"
               tone="primary"
             />
             <KpiCard
               label="Meta mínima"
-              value="85,00"
+              value={competencia.meta.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
               hint="pontos para elegibilidade"
               icon="target"
               tone="warning"
@@ -63,7 +65,7 @@ export default function ProjectPage() {
             {engineeringSteps.map((s) => (
               <div
                 key={s.numero}
-                className="relative rounded-xl border bg-muted/40 p-4 transition-shadow hover:shadow-elevated"
+                className="relative rounded-sm border bg-muted/40 p-4 transition-shadow hover:shadow-elevated"
               >
                 <span className="tnum text-2xl font-bold text-primary/40">
                   {s.numero}
@@ -80,7 +82,7 @@ export default function ProjectPage() {
         {/* Regra selecionada */}
         <SectionCard
           eyebrow="Regra selecionada"
-          title="Novo modelo oficial — automáticos incluídos e Tempo/TMA fixos em 31,5"
+          title={competencia.regra}
           description="Os parâmetros mudam conforme o mês e ficam gravados no histórico."
         >
           <dl className="grid gap-x-8 gap-y-4 sm:grid-cols-2">
@@ -94,7 +96,9 @@ export default function ProjectPage() {
             ))}
           </dl>
 
-          <div className="mt-6 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl bg-primary-soft px-4 py-3.5">
+          <div className="mt-6 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-sm bg-primary-soft px-4 py-3.5">
+            {!currentSnapshot || currentSnapshot.config.pontuacaoTempoTmaFixa ? (
+              <>
             <span className="text-sm">
               <span className="font-semibold">Base fixa </span>
               <span className="tnum font-bold">31,50</span>
@@ -119,8 +123,14 @@ export default function ProjectPage() {
               Teto efetivo <span className="tnum">91,50</span>
             </span>
             <span className="ml-1 rounded-full bg-warning-soft px-2 py-0.5 text-[11px] font-bold text-warning-foreground">
-              meta 85,00
+              meta {competencia.meta.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
             </span>
+              </>
+            ) : (
+              <span className="text-sm font-semibold">
+                Pesos da competência: Quantidade {currentSnapshot?.config.pesoQuantidade ?? 20} · Tempo {currentSnapshot?.config.pesoTempo ?? 10} · TMA {currentSnapshot?.config.pesoTma ?? 30} · Avaliação {currentSnapshot?.config.pesoAvaliacao ?? 40}
+              </span>
+            )}
           </div>
         </SectionCard>
 
@@ -134,7 +144,7 @@ export default function ProjectPage() {
             {validationGroups.map((g) => (
               <div
                 key={g.titulo}
-                className="rounded-xl border bg-muted/40 p-5"
+                className="rounded-sm border bg-muted/40 p-5"
               >
                 <h3 className="text-sm font-bold">{g.titulo}</h3>
                 <ul className="mt-3 space-y-2">

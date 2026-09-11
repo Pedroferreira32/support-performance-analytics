@@ -3,10 +3,14 @@ import { toast } from "sonner";
 
 import { AppShell } from "@/components/layout/app-shell";
 import { type IconName } from "@/components/ui-ext/app-icon";
+import { Funnel } from "@/components/ui-ext/funnel";
 import { KpiCard } from "@/components/ui-ext/kpi-card";
 import { RankingChart } from "@/components/ui-ext/ranking-chart";
+import { ScoreGauge } from "@/components/ui-ext/score-gauge";
 import { SectionCard } from "@/components/ui-ext/section-card";
+import { StackedFormation } from "@/components/ui-ext/stacked-formation";
 import { StatusBadge } from "@/components/ui-ext/status-badge";
+import { WaterfallLeader } from "@/components/ui-ext/waterfall-leader";
 import { situacaoTone } from "@/lib/status-tones";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,20 +22,29 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
+  competencia,
+  currentSnapshot,
   employees,
-  leaderBreakdown,
-  leaderTotal,
+  operationalSnapshots,
   premiacaoResumo,
-} from "@/data/support-data";
-import { cn } from "@/lib/utils";
+} from "@/data/support-data-runtime";
 import { fmtBR } from "@/lib/format";
+import { exportExcel as generateExcel } from "@/lib/report-export";
 
 export default function PremiacaoPage() {
-  const exportExcel = () =>
-    toast("Exportação disponível na versão completa", {
-      description:
-        "Esta demonstração é somente leitura e usa dados sintéticos.",
-    });
+  const leader = employees[0];
+  const exportExcel = async () => {
+    if (!currentSnapshot) {
+      toast.info("Importe uma base para gerar o arquivo oficial.");
+      return;
+    }
+    try {
+      await generateExcel(currentSnapshot, operationalSnapshots);
+      toast.success("Memória de cálculo gerada em Excel");
+    } catch (error) {
+      toast.error("Não foi possível gerar o Excel", { description: error instanceof Error ? error.message : "Tente novamente." });
+    }
+  };
 
   return (
     <AppShell breadcrumb="Painel de performance" title="Premiação">
@@ -42,10 +55,12 @@ export default function PremiacaoPage() {
           title="Composição da nota final"
           description="O perfil da competência define os pesos e identifica quais parcelas são fixas ou comparativas."
         >
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl bg-primary-soft px-4 py-3.5">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-sm bg-primary-soft px-4 py-3.5">
+            {competencia.baseFixa > 0 ? (
+              <>
             <span className="text-sm">
               <span className="font-semibold">Base fixa </span>
-              <span className="tnum font-bold">31,50</span>
+              <span className="tnum font-bold">{fmtBR(competencia.baseFixa, 2)}</span>
               <span className="ml-1 text-xs text-muted-foreground">
                 Tempo + TMA
               </span>
@@ -53,7 +68,7 @@ export default function PremiacaoPage() {
             <Plus className="size-4 text-muted-foreground" />
             <span className="text-sm">
               <span className="font-semibold">Variável </span>
-              <span className="tnum font-bold">20,00</span>
+              <span className="tnum font-bold">{fmtBR(competencia.pesoQuantidade, 2)}</span>
               <span className="ml-1 text-xs text-muted-foreground">
                 Quantidade
               </span>
@@ -61,17 +76,23 @@ export default function PremiacaoPage() {
             <Plus className="size-4 text-muted-foreground" />
             <span className="text-sm">
               <span className="font-semibold">Variável </span>
-              <span className="tnum font-bold">40,00</span>
+              <span className="tnum font-bold">{fmtBR(competencia.pesoAvaliacao, 2)}</span>
               <span className="ml-1 text-xs text-muted-foreground">
                 Avaliação
               </span>
             </span>
             <Equal className="size-4 text-muted-foreground" />
             <span className="text-sm font-bold">
-              Teto efetivo <span className="tnum">91,50</span>
+              Teto efetivo <span className="tnum">{fmtBR(competencia.teto, 2)}</span>
             </span>
-            <span className="ml-1 rounded-full bg-warning-soft px-2 py-0.5 text-[11px] font-bold text-warning-foreground">
-              meta 85,00
+              </>
+            ) : (
+              <span className="text-sm font-semibold">
+                Pontuação comparativa por equipe · Quantidade {currentSnapshot?.config.pesoQuantidade ?? 20} · Tempo {currentSnapshot?.config.pesoTempo ?? 10} · TMA {currentSnapshot?.config.pesoTma ?? 30} · Avaliação {currentSnapshot?.config.pesoAvaliacao ?? 40}
+              </span>
+            )}
+            <span className="ml-1 rounded-sm bg-warning-soft px-2 py-0.5 mono text-[11px] font-bold text-warning-foreground">
+              meta {fmtBR(competencia.meta, 2)}
             </span>
           </div>
 
@@ -109,73 +130,47 @@ export default function PremiacaoPage() {
           <SectionCard
             eyebrow="Formação da nota"
             title="Componentes do primeiro colocado"
-            description="Contribuição de cada parcela até a nota final da liderança."
+            description={`Cascata da nota final da liderança até o índice de ${fmtBR(leader?.note ?? 0, 2)}.`}
           >
-            <div className="space-y-2">
-              {leaderBreakdown.map((b, i) => (
-                <div key={b.label}>
-                  <div
-                    className={cn(
-                      "flex items-center justify-between rounded-xl border p-4",
-                      b.color === "primary" ? "bg-primary-soft/50" : "bg-muted/40"
-                    )}
-                  >
-                    <div>
-                      <p className="text-sm font-semibold">{b.label}</p>
-                      <p className="text-xs text-muted-foreground">{b.hint}</p>
-                    </div>
-                    <span
-                      className={cn(
-                        "tnum text-lg font-bold",
-                        b.color === "primary" && "text-primary"
-                      )}
-                    >
-                      {b.value}
-                    </span>
-                  </div>
-                  {i < leaderBreakdown.length - 1 && (
-                    <Plus className="mx-auto my-1 size-4 text-muted-foreground" />
-                  )}
-                </div>
-              ))}
-              <Equal className="mx-auto my-1 size-4 text-muted-foreground" />
-              <div className="flex items-center justify-between rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 p-4 text-white shadow-glow">
-                <div>
-                  <p className="text-sm font-bold">{leaderTotal.label}</p>
-                  <p className="text-xs opacity-80">{leaderTotal.hint}</p>
-                </div>
-                <span className="tnum text-2xl font-bold">
-                  {leaderTotal.value}
-                </span>
-              </div>
-            </div>
+            <WaterfallLeader />
           </SectionCard>
 
           <SectionCard
             eyebrow="Liderança da competência"
-            title="Marina Costa"
+            title={leader?.name ?? "Sem resultado"}
             className="h-fit"
           >
-            <div className="rounded-xl border bg-gradient-to-br from-primary-soft/70 to-card p-5">
-              <p className="text-[11px] font-bold uppercase tracking-wide text-primary">
-                Nota da liderança
-              </p>
-              <p className="tnum mt-2 text-4xl font-bold text-primary">
-                91,09
-              </p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                de 91,50 pontos possíveis
-              </p>
-              <div className="mt-4 rounded-lg bg-card px-3 py-2.5 text-xs text-muted-foreground">
-                A nota ficou{" "}
-                <span className="tnum font-bold text-foreground">0,41</span>{" "}
-                ponto(s) abaixo do teto.
-              </div>
+            <div className="rounded-sm border bg-gradient-to-br from-primary-soft/60 to-card p-5">
+              <ScoreGauge
+                value={leader?.note ?? 0}
+                max={competencia.teto}
+                label="Índice final"
+                sublabel={`A nota ficou ${fmtBR(Math.max(0, competencia.teto - (leader?.note ?? 0)), 2)} ponto(s) abaixo do teto`}
+              />
             </div>
             <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
               Cálculo reproduzível e memória de cálculo disponível para
               conferência completa da competência.
             </p>
+          </SectionCard>
+        </div>
+
+        {/* Formação por funcionário + funil */}
+        <div className="grid gap-5 lg:grid-cols-2">
+          <SectionCard
+            eyebrow="Formação da nota"
+            title="Composição da nota por funcionário"
+            description="Parcela fixa e variáveis empilhadas; a linha marca a meta de 85."
+          >
+            <StackedFormation />
+          </SectionCard>
+
+          <SectionCard
+            eyebrow="Funil de elegibilidade"
+            title="Da avaliação à premiação"
+            description="Queda de aproveitamento entre as etapas do processo."
+          >
+            <Funnel />
           </SectionCard>
         </div>
 
@@ -185,7 +180,7 @@ export default function PremiacaoPage() {
           title="Detalhamento por funcionário"
           description="Pontos variáveis, nota final, distância para a meta e situação."
           action={
-            <Button variant="outline" size="sm" onClick={exportExcel}>
+            <Button variant="outline" size="sm" onClick={() => void exportExcel()}>
               <FileDown className="size-4" />
               Exportar Excel
             </Button>

@@ -1,53 +1,49 @@
-import AuditoriaPage from "./pages/AuditoriaPage";
-import GerencialPage from "./pages/GerencialPage";
-import HistoricoPage from "./pages/HistoricoPage";
-import Index from "./pages/Index";
-import NotFound from "./pages/NotFound";
-import OperacaoPage from "./pages/OperacaoPage";
-import PremiacaoPage from "./pages/PremiacaoPage";
-import ProjectPage from "./pages/ProjectPage";
-
 export const routers = [
   {
     path: "/",
     name: "home",
-    element: <Index />,
+    lazy: async () => ({ Component: (await import("./pages/Index")).default }),
+  },
+  {
+    path: "/atualizar",
+    name: "atualizar",
+    lazy: async () => ({ Component: (await import("./pages/AtualizarPage")).default }),
   },
   {
     path: "/projeto",
     name: "projeto",
-    element: <ProjectPage />,
+    lazy: async () => ({ Component: (await import("./pages/ProjectPage")).default }),
   },
   {
     path: "/gerencial",
     name: "gerencial",
-    element: <GerencialPage />,
+    lazy: async () => ({ Component: (await import("./pages/GerencialPage")).default }),
   },
   {
     path: "/operacao",
     name: "operacao",
-    element: <OperacaoPage />,
+    lazy: async () => ({ Component: (await import("./pages/OperacaoPage")).default }),
   },
   {
     path: "/premiacao",
     name: "premiacao",
-    element: <PremiacaoPage />,
+    lazy: async () => ({ Component: (await import("./pages/PremiacaoPage")).default }),
   },
   {
     path: "/historico",
     name: "historico",
-    element: <HistoricoPage />,
+    lazy: async () => ({ Component: (await import("./pages/HistoricoPage")).default }),
   },
   {
     path: "/auditoria",
     name: "auditoria",
-    element: <AuditoriaPage />,
+    lazy: async () => ({ Component: (await import("./pages/AuditoriaPage")).default }),
   },
   /* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */
   {
     path: "*",
     name: "404",
-    element: <NotFound />,
+    lazy: async () => ({ Component: (await import("./pages/NotFound")).default }),
   },
 ];
 

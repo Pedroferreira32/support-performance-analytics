@@ -14,7 +14,14 @@ const App = () => {
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <RouterProvider router={router} />
+        <RouterProvider
+          router={router}
+          fallbackElement={
+            <div className="grid min-h-screen place-items-center bg-background text-sm text-muted-foreground">
+              Carregando painel…
+            </div>
+          }
+        />
       </TooltipProvider>
     </QueryClientProvider>
   );

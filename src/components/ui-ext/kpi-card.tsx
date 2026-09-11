@@ -1,6 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { AppIcon, type IconName } from "./app-icon";
+import type { IconName } from "./app-icon";
 
 export type KpiTone = "default" | "primary" | "success" | "warning" | "danger";
 
@@ -25,35 +25,30 @@ export function KpiCard({
   label,
   value,
   hint,
-  icon,
+  icon: _icon,
   tone = "default",
   className,
 }: KpiCardProps) {
   return (
     <Card
       className={cn(
-        "border-border/60 bg-card/50 p-5 shadow-none",
+        "rounded-sm border-border/70 bg-card/40 p-4 shadow-none",
         className
       )}
     >
       <div className="flex items-center justify-between gap-3">
-        <p className="truncate text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+        <p className="mono truncate text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
           {label}
         </p>
-        {icon ? (
-          <AppIcon name={icon} className={cn("size-3.5 shrink-0", dotTones[tone])} />
-        ) : (
-          <span
-            className={cn(
-              "size-1.5 shrink-0 rounded-full",
-              dotTones[tone]
-            )}
-          />
-        )}
+        <span
+          className={cn("size-1.5 shrink-0 rounded-full", dotTones[tone])}
+        />
       </div>
-      <p className="tnum mt-2 text-3xl font-bold tracking-tight">{value}</p>
+      <p className="mono mt-2 text-3xl font-bold tracking-tight">{value}</p>
       {hint && (
-        <p className="mt-1 text-xs leading-snug text-muted-foreground">{hint}</p>
+        <p className="mt-1 text-[11px] leading-snug text-muted-foreground">
+          {hint}
+        </p>
       )}
     </Card>
   );
