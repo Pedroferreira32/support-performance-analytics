@@ -270,6 +270,15 @@ A apresentação é gerada diretamente no navegador e inclui:
 | Qualidade | Vitest, ESLint e TypeScript Compiler | Testes automatizados, análise estática e validação de tipos |
 | Pacotes | pnpm | Instalação reproduzível das dependências |
 | Hospedagem | GitHub e Vercel | Versionamento, integração contínua e publicação da SPA |
+| Protótipo local — histórico | Python, Pandas, SQLite e Streamlit | Primeira implementação da limpeza, validação, cálculos e persistência; não executa na versão atual da Vercel |
+
+### Evolução tecnológica e uso do Pandas
+
+A primeira versão do projeto foi desenvolvida localmente em **Python**, utilizando **Pandas** para leitura das planilhas, limpeza e padronização dos dados, aplicação dos filtros, agrupamento por funcionário e cálculo dos indicadores. O histórico era armazenado em **SQLite**, e a interface inicial foi construída com **Streamlit**.
+
+Na migração para uma aplicação pública hospedada na Vercel, as mesmas regras foram reimplementadas em **TypeScript** no arquivo `src/lib/validation-engine.ts`. A leitura de CSV e Excel passou a ser feita com **SheetJS**, e o histórico passou a ser mantido no navegador com `localStorage` e LZ-String.
+
+Portanto, Pandas faz parte da evolução e da experiência técnica do projeto, mas **não é uma dependência da versão atualmente publicada**. Essa mudança permitiu executar toda a validação diretamente no navegador, sem enviar a planilha do usuário para um backend.
 
 ## Arquitetura da aplicação
 
