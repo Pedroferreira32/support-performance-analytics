@@ -5,8 +5,8 @@ import { AppShell } from "@/components/layout/app-shell";
 import { type IconName } from "@/components/ui-ext/app-icon";
 import { Funnel } from "@/components/ui-ext/funnel";
 import { KpiCard } from "@/components/ui-ext/kpi-card";
+import { LeaderComparison } from "@/components/ui-ext/leader-comparison";
 import { RankingChart } from "@/components/ui-ext/ranking-chart";
-import { ScoreGauge } from "@/components/ui-ext/score-gauge";
 import { SectionCard } from "@/components/ui-ext/section-card";
 import { StackedFormation } from "@/components/ui-ext/stacked-formation";
 import { StatusBadge } from "@/components/ui-ext/status-badge";
@@ -136,31 +136,20 @@ export default function PremiacaoPage() {
           </SectionCard>
 
           <SectionCard
-            eyebrow="Liderança da competência"
-            title={leader?.name ?? "Sem resultado"}
-            className="h-fit"
+            eyebrow="Leitura direta"
+            title="Líder comparada à equipe"
+            description="Volume e avaliação contra a média da equipe; nota final contra a meta da competência."
           >
-            <div className="rounded-sm border bg-gradient-to-br from-primary-soft/60 to-card p-5">
-              <ScoreGauge
-                value={leader?.note ?? 0}
-                max={competencia.teto}
-                label="Índice final"
-                sublabel={`A nota ficou ${fmtBR(Math.max(0, competencia.teto - (leader?.note ?? 0)), 2)} ponto(s) abaixo do teto`}
-              />
-            </div>
-            <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
-              Cálculo reproduzível e memória de cálculo disponível para
-              conferência completa da competência.
-            </p>
+            <LeaderComparison />
           </SectionCard>
         </div>
 
         {/* Formação por funcionário + funil */}
         <div className="grid gap-5 lg:grid-cols-2">
           <SectionCard
-            eyebrow="Formação da nota"
-            title="Composição da nota por funcionário"
-            description="Parcela fixa e variáveis empilhadas; a linha marca a meta de 85."
+            eyebrow="Comparação por critério"
+            title="Matriz de composição da nota"
+            description="Pontuação exata e aproveitamento de cada critério, ordenados pelo ranking oficial."
           >
             <StackedFormation />
           </SectionCard>
