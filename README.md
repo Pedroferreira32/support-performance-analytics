@@ -275,7 +275,7 @@ A apresentação é gerada diretamente no navegador e inclui:
 | Apresentações | PptxGenJS | Geração do relatório executivo em `.pptx` |
 | Qualidade | Vitest, ESLint e TypeScript Compiler | Testes automatizados, análise estática e validação de tipos |
 | Pacotes | pnpm | Instalação reproduzível das dependências |
-| Infraestrutura | Docker, Render, GitHub e Vercel | Empacotamento da API, banco, versionamento e publicação do frontend |
+| Infraestrutura | Vercel Functions, Neon Postgres, GitHub e Vercel | Execução serverless da API, banco persistente, versionamento e publicação contínua |
 
 ### Papel do Pandas na versão atual
 
@@ -287,7 +287,7 @@ O motor TypeScript foi preservado como contingência e como referência de equiv
 
 | Método e rota | Finalidade |
 |---|---|
-| `GET /health` | Saúde, versão da pipeline e mecanismo de armazenamento |
+| `GET /api/health` | Saúde, versão da pipeline e mecanismo de armazenamento |
 | `POST /api/v1/detectar-competencia` | Identifica a competência pela data de início |
 | `POST /api/v1/competencias/processar` | Executa a pipeline e substitui a competência de forma idempotente |
 | `GET /api/v1/competencias` | Sincroniza o histórico completo com o dashboard |
@@ -303,6 +303,8 @@ backend/
 ├── app/pipeline/engine.py       # ETL/ELT com Pandas e cálculo do ranking
 └── app/database.py              # PostgreSQL/SQLite e carga idempotente
 
+api/index.py                     # Entrada da FastAPI como Vercel Function
+
 src/
 ├── components/                  # Layout, componentes e visualizações
 ├── data/support-data-runtime.ts # Adaptação dos snapshots aos painéis
@@ -315,11 +317,11 @@ src/
 
 ## Privacidade e persistência
 
-- Com a API configurada, a planilha é enviada ao backend FastAPI para processamento pela pipeline Pandas.
+- Em produção, a planilha é enviada à FastAPI no mesmo domínio da aplicação e processada pela pipeline Pandas.
 - O histórico oficial fica no PostgreSQL e pode ser acessado pelos diferentes operadores do setor.
 - `competencias`, `resultados`, `atendimentos_validos` e `exclusoes` preservam a rastreabilidade analítica.
 - O navegador mantém uma cópia comprimida com LZ-String para continuidade e leitura rápida.
-- Sem `VITE_DATA_API_URL`, o sistema deixa claro que está no modo local e não compartilha o histórico.
+- Na Vercel, a API de mesma origem é ativada automaticamente; `VITE_DATA_API_URL` fica reservado para desenvolvimento ou backend externo.
 - O backend não armazena o arquivo original; persiste os dados tratados, parâmetros, resultados e evidências de auditoria.
 - Recomenda-se gerar e guardar o Excel de auditoria após cada fechamento oficial.
 
@@ -368,14 +370,16 @@ Os testes automatizados cobrem os perfis de regra, o teto histórico de 100 pont
 
 ## Publicação
 
-O projeto usa dois serviços conectados pelo GitHub:
+O frontend e a API são publicados no mesmo projeto da Vercel:
 
-- **Vercel:** compila e publica o dashboard React.
-- **Render:** constrói o `backend/Dockerfile`, executa o FastAPI e provisiona o PostgreSQL definido em `render.yaml`.
+- **Frontend:** React/Vite distribuído pela CDN da Vercel.
+- **API:** FastAPI/Pandas executada em uma Vercel Function por meio de `api/index.py`.
+- **Banco:** Neon Postgres conectado pelo Vercel Marketplace e disponibilizado pela variável privada `DATABASE_URL`.
+- **Rotas:** `/api/*` é direcionado à Function; as demais rotas permanecem na SPA.
 
-Na Vercel, `VITE_DATA_API_URL` deve apontar para a URL pública da API Render. No Render, `FRONTEND_ORIGINS` restringe o CORS ao domínio do dashboard.
+Em produção, o frontend utiliza a API do próprio domínio, sem depender de `VITE_DATA_API_URL` e sem tráfego CORS entre provedores. Atualizações enviadas para a branch `main` acionam o deploy integrado pelo GitHub.
 
-Atualizações enviadas para a branch `main` podem acionar automaticamente os dois deploys. O frontend mantém o layout atual; a mudança ocorre na origem e na persistência dos dados.
+O PostgreSQL é obrigatório na Vercel. A aplicação não utiliza SQLite temporário em produção, evitando que o histórico desapareça após reinicializações das Functions.
 
 ---
 
