@@ -6,6 +6,7 @@ import {
 
 const API_URL = (import.meta.env.VITE_DATA_API_URL ?? "").trim().replace(/\/$/, "");
 const ALLOW_LOCAL_FALLBACK = import.meta.env.VITE_ALLOW_LOCAL_PIPELINE_FALLBACK !== "false";
+const SAME_ORIGIN_API = import.meta.env.PROD && !API_URL;
 
 export type PipelineMode = "api" | "local";
 
@@ -16,7 +17,7 @@ export interface PipelineResult<T> {
 }
 
 export function pipelineApiEnabled(): boolean {
-  return Boolean(API_URL);
+  return Boolean(API_URL) || SAME_ORIGIN_API;
 }
 
 async function errorMessage(response: Response): Promise<string> {
@@ -112,4 +113,3 @@ export async function persistPipelineFeedback(
     return "local";
   }
 }
-

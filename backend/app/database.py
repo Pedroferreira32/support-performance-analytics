@@ -76,6 +76,10 @@ def default_database_url() -> str:
     value = os.getenv("DATABASE_URL", "").strip()
     if value:
         return value
+    if os.getenv("VERCEL"):
+        raise RuntimeError(
+            "DATABASE_URL não configurada. Conecte um PostgreSQL persistente ao projeto da Vercel."
+        )
     path = Path(__file__).resolve().parents[1] / "data" / "support_performance.db"
     path.parent.mkdir(parents=True, exist_ok=True)
     return f"sqlite:///{path}"
@@ -287,4 +291,3 @@ class SnapshotRepository:
                 (feedback, _json(ranking_row), competence, attendant),
             )
             return snapshot
-

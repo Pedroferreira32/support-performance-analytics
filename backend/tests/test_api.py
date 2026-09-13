@@ -15,7 +15,9 @@ def test_full_api_flow(tmp_path) -> None:
     ).encode()
 
     with TestClient(app) as client:
-        assert client.get("/health").json()["pipeline"] == "python-pandas"
+        health = client.get("/api/health").json()
+        assert health["pipeline"] == "python-pandas"
+        assert health["persistent"] is True
         detection = client.post(
             "/api/v1/detectar-competencia",
             files={"file": ("agosto.csv", content, "text/csv")},
@@ -38,4 +40,3 @@ def test_full_api_flow(tmp_path) -> None:
         )
         assert updated.status_code == 200
         assert updated.json()["ranking"][0]["feedback"] == "Manter o resultado."
-

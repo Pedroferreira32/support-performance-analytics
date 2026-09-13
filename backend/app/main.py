@@ -34,11 +34,26 @@ async def _read_file(file: UploadFile) -> bytes:
 
 
 def create_app(repository: SnapshotRepository | None = None) -> FastAPI:
-    repo = repository or SnapshotRepository()
+    repository_error: str | None = None
+    repo = repository
+    if repo is None:
+        try:
+            repo = SnapshotRepository()
+        except RuntimeError as error:
+            repository_error = str(error)
+
+    def require_repository() -> SnapshotRepository:
+        if repo is None:
+            raise HTTPException(
+                status_code=503,
+                detail=repository_error or "O armazenamento persistente não está configurado.",
+            )
+        return repo
 
     @asynccontextmanager
     async def lifespan(_: FastAPI):
-        repo.initialize()
+        if repo is not None:
+            repo.initialize()
         yield
 
     app = FastAPI(
@@ -46,6 +61,9 @@ def create_app(repository: SnapshotRepository | None = None) -> FastAPI:
         version="1.0.0",
         description="Pipeline Pandas para limpeza, validação, cálculo e histórico da premiação.",
         lifespan=lifespan,
+        docs_url="/api/docs",
+        redoc_url="/api/redoc",
+        openapi_url="/api/openapi.json",
     )
     app.state.repository = repo
     app.add_middleware(
@@ -56,12 +74,14 @@ def create_app(repository: SnapshotRepository | None = None) -> FastAPI:
         allow_headers=["*"],
     )
 
-    @app.get("/health")
+    @app.get("/api/health")
     def health() -> dict[str, object]:
         return {
-            "status": "ok",
+            "status": "ok" if repo is not None else "configuration_required",
             "pipeline": "python-pandas",
-            "storage": repo.dialect,
+            "storage": repo.dialect if repo is not None else "unconfigured",
+            "persistent": repo is not None,
+            "detail": repository_error,
             "version": app.version,
         }
 
@@ -89,6 +109,7 @@ def create_app(repository: SnapshotRepository | None = None) -> FastAPI:
         atendentes_excluidos: Annotated[str, Form()] = "",
     ) -> dict[str, object]:
         try:
+            storage = require_repository()
             content = await _read_file(file)
             snapshot = process_upload(
                 content,
@@ -96,7 +117,7 @@ def create_app(repository: SnapshotRepository | None = None) -> FastAPI:
                 competencia,
                 atendentes_excluidos,
             )
-            return repo.save(snapshot)
+            return storage.save(snapshot)
         except HTTPException:
             raise
         except Exception as error:
@@ -104,18 +125,18 @@ def create_app(repository: SnapshotRepository | None = None) -> FastAPI:
 
     @app.get("/api/v1/competencias")
     def list_competences() -> list[dict[str, object]]:
-        return repo.list()
+        return require_repository().list()
 
     @app.get("/api/v1/competencias/{competencia}")
     def get_competence(competencia: str) -> dict[str, object]:
-        snapshot = repo.get(competencia)
+        snapshot = require_repository().get(competencia)
         if snapshot is None:
             raise HTTPException(status_code=404, detail="Competência não encontrada.")
         return snapshot
 
     @app.patch("/api/v1/competencias/{competencia}/feedback/{atendente}")
     def update_feedback(competencia: str, atendente: str, body: FeedbackBody) -> dict[str, object]:
-        snapshot = repo.update_feedback(competencia, atendente, body.feedback.strip())
+        snapshot = require_repository().update_feedback(competencia, atendente, body.feedback.strip())
         if snapshot is None:
             raise HTTPException(status_code=404, detail="Resultado não encontrado.")
         return snapshot
@@ -124,4 +145,3 @@ def create_app(repository: SnapshotRepository | None = None) -> FastAPI:
 
 
 app = create_app()
-

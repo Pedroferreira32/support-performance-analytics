@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from backend.app.database import SnapshotRepository
+import pytest
+
+from backend.app.database import SnapshotRepository, default_database_url
 from backend.app.pipeline.engine import process_upload
 
 
@@ -32,3 +34,10 @@ def test_feedback_is_updated_in_canonical_snapshot(tmp_path) -> None:
     assert updated is not None
     assert repository.get("2026-08")["ranking"][0]["feedback"] == "Acompanhar cobertura semanalmente."
 
+
+def test_vercel_requires_persistent_database(monkeypatch) -> None:
+    monkeypatch.setenv("VERCEL", "1")
+    monkeypatch.delenv("DATABASE_URL", raising=False)
+
+    with pytest.raises(RuntimeError, match="DATABASE_URL não configurada"):
+        default_database_url()
