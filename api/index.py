@@ -1,6 +1,12 @@
-"""Entrada serverless da API Python/Pandas na Vercel."""
+from fastapi import FastAPI
 
-from backend.app.main import app
+app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
 
 
-__all__ = ["app"]
+@app.get("/api/health")
+def health() -> dict[str, object]:
+    return {
+        "status": "ok",
+        "pipeline": "diagnostico-fastapi",
+        "persistent": False,
+    }
