@@ -12,6 +12,12 @@ dist
 dist-ssr
 reports
 *.local
+.env
+.venv/
+backend/data/*.db
+backend/data/*.db-*
+**/__pycache__/
+*.py[cod]
 
 # Editor directories and files
 .vscode/*

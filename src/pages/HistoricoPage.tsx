@@ -31,6 +31,7 @@ import {
   hasOperationalData,
 } from "@/data/support-data-runtime";
 import { updateFeedback } from "@/lib/dashboard-store";
+import { persistPipelineFeedback, pipelineApiEnabled } from "@/lib/data-pipeline-api";
 import { fmtBR } from "@/lib/format";
 
 export default function HistoricoPage() {
@@ -48,7 +49,7 @@ export default function HistoricoPage() {
     setFeedback(row?.feedback ?? "");
   }, [emp?.name]);
 
-  const saveFeedback = () => {
+  const saveFeedback = async () => {
     if (!currentSnapshot || !emp || !hasOperationalData) {
       toast.info("Importe uma base para registrar feedbacks.");
       return;
@@ -57,8 +58,15 @@ export default function HistoricoPage() {
       toast.error("Escreva o feedback antes de salvar.");
       return;
     }
-    updateFeedback(currentSnapshot.competencia, emp.name, feedback);
-    toast.success("Feedback salvo no histórico local");
+    try {
+      const mode = await persistPipelineFeedback(currentSnapshot.competencia, emp.name, feedback);
+      updateFeedback(currentSnapshot.competencia, emp.name, feedback);
+      toast.success(mode === "api" ? "Feedback salvo no histórico central" : "Feedback salvo no histórico local");
+    } catch (error) {
+      toast.error("Não foi possível salvar o feedback", {
+        description: error instanceof Error ? error.message : "Tente novamente.",
+      });
+    }
   };
 
   if (!emp) return null;
@@ -205,9 +213,13 @@ export default function HistoricoPage() {
             />
             <div className="flex items-center justify-between gap-3">
               <p className="text-xs text-muted-foreground">
-                {hasOperationalData ? "O texto fica vinculado à competência selecionada neste navegador." : "Importe uma base para habilitar a edição."}
+                {hasOperationalData
+                  ? pipelineApiEnabled()
+                    ? "O texto fica vinculado à competência no histórico central."
+                    : "O texto fica vinculado à competência selecionada neste navegador."
+                  : "Importe uma base para habilitar a edição."}
               </p>
-              <Button size="sm" onClick={saveFeedback}>
+              <Button size="sm" onClick={() => void saveFeedback()}>
                 Salvar feedback
               </Button>
             </div>

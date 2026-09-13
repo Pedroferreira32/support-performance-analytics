@@ -11,7 +11,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { loadExcludedNames, saveExcludedNames, saveSnapshot } from "@/lib/dashboard-store";
-import { competenceToBr, detectCompetence, officialConfig, processFile } from "@/lib/validation-engine";
+import { detectDataCompetence, pipelineApiEnabled, processDataFile } from "@/lib/data-pipeline-api";
+import { competenceToBr, officialConfig } from "@/lib/validation-engine";
 
 export default function AtualizarPage() {
   const navigate = useNavigate();
@@ -36,8 +37,9 @@ export default function AtualizarPage() {
     setMessage(null);
     if (!selected) return;
     try {
-      const detected = await detectCompetence(selected);
-      if (detected) setCompetence(competenceToBr(detected));
+      const result = await detectDataCompetence(selected);
+      if (result.data) setCompetence(competenceToBr(result.data));
+      if (result.warning) toast.warning("Pipeline central indisponível", { description: result.warning });
     } catch (error) {
       setMessage({ tone: "error", title: "Não foi possível ler o arquivo", body: error instanceof Error ? error.message : "Verifique o formato da planilha." });
     }
@@ -55,15 +57,17 @@ export default function AtualizarPage() {
     setProcessing(true);
     setMessage(null);
     try {
-      const snapshot = await processFile(file, competence, excluded);
+      const result = await processDataFile(file, competence, excluded);
+      const snapshot = result.data;
       saveExcludedNames(excluded);
       saveSnapshot(snapshot);
       setMessage({
         tone: "success",
         title: `${snapshot.competenciaBr} processada com sucesso`,
-        body: `${snapshot.validos.length.toLocaleString("pt-BR")} registros válidos, ${snapshot.excluidos.length.toLocaleString("pt-BR")} excluídos e ${snapshot.ranking.filter((row) => row.premiado).length} premiados.`,
+        body: `${snapshot.validos.length.toLocaleString("pt-BR")} registros válidos, ${snapshot.excluidos.length.toLocaleString("pt-BR")} excluídos e ${snapshot.ranking.filter((row) => row.premiado).length} premiados. Processamento: ${result.mode === "api" ? "pipeline Python/Pandas" : "motor local de contingência"}.`,
       });
-      toast.success("Histórico atualizado", { description: "A competência foi substituída integralmente, sem duplicidade." });
+      if (result.warning) toast.warning("Resultado salvo somente neste navegador", { description: result.warning });
+      else toast.success("Histórico atualizado", { description: result.mode === "api" ? "A competência foi persistida no histórico central, sem duplicidade." : "A competência foi substituída no histórico local, sem duplicidade." });
       window.setTimeout(() => {
         navigate("/gerencial");
         window.location.reload();
@@ -80,9 +84,11 @@ export default function AtualizarPage() {
       <div className="animate-fade-in-up space-y-5">
         <Alert className="rounded-sm border-primary/30 bg-primary/5">
           <ShieldCheck className="size-4 text-primary" />
-          <AlertTitle>Processamento local e privado</AlertTitle>
+          <AlertTitle>{pipelineApiEnabled() ? "Pipeline Python/Pandas" : "Processamento local de contingência"}</AlertTitle>
           <AlertDescription>
-            A planilha é validada dentro deste navegador e não é enviada para servidores. O histórico fica salvo somente neste dispositivo.
+            {pipelineApiEnabled()
+              ? "A base percorre as etapas de ingestão, limpeza, qualidade, validação, cálculo e persistência central. O navegador mantém uma cópia para continuidade operacional."
+              : "A planilha é validada neste navegador. Configure VITE_DATA_API_URL para ativar a pipeline Pandas e o histórico compartilhado."}
           </AlertDescription>
         </Alert>
 
@@ -151,6 +157,7 @@ export default function AtualizarPage() {
                   ["Automáticos", config.incluirFinalizadosAutomaticamente ? "Incluídos; duração protegida" : "Tratamento regular"],
                   ["Avaliação", `Escala de 0 a ${config.escalaAvaliacaoMax}`],
                   ["Meta mínima", `${config.notaMinima} pontos`],
+                  ["Teto da regra", `${config.tetoPontuacao.toLocaleString("pt-BR", { minimumFractionDigits: 2 })} pontos`],
                   ["Premiação", "Top 3 entre elegíveis"],
                 ].map(([label, value]) => (
                   <div key={label} className="flex items-start justify-between gap-4 border-b border-border/60 py-3 first:pt-0 last:border-0 last:pb-0">

@@ -127,9 +127,25 @@ export default function ProjectPage() {
             </span>
               </>
             ) : (
-              <span className="text-sm font-semibold">
-                Pesos da competência: Quantidade {currentSnapshot?.config.pesoQuantidade ?? 20} · Tempo {currentSnapshot?.config.pesoTempo ?? 10} · TMA {currentSnapshot?.config.pesoTma ?? 30} · Avaliação {currentSnapshot?.config.pesoAvaliacao ?? 40}
-              </span>
+              <>
+                {[
+                  ["Quantidade", currentSnapshot?.config.pesoQuantidade ?? 20],
+                  ["Tempo Total", currentSnapshot?.config.pesoTempo ?? 10],
+                  ["TMA", currentSnapshot?.config.pesoTma ?? 30],
+                  ["Avaliação", currentSnapshot?.config.pesoAvaliacao ?? 40],
+                ].map(([label, value], index) => (
+                  <span key={label} className="contents">
+                    {index > 0 && <Plus className="size-4 text-muted-foreground" />}
+                    <span className="text-sm">
+                      <span className="font-semibold">{label} </span>
+                      <span className="tnum font-bold">{Number(value).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</span>
+                    </span>
+                  </span>
+                ))}
+                <Equal className="size-4 text-muted-foreground" />
+                <span className="text-sm font-bold">Teto <span className="tnum">{competencia.teto.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</span></span>
+                <span className="w-full text-xs text-muted-foreground">Tempo Total e TMA são componentes independentes nesta regra.</span>
+              </>
             )}
           </div>
         </SectionCard>
@@ -182,6 +198,7 @@ export default function ProjectPage() {
                   <TableHead>Avaliação</TableHead>
                   <TableHead>Duração</TableHead>
                   <TableHead>Pesos Qtd./Tempo/TMA/Aval.</TableHead>
+                  <TableHead>Teto</TableHead>
                   <TableHead className="pr-6">Tratamento de Tempo/TMA</TableHead>
                 </TableRow>
               </TableHeader>
@@ -192,9 +209,10 @@ export default function ProjectPage() {
                       {r.periodo}
                     </TableCell>
                     <TableCell className="tnum">{r.avaliacao}</TableCell>
-                    <TableCell>{r.duracao}</TableCell>
-                    <TableCell className="tnum">{r.pesos}</TableCell>
-                    <TableCell className="pr-6">{r.tratamento}</TableCell>
+                      <TableCell>{r.duracao}</TableCell>
+                      <TableCell className="tnum">{r.pesos}</TableCell>
+                      <TableCell className="tnum font-bold">{r.teto}</TableCell>
+                      <TableCell className="pr-6">{r.tratamento}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

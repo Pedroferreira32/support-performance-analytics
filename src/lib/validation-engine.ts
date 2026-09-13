@@ -26,6 +26,7 @@ export interface RuleConfig {
   notaMinima: number;
   horaInicio: string;
   horaFim: string;
+  tetoPontuacao: number;
 }
 
 export interface ValidRecord {
@@ -228,7 +229,7 @@ export function competenceToBr(value: string): string {
 export function officialConfig(competencia: string): RuleConfig {
   const base: RuleConfig = {
     competencia,
-    perfilRegra: "Novo modelo oficial — 9 horas",
+    perfilRegra: "Novo modelo oficial — 100 pontos com Tempo e TMA separados",
     modo: "padrao",
     maxHoras: 9,
     escalaAvaliacaoMax: 5,
@@ -243,12 +244,13 @@ export function officialConfig(competencia: string): RuleConfig {
     notaMinima: META_ELEGIBILIDADE,
     horaInicio: "08:00",
     horaFim: "19:59",
+    tetoPontuacao: 100,
   };
 
   if (competencia <= "2026-05") {
     return {
       ...base,
-      perfilRegra: "Modelo histórico (até maio/2026)",
+      perfilRegra: "Modelo histórico — 100 pontos; Tempo Total e TMA separados",
       maxHoras: 8,
       escalaAvaliacaoMax: 10,
       pesoQuantidade: 30,
@@ -266,6 +268,7 @@ export function officialConfig(competencia: string): RuleConfig {
       incluirFinalizadosAutomaticamente: true,
       neutralizarTempoAutomaticos: true,
       pontuacaoTempoTmaFixa: true,
+      tetoPontuacao: 91.5,
     };
   }
   if (competencia >= "2026-08") {
@@ -275,6 +278,7 @@ export function officialConfig(competencia: string): RuleConfig {
       incluirFinalizadosAutomaticamente: true,
       neutralizarTempoAutomaticos: true,
       pontuacaoTempoTmaFixa: true,
+      tetoPontuacao: 91.5,
     };
   }
   return base;
@@ -637,6 +641,7 @@ export async function processFile(
   if (headers[mapping.protocolo] === undefined) warnings.push("Protocolo ausente: foi usado o número da linha para auditoria.");
   if (config.incluirFinalizadosAutomaticamente) warnings.push("Finalizados automaticamente incluídos em Quantidade e Avaliação; a duração artificial não participa de Tempo/TMA.");
   if (config.pontuacaoTempoTmaFixa) warnings.push("Tempo Total e TMA recebem 31,50 pontos iguais para todos os funcionários.");
+  else warnings.push(`Teto de ${config.tetoPontuacao.toFixed(0)} pontos: Tempo Total e TMA são componentes separados e comparativos.`);
 
   const mappingNames = Object.fromEntries(Object.entries(mapping).map(([key, index]) => [key, cleanText(headers[index])]));
   return {

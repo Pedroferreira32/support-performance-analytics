@@ -414,6 +414,7 @@ export const selectedRule = [
     value: "Incluídos; duração artificial sem impacto em Tempo/TMA",
   },
   { label: "Elegibilidade", value: "Nota final ≥ 85,00" },
+  { label: "Teto da pontuação", value: "91,50 pontos" },
   { label: "Premiação", value: "Somente os três maiores elegíveis" },
   { label: "Desempate", value: "Nota, quantidade e avaliação" },
 ];
@@ -423,14 +424,15 @@ export interface VersionedRule {
   avaliacao: string;
   duracao: string;
   pesos: string;
+  teto: string;
   tratamento: string;
 }
 
 export const versionedRules: VersionedRule[] = [
-  { periodo: "Até maio/2026", avaliacao: "0 a 10", duracao: "Até 8h", pesos: "30 / 15 / 25 / 30", tratamento: "Comparativo" },
-  { periodo: "Junho/2026", avaliacao: "0 a 5", duracao: "Até 9h", pesos: "20 / 10 / 30 / 40", tratamento: "Comparativo" },
-  { periodo: "Julho/2026", avaliacao: "0 a 5", duracao: "Neutralizada", pesos: "20 / 10 / 30 / 40", tratamento: "31,50 pontos fixos" },
-  { periodo: "Agosto/2026 em diante", avaliacao: "0 a 5", duracao: "Até 9h", pesos: "20 / 10 / 30 / 40", tratamento: "31,50 pontos fixos" },
+  { periodo: "Até maio/2026", avaliacao: "0 a 10", duracao: "Até 8h", pesos: "30 / 15 / 25 / 30", teto: "100,00", tratamento: "Tempo e TMA separados" },
+  { periodo: "Junho/2026", avaliacao: "0 a 5", duracao: "Até 9h", pesos: "20 / 10 / 30 / 40", teto: "100,00", tratamento: "Tempo e TMA separados" },
+  { periodo: "Julho/2026", avaliacao: "0 a 5", duracao: "Neutralizada", pesos: "20 / 10 / 30 / 40", teto: "91,50", tratamento: "31,50 pontos fixos" },
+  { periodo: "Agosto/2026 em diante", avaliacao: "0 a 5", duracao: "Até 9h", pesos: "20 / 10 / 30 / 40", teto: "91,50", tratamento: "31,50 pontos fixos" },
 ];
 
 export const validationGroups = [
@@ -467,6 +469,7 @@ export const validationGroups = [
     itens: [
       "Os componentes são normalizados pelo melhor resultado da equipe.",
       "Quantidade, Tempo Total, TMA e Avaliação usam os pesos do mês.",
+      "Na regra histórica de 100 pontos, Tempo Total e TMA são calculados separadamente.",
       "Quando protegidos, Tempo e TMA somam 31,50 pontos para todos.",
       "Nota final a partir de 85 gera elegibilidade; apenas o Top 3 é premiado.",
     ],
@@ -497,7 +500,7 @@ export const engineeringSteps = [
   {
     numero: "05",
     titulo: "Persistência",
-    descricao: "Histórico comprimido no navegador, substituindo a competência reprocessada sem duplicidade.",
+    descricao: "Histórico versionado por competência, com substituição idempotente e cópia local de contingência.",
   },
 ];
 

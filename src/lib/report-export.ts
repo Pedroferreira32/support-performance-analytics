@@ -172,12 +172,13 @@ export async function exportPowerPoint(snapshot: CompetenceSnapshot, history: Co
     `Janela: ${snapshot.config.incluirForaExpediente ? "período integral preservado" : "segunda a sábado, 08:00–19:59"}`,
     `Duração: até ${snapshot.config.maxHoras} horas para atendimentos regulares`,
     `Automáticos: ${snapshot.config.incluirFinalizadosAutomaticamente ? "incluídos; duração não altera Tempo/TMA" : "tratamento regular"}`,
-    `Tempo/TMA: ${snapshot.config.pontuacaoTempoTmaFixa ? "31,50 pontos iguais para todos" : "normalizados pela equipe"}`,
+    `Tempo/TMA: ${snapshot.config.pontuacaoTempoTmaFixa ? "31,50 pontos iguais para todos" : "componentes separados, normalizados pela equipe"}`,
+    `Teto: ${(snapshot.config.tetoPontuacao ?? (snapshot.config.pontuacaoTempoTmaFixa ? 91.5 : 100)).toLocaleString("pt-BR", { minimumFractionDigits: 2 })} pontos`,
     `Elegibilidade: nota final ≥ ${snapshot.config.notaMinima}; premiação: Top 3 elegível`,
   ];
   s.addText(rules.map((text) => ({ text, options: { bullet: { indent: 14 }, breakLine: true } })), { x: 0.9, y: 2.05, w: 11.4, h: 3.7, fontFace: "Aptos", fontSize: 17, color: COLORS.white, breakLine: false, paraSpaceAfterPt: 13 });
 
-  s = slide("Metodologia", "Pipeline de engenharia de dados", "Leitura, limpeza, validação, transformação e persistência local.");
+  s = slide("Metodologia", "Pipeline de engenharia de dados", "Leitura, limpeza, validação, transformação e persistência versionada.");
   addKpis(s, [
     { label: "01", value: "Importar", hint: "CSV ou Excel" },
     { label: "02", value: "Limpar", hint: "datas, textos e colunas" },

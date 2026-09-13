@@ -4,7 +4,7 @@ Dashboard web para engenharia de dados, validação mensal dos atendimentos e ap
 
 [Acessar a demonstração publicada](https://support-performance-analytics.vercel.app/)
 
-> A demonstração pública utiliza dados sintéticos. Arquivos importados pelo usuário são processados localmente no navegador e não são enviados para a Vercel ou para outro servidor.
+> A demonstração pública utiliza dados sintéticos. Quando `VITE_DATA_API_URL` está configurada, as importações são processadas pela API Python/Pandas e persistidas no banco central; sem a API, o motor TypeScript permanece disponível como contingência local.
 
 ## Visão geral
 
@@ -30,14 +30,13 @@ O processamento é determinístico e reproduzível: as regras aplicadas ficam re
 
 ```mermaid
 flowchart TD
-    A["Arquivo ChatMobi<br/>CSV, TXT ou Excel"] --> B["Extração e leitura"]
-    B --> C["Limpeza e padronização"]
-    C --> D["Validação das regras"]
-    D --> E["Cálculo dos KPIs e da nota"]
-    E --> F["Histórico local por competência"]
-    F --> G["Dashboards e feedbacks"]
-    F --> H["Excel de auditoria"]
-    F --> I["PowerPoint executivo"]
+    A["Arquivo ChatMobi"] --> B["API FastAPI"]
+    B --> C["Limpeza com Pandas"]
+    C --> D["Qualidade e regras"]
+    D --> E["KPIs e pontuação"]
+    E --> F["PostgreSQL ou SQLite"]
+    F --> G["Dashboard React"]
+    G --> H["Excel e PowerPoint"]
 ```
 
 ### Etapas executadas
@@ -49,8 +48,9 @@ flowchart TD
 5. **Validação:** aplicação do escopo, expediente, duração, atendente, competência e demais regras.
 6. **Transformação:** agrupamento por funcionário e cálculo dos indicadores operacionais.
 7. **Pontuação:** normalização dos critérios, cálculo da nota, elegibilidade e ranking.
-8. **Persistência:** substituição segura da competência reprocessada, sem duplicar o histórico.
-9. **Apresentação:** atualização dos painéis, feedbacks e exportações.
+8. **Carga:** gravação transacional nas tabelas de competências, resultados, válidos e exclusões.
+9. **Persistência:** substituição idempotente da competência reprocessada, sem duplicar o histórico.
+10. **Apresentação:** sincronização do React, atualização dos painéis, feedbacks e exportações.
 
 ## Formatos e campos reconhecidos
 
@@ -113,14 +113,16 @@ Nas competências em que os automáticos são incluídos:
 
 ## Regras versionadas por competência
 
-| Período | Escala de avaliação | Duração regular | Pesos Qtd./Tempo/TMA/Aval. | Tratamento de Tempo/TMA |
-|---|---:|---:|---:|---|
-| Até maio/2026 | 0 a 10 | Até 8 horas | 30 / 15 / 25 / 30 | Comparação relativa à equipe |
-| Junho/2026 | 0 a 5 | Até 9 horas | 20 / 10 / 30 / 40 | Comparação relativa à equipe |
-| Julho/2026 | 0 a 5 | Neutralizada | 20 / 10 / 30 / 40 | 31,50 pontos iguais para todos |
-| Agosto/2026 em diante | 0 a 5 | Até 9 horas | 20 / 10 / 30 / 40 | 31,50 pontos iguais para todos |
+| Período | Escala | Duração | Pesos Qtd./Tempo/TMA/Aval. | Teto | Tratamento de Tempo/TMA |
+|---|---:|---:|---:|---:|---|
+| Até maio/2026 | 0 a 10 | Até 8 horas | 30 / 15 / 25 / 30 | 100,00 | Componentes separados e comparativos |
+| Junho/2026 | 0 a 5 | Até 9 horas | 20 / 10 / 30 / 40 | 100,00 | Componentes separados e comparativos |
+| Julho/2026 | 0 a 5 | Neutralizada | 20 / 10 / 30 / 40 | 91,50 | 31,50 pontos iguais para todos |
+| Agosto/2026 em diante | 0 a 5 | Até 9 horas | 20 / 10 / 30 / 40 | 91,50 | 31,50 pontos iguais para todos |
 
 No modelo regular, o expediente é de segunda-feira a sábado, das `08:00` às `19:59`. Julho/2026 preserva os atendimentos fora dessa janela conforme a exceção histórica registrada no projeto.
+
+Na primeira regra histórica, os 100 pontos não representam uma base fixa: **Tempo Total vale até 15 pontos e TMA vale até 25 pontos, calculados de forma independente**. Junho também mantém Tempo e TMA separados, com pesos de 10 e 30 pontos.
 
 ## Fórmulas utilizadas
 
@@ -262,51 +264,63 @@ A apresentação é gerada diretamente no navegador e inclui:
 | Componentes | Radix UI, shadcn/ui, CVA, clsx e tailwind-merge | Componentes acessíveis e composição das variações visuais |
 | Visualização | Recharts 3 e SVG nativo | Rankings, séries mensais, indicadores e gráficos personalizados |
 | Ícones e interação | Lucide React, Sonner e Framer Motion | Ícones, notificações e transições da interface |
-| Estado e dados | TanStack Query, Local Storage e LZ-String | Estado da aplicação e histórico local comprimido |
+| Integração | Fetch API e TanStack Query | Comunicação do dashboard com a API e estado assíncrono |
+| Pipeline | Python 3.12 e Pandas 2 | Leitura, limpeza, normalização, qualidade, agrupamentos e cálculo dos KPIs |
+| API | FastAPI, Pydantic e Uvicorn | Endpoints tipados para importação, histórico, regras e feedbacks |
+| Persistência | PostgreSQL, SQLite e DB-API | Histórico central normalizado, transações e fallback de desenvolvimento |
+| Contingência | TypeScript, SheetJS, Local Storage e LZ-String | Processamento e cópia local quando a API não está configurada ou está indisponível |
 | Formulários | React Hook Form e Zod | Estrutura de formulários e validação tipada |
 | Datas | date-fns e parser próprio | Apoio a datas e tratamento dos formatos da base importada |
 | Planilhas | SheetJS (`xlsx`) | Leitura de arquivos Excel e geração da auditoria |
 | Apresentações | PptxGenJS | Geração do relatório executivo em `.pptx` |
 | Qualidade | Vitest, ESLint e TypeScript Compiler | Testes automatizados, análise estática e validação de tipos |
 | Pacotes | pnpm | Instalação reproduzível das dependências |
-| Hospedagem | GitHub e Vercel | Versionamento, integração contínua e publicação da SPA |
-| Protótipo local — histórico | Python, Pandas, SQLite e Streamlit | Primeira implementação da limpeza, validação, cálculos e persistência; não executa na versão atual da Vercel |
+| Infraestrutura | Docker, Render, GitHub e Vercel | Empacotamento da API, banco, versionamento e publicação do frontend |
 
-### Evolução tecnológica e uso do Pandas
+### Papel do Pandas na versão atual
 
-A primeira versão do projeto foi desenvolvida localmente em **Python**, utilizando **Pandas** para leitura das planilhas, limpeza e padronização dos dados, aplicação dos filtros, agrupamento por funcionário e cálculo dos indicadores. O histórico era armazenado em **SQLite**, e a interface inicial foi construída com **Streamlit**.
+O Pandas voltou a ser a camada principal do processamento de dados. A API recebe CSV ou Excel, localiza o cabeçalho, converte os campos em um `DataFrame`, normaliza textos, datas e avaliações, classifica cada registro, calcula as métricas por funcionário e produz o snapshot consumido pelo React.
 
-Na migração para uma aplicação pública hospedada na Vercel, as mesmas regras foram reimplementadas em **TypeScript** no arquivo `src/lib/validation-engine.ts`. A leitura de CSV e Excel passou a ser feita com **SheetJS**, e o histórico passou a ser mantido no navegador com `localStorage` e LZ-String.
+O motor TypeScript foi preservado como contingência e como referência de equivalência. Essa estratégia permite comparar resultados durante a migração e mantém a importação disponível caso a API central esteja temporariamente fora do ar. O modo utilizado aparece na tela após o processamento.
 
-Portanto, Pandas faz parte da evolução e da experiência técnica do projeto, mas **não é uma dependência da versão atualmente publicada**. Essa mudança permitiu executar toda a validação diretamente no navegador, sem enviar a planilha do usuário para um backend.
+## Contrato da API
+
+| Método e rota | Finalidade |
+|---|---|
+| `GET /health` | Saúde, versão da pipeline e mecanismo de armazenamento |
+| `POST /api/v1/detectar-competencia` | Identifica a competência pela data de início |
+| `POST /api/v1/competencias/processar` | Executa a pipeline e substitui a competência de forma idempotente |
+| `GET /api/v1/competencias` | Sincroniza o histórico completo com o dashboard |
+| `GET /api/v1/competencias/{AAAA-MM}` | Consulta um snapshot mensal |
+| `PATCH /api/v1/competencias/{AAAA-MM}/feedback/{atendente}` | Atualiza o feedback individual |
 
 ## Arquitetura da aplicação
 
 ```text
+backend/
+├── app/main.py                  # API FastAPI e CORS
+├── app/pipeline/rules.py        # Perfis versionados por competência
+├── app/pipeline/engine.py       # ETL/ELT com Pandas e cálculo do ranking
+└── app/database.py              # PostgreSQL/SQLite e carga idempotente
+
 src/
-├── components/
-│   ├── layout/          # Navegação e estrutura das páginas
-│   ├── ui/              # Componentes reutilizáveis de interface
-│   └── ui-ext/          # KPIs, rankings e visualizações analíticas
-├── data/
-│   ├── support-data.ts          # Base sintética da demonstração
-│   └── support-data-runtime.ts  # Adaptação do histórico para os painéis
-├── lib/
-│   ├── validation-engine.ts     # Leitura, validação, cálculo e ranking
-│   ├── dashboard-store.ts       # Persistência local das competências
-│   └── report-export.ts         # Exportações Excel e PowerPoint
-├── pages/               # Projeto, gestão, operação, premiação e auditoria
-├── router.tsx           # Definição das rotas
-└── main.tsx             # Inicialização da aplicação
+├── components/                  # Layout, componentes e visualizações
+├── data/support-data-runtime.ts # Adaptação dos snapshots aos painéis
+├── lib/data-pipeline-api.ts     # Integração API-first com fallback local
+├── lib/validation-engine.ts     # Motor TypeScript de contingência
+├── lib/dashboard-store.ts       # Cache local das competências
+├── lib/report-export.ts         # Excel e PowerPoint
+└── pages/                       # Projeto, gestão, operação e auditoria
 ```
 
 ## Privacidade e persistência
 
-- O projeto não possui backend nem banco de dados remoto.
-- O arquivo importado é processado dentro do navegador.
-- O histórico fica no `localStorage` do navegador e é comprimido com LZ-String.
-- Computadores ou navegadores diferentes não compartilham automaticamente o mesmo histórico.
-- Limpar os dados do navegador remove o histórico local.
+- Com a API configurada, a planilha é enviada ao backend FastAPI para processamento pela pipeline Pandas.
+- O histórico oficial fica no PostgreSQL e pode ser acessado pelos diferentes operadores do setor.
+- `competencias`, `resultados`, `atendimentos_validos` e `exclusoes` preservam a rastreabilidade analítica.
+- O navegador mantém uma cópia comprimida com LZ-String para continuidade e leitura rápida.
+- Sem `VITE_DATA_API_URL`, o sistema deixa claro que está no modo local e não compartilha o histórico.
+- O backend não armazena o arquivo original; persiste os dados tratados, parâmetros, resultados e evidências de auditoria.
 - Recomenda-se gerar e guardar o Excel de auditoria após cada fechamento oficial.
 
 ## Execução local
@@ -315,15 +329,27 @@ Requisitos:
 
 - Node.js 20 ou superior.
 - pnpm compatível com o projeto.
+- Python 3.12 ou superior.
 
 ```bash
 git clone https://github.com/Pedroferreira32/support-performance-analytics.git
 cd support-performance-analytics
 pnpm install
+python -m venv .venv
+# Windows: .venv\Scripts\activate
+# Linux/macOS: source .venv/bin/activate
+pip install -r backend/requirements-dev.txt
+uvicorn backend.app.main:app --reload --port 10000
+```
+
+Em outro terminal:
+
+```bash
+cp .env.example .env
 pnpm dev
 ```
 
-A aplicação ficará disponível no endereço exibido pelo Vite, normalmente `http://localhost:5173`.
+O frontend ficará normalmente em `http://localhost:5173`, a API em `http://localhost:10000` e a documentação interativa em `http://localhost:10000/docs`.
 
 ## Testes e build
 
@@ -331,17 +357,25 @@ A aplicação ficará disponível no endereço exibido pelo Vite, normalmente `h
 # Executa lint, validação de tipos e testes automatizados
 pnpm check
 
+# Executa os testes da pipeline, banco e API
+python -m pytest backend/tests -q
+
 # Gera a versão otimizada para produção
 pnpm build:prod
 ```
 
-Os testes automatizados cobrem os perfis de regra, validações da base, competência pela data de início, finalizações automáticas, ranking, elegibilidade, Top 3 e geração dos arquivos Excel e PowerPoint.
+Os testes automatizados cobrem os perfis de regra, o teto histórico de 100 pontos, Tempo/TMA separados, validações da base, competência pela data de início, finalizações automáticas, reprocessamento idempotente, persistência, API, ranking, elegibilidade, Top 3 e geração dos arquivos Excel e PowerPoint.
 
 ## Publicação
 
-O projeto está conectado ao GitHub e à Vercel. O arquivo `vercel.json` configura o build do Vite e a reescrita necessária para que as rotas da aplicação funcionem corretamente como SPA.
+O projeto usa dois serviços conectados pelo GitHub:
 
-Atualizações enviadas para a branch `main` acionam automaticamente um novo deploy de produção na Vercel.
+- **Vercel:** compila e publica o dashboard React.
+- **Render:** constrói o `backend/Dockerfile`, executa o FastAPI e provisiona o PostgreSQL definido em `render.yaml`.
+
+Na Vercel, `VITE_DATA_API_URL` deve apontar para a URL pública da API Render. No Render, `FRONTEND_ORIGINS` restringe o CORS ao domínio do dashboard.
+
+Atualizações enviadas para a branch `main` podem acionar automaticamente os dois deploys. O frontend mantém o layout atual; a mudança ocorre na origem e na persistência dos dados.
 
 ---
 

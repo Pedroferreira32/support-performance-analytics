@@ -1,6 +1,7 @@
 import * as demo from "@/data/support-data";
 import { loadSnapshots, selectedCompetence } from "@/lib/dashboard-store";
 import { META_ELEGIBILIDADE } from "@/lib/validation-engine";
+import { pipelineApiEnabled } from "@/lib/data-pipeline-api";
 import type { CompetenceSnapshot, RankingRecord } from "@/lib/validation-engine";
 
 export type Situacao = demo.Situacao;
@@ -89,9 +90,9 @@ export const competencia = current ? {
   atualizadoEm: new Date(current.processadoEm).toLocaleString("pt-BR"),
   regra: current.config.perfilRegra,
   meta: current.config.notaMinima,
-  teto: current.config.pontuacaoTempoTmaFixa
+  teto: current.config.tetoPontuacao ?? (current.config.pontuacaoTempoTmaFixa
     ? current.config.pesoQuantidade + current.config.pesoAvaliacao + 31.5
-    : current.config.pesoQuantidade + current.config.pesoTempo + current.config.pesoTma + current.config.pesoAvaliacao,
+    : current.config.pesoQuantidade + current.config.pesoTempo + current.config.pesoTma + current.config.pesoAvaliacao),
   baseFixa: current.config.pontuacaoTempoTmaFixa ? 31.5 : 0,
   pesoQuantidade: current.config.pesoQuantidade,
   pesoAvaliacao: current.config.pesoAvaliacao,
@@ -217,12 +218,20 @@ export const selectedRule = current ? [
   { label: "Duração máxima", value: `${fmt(current.config.maxHoras, 0)} horas no máximo` },
   { label: "Finalizados automáticos", value: current.config.incluirFinalizadosAutomaticamente ? "Incluídos; duração artificial sem impacto em Tempo/TMA" : "Submetidos às regras regulares" },
   { label: "Elegibilidade", value: `Nota final ≥ ${fmt(current.config.notaMinima)}` },
+  { label: "Teto da pontuação", value: `${fmt(current.config.tetoPontuacao ?? competencia.teto)} pontos` },
   { label: "Premiação", value: "Somente os três maiores elegíveis" },
   { label: "Desempate", value: "Nota, quantidade e avaliação" },
 ] : demo.selectedRule;
 export const versionedRules = demo.versionedRules;
 export const validationGroups = demo.validationGroups;
-export const engineeringSteps = demo.engineeringSteps;
+export const engineeringSteps = demo.engineeringSteps.map((step) => step.numero === "05"
+  ? {
+      ...step,
+      descricao: pipelineApiEnabled()
+        ? "Carga idempotente no banco central e cópia local de contingência, sem duplicar a competência."
+        : "Histórico local de contingência, substituindo a competência reprocessada sem duplicidade.",
+    }
+  : step);
 
 const timedRecords = current?.validos.filter((row) => row.duracaoConsiderada) ?? [];
 const timedMinutes = timedRecords.map((row) => row.tmaMinutos);

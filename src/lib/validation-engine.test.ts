@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   detectCompetence,
+  officialConfig,
   parseDate,
   processFile,
   type UploadFile,
@@ -19,6 +20,25 @@ function upload(name: string, contents: string): UploadFile {
 const header = "Protocolo,User ID,Iniciado,Fim,Setores,Setores Transfers,Rating";
 
 describe("motor de validação", () => {
+  it("preserva o modelo histórico de 100 pontos com Tempo e TMA separados", async () => {
+    const config = officialConfig("2026-05");
+    expect(config.tetoPontuacao).toBe(100);
+    expect(config.pontuacaoTempoTmaFixa).toBe(false);
+    expect(config.pesoQuantidade + config.pesoTempo + config.pesoTma + config.pesoAvaliacao).toBe(100);
+
+    const rows = [
+      "1,Ana,10/05/2026 10:00,10/05/2026 11:00,Suporte,,10",
+      "2,Ana,11/05/2026 10:00,11/05/2026 11:00,Suporte,,10",
+      "3,Bruna,10/05/2026 10:00,10/05/2026 12:00,Suporte,,8",
+    ];
+    const result = await processFile(upload("historico.csv", [header, ...rows].join("\n")), "05/2026");
+
+    expect(result.ranking[0].atendente).toBe("Ana");
+    expect(result.ranking[0].notaFinal).toBeCloseTo(100, 6);
+    expect(result.ranking[0].pontosTempo).toBeCloseTo(15, 6);
+    expect(result.ranking[0].pontosTma).toBeCloseTo(25, 6);
+  });
+
   it("define a competência pela data de início, mesmo com término no mês seguinte", async () => {
     const file = upload("agosto.csv", `${header}\n1,Ana Sofia,31/08/2026 19:56,01/09/2026 02:47,Suporte,,5`);
 

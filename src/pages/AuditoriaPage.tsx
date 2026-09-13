@@ -98,7 +98,8 @@ export default function AuditoriaPage() {
                     ["Perfil", currentSnapshot.config.perfilRegra],
                     ["Escala de avaliação", `0 a ${currentSnapshot.config.escalaAvaliacaoMax}`],
                     ["Duração regular", `até ${currentSnapshot.config.maxHoras} horas`],
-                    ["Tempo + TMA", currentSnapshot.config.pontuacaoTempoTmaFixa ? "31,50 pontos iguais para todos" : "pontuação comparativa"],
+                    ["Tempo e TMA", currentSnapshot.config.pontuacaoTempoTmaFixa ? "31,50 pontos iguais para todos" : "componentes separados e comparativos"],
+                    ["Teto da pontuação", `${(currentSnapshot.config.tetoPontuacao ?? 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })} pontos`],
                     ["Meta e premiação", `${currentSnapshot.config.notaMinima} pontos · Top 3 elegível`],
                   ].map(([term, value]) => (
                     <div key={term} className="flex justify-between gap-4 py-2.5 text-xs">
