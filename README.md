@@ -1,56 +1,186 @@
-# Performance do Suporte
+# Performance do Suporte — Validação e Premiação
 
-Dashboard web para engenharia de dados, validação mensal dos atendimentos e apuração da premiação da equipe de suporte.
+Plataforma de engenharia e análise de dados para validar os atendimentos do setor de suporte, calcular indicadores de desempenho, identificar os profissionais elegíveis e premiar os três melhores resultados de cada competência.
 
-[Acessar a demonstração publicada](https://support-performance-analytics.vercel.app/)
+[Acessar o dashboard em produção](https://support-performance-analytics.vercel.app/) · [Verificar a saúde da API](https://support-performance-analytics.vercel.app/api/health)
 
-> A demonstração pública utiliza dados sintéticos. Quando `VITE_DATA_API_URL` está configurada, as importações são processadas pela API Python/Pandas e persistidas no banco central; sem a API, o motor TypeScript permanece disponível como contingência local.
+> A versão pública é um projeto de portfólio e utiliza dados sintéticos. Bases reais de funcionários não devem ser publicadas enquanto o ambiente não possuir autenticação e controle de acesso.
 
-## Visão geral
+## Resumo executivo
 
-O projeto transforma arquivos operacionais do ChatMobi em indicadores auditáveis para apoiar o fechamento mensal da equipe. A aplicação executa um pipeline completo de leitura, limpeza, padronização, validação, transformação e apresentação dos dados.
+O projeto nasceu para resolver um fechamento mensal que exigia conferência manual de arquivos exportados do ChatMobi. Era necessário determinar quais atendimentos realmente pertenciam ao suporte, retirar registros inválidos, respeitar as regras vigentes em cada mês, calcular a pontuação de cada funcionário e justificar de forma objetiva quem deveria receber a premiação.
 
-Além de calcular a nota de cada funcionário, o sistema identifica quem atingiu a meta, seleciona os três premiados por maior nota, registra os motivos de exclusão, preserva o histórico das competências e gera relatórios em Excel e PowerPoint.
+A solução atual transforma a base operacional em uma decisão auditável. O sistema:
 
-O processamento é determinístico e reproduzível: as regras aplicadas ficam registradas junto ao resultado de cada competência.
+- importa arquivos CSV, TXT e Excel;
+- identifica e padroniza automaticamente as colunas;
+- limpa textos, números, avaliações e datas;
+- aplica regras de qualidade e negócio versionadas por competência;
+- calcula volume, tempo total, TMA, avaliação e cobertura de CSAT;
+- determina elegibilidade a partir de 85 pontos;
+- premia somente o Top 3 entre os elegíveis, por maior nota;
+- registra válidos, exclusões, parâmetros, ranking e feedbacks no histórico;
+- apresenta análises gerenciais, operacionais e individuais;
+- exporta auditoria em Excel e relatório executivo em PowerPoint.
 
-## Objetivos
+O resultado é um produto completo de **engenharia de dados, análise de dados, automação de processos, visualização, qualidade de dados e inteligência operacional**.
 
-- Reduzir a conferência manual da base mensal.
-- Padronizar critérios que variam conforme a competência.
-- Separar atendimentos válidos, excluídos e finalizados automaticamente.
-- Evitar que datas de encerramento no mês seguinte alterem a competência correta.
-- Calcular indicadores, pontuações, elegibilidade e ranking com memória de cálculo.
-- Premiar somente o Top 3 entre os funcionários elegíveis.
-- Disponibilizar painéis gerenciais, operacionais e individuais.
-- Preservar rastreabilidade para conferência e auditoria.
-- Exportar o resultado em formatos adequados para análise e apresentação executiva.
+## Problema de negócio
 
-## Pipeline de engenharia de dados
+A premiação do suporte precisava reconhecer os melhores desempenhos sem depender de fórmulas manuais ou avaliações subjetivas. A base bruta, porém, podia conter:
+
+- atendimentos de outros departamentos;
+- operadores fora da campanha;
+- registros sem atendente ou sem finalização;
+- datas em formatos diferentes;
+- encerramentos no mês seguinte;
+- durações negativas ou acima do limite;
+- atendimentos fora do expediente;
+- avaliações fora da escala vigente;
+- finalizações automáticas que distorciam Tempo Total e TMA.
+
+Sem um tratamento padronizado, esses casos alteravam os indicadores e poderiam mudar o ranking. O projeto foi criado para transformar essa apuração em um processo reproduzível, transparente e explicável ao responsável pelo setor.
+
+## Decisão apoiada
+
+Ao final de cada competência, o sistema responde:
+
+1. Quantos registros foram importados, validados e excluídos?
+2. Por que cada registro foi retirado da apuração?
+3. Qual foi o desempenho de cada funcionário?
+4. Quem atingiu a meta mínima de 85 pontos?
+5. Quais são os três maiores resultados entre os elegíveis?
+6. Quais critérios mais influenciaram a nota?
+7. Quais pontos devem ser acompanhados no próximo ciclo?
+8. Como o resultado evoluiu em relação aos meses anteriores?
+
+## Evolução do projeto
+
+### 1. Conferência manual e definição das regras
+
+O processo começou com planilhas mensais exportadas do ChatMobi. As regras de escopo, horário, duração, avaliação e pontuação foram documentadas e conferidas manualmente para formar uma base de referência.
+
+### 2. Automação local em Python
+
+A validação foi automatizada em Python, com leitura de CSV/Excel, tratamento dos dados, cálculo das notas e histórico em SQLite. Essa etapa reduziu a repetição do fechamento mensal e criou uma memória de cálculo reproduzível.
+
+### 3. Primeiras interfaces web
+
+Foram testadas versões com Streamlit, Altair e Matplotlib. Problemas de compatibilidade entre versões do Python e das bibliotecas motivaram a criação de um ambiente isolado e, posteriormente, a substituição dessa interface.
+
+### 4. Dashboard HTML local
+
+O sistema evoluiu para HTML, CSS e JavaScript, executado por um servidor Python local. Foram incluídos menu lateral, KPIs, ranking, histórico individual, auditoria, feedbacks, exportação Excel e geração de PowerPoint. O acesso pela rede interna também foi preparado.
+
+### 5. Storytelling e visual executivo
+
+Os painéis foram reorganizados para apresentar primeiro a decisão, depois os direcionadores e, por último, as evidências. Gráficos de pizza, visuais clusterizados e elementos com leitura pouco objetiva foram removidos. A interface passou a usar comparações diretas, metas visíveis, barras ordenadas, tabelas analíticas e linguagem próxima a dashboards profissionais de Power BI.
+
+### 6. React, TypeScript e Vite
+
+O frontend foi reconstruído como uma SPA moderna, mantendo o layout executivo aprovado. O projeto passou a usar React, TypeScript, Vite, Tailwind CSS, shadcn/ui, Radix UI e Recharts.
+
+### 7. Publicação e versionamento
+
+O código foi publicado no GitHub com dados sintéticos. O Render foi utilizado durante uma fase de hospedagem e depois substituído pela Vercel, que atualmente publica o frontend e a API no mesmo domínio por integração contínua com a branch `main`.
+
+### 8. Retorno da pipeline Python/Pandas
+
+O layout moderno foi preservado e o processamento profissional de dados voltou ao centro da solução. A API FastAPI recebe o arquivo, a pipeline Pandas executa limpeza, validação, transformação, cálculo e carga, e o motor TypeScript permanece como contingência local.
+
+### 9. Histórico compartilhado com Neon Postgres
+
+A persistência local foi ampliada para um PostgreSQL gerenciado no Neon. O histórico agora pode ser centralizado e consultado por diferentes navegadores, sem depender do computador que iniciou o sistema.
+
+### 10. Análise automatizada sem IA generativa
+
+Uma integração experimental com Ollama foi avaliada e retirada. A versão atual gera feedbacks e recomendações por regras determinísticas baseadas nos KPIs, evitando respostas genéricas e mantendo a explicação ligada aos números realmente calculados.
+
+## Arquitetura em produção
 
 ```mermaid
 flowchart TD
-    A["Arquivo ChatMobi"] --> B["API FastAPI"]
-    B --> C["Limpeza com Pandas"]
-    C --> D["Qualidade e regras"]
-    D --> E["KPIs e pontuação"]
-    E --> F["PostgreSQL ou SQLite"]
+    A["ChatMobi: CSV ou Excel"] --> B["Vercel Function: FastAPI"]
+    B --> C["Pipeline Pandas"]
+    C --> D["Qualidade e regras versionadas"]
+    D --> E["KPIs, nota e Top 3"]
+    E --> F["Neon PostgreSQL"]
     F --> G["Dashboard React"]
     G --> H["Excel e PowerPoint"]
 ```
 
-### Etapas executadas
+| Camada | Implementação atual |
+|---|---|
+| Origem | Arquivos operacionais CSV/TXT/XLS/XLSX/XLSM do ChatMobi |
+| Processamento | Python 3.12 e Pandas 2.2 |
+| API | FastAPI executada como Vercel Function |
+| Persistência | Neon PostgreSQL em produção e SQLite no desenvolvimento local |
+| Aplicação | React 19, TypeScript e Vite |
+| Visualização | Recharts, SVG e componentes analíticos próprios |
+| Exportações | SheetJS e PptxGenJS |
+| Publicação | GitHub + Vercel, com deploy automático da `main` |
 
-1. **Extração:** leitura da primeira aba de arquivos Excel ou do conteúdo de arquivos delimitados.
-2. **Detecção:** identificação automática do delimitador, do cabeçalho e dos campos equivalentes.
-3. **Limpeza:** normalização de textos, acentos, espaços, números, datas e linhas CSV encapsuladas.
-4. **Padronização:** conversão de datas brasileiras, datas ISO e datas seriais do Excel.
-5. **Validação:** aplicação do escopo, expediente, duração, atendente, competência e demais regras.
-6. **Transformação:** agrupamento por funcionário e cálculo dos indicadores operacionais.
-7. **Pontuação:** normalização dos critérios, cálculo da nota, elegibilidade e ranking.
-8. **Carga:** gravação transacional nas tabelas de competências, resultados, válidos e exclusões.
-9. **Persistência:** substituição idempotente da competência reprocessada, sem duplicar o histórico.
-10. **Apresentação:** sincronização do React, atualização dos painéis, feedbacks e exportações.
+Em produção, o frontend chama a API pelo mesmo domínio. A variável privada `DATABASE_URL` conecta a Function ao Neon; ela nunca é exposta ao navegador nem armazenada no repositório.
+
+## Pipeline de engenharia de dados
+
+O fluxo segue uma estrutura ETL aplicada ao fechamento mensal:
+
+### 1. Extração
+
+- Recebimento do arquivo exportado do ChatMobi.
+- Leitura da primeira planilha dos arquivos Excel.
+- Detecção automática do delimitador dos arquivos de texto.
+- Localização da linha que contém o cabeçalho real.
+
+### 2. Padronização do esquema
+
+- Associação de nomes diferentes ao mesmo campo lógico.
+- Remoção de espaços excedentes e normalização de acentos.
+- Padronização de atendente, setor, status e protocolo.
+- Conversão das avaliações para valores numéricos.
+
+### 3. Tratamento temporal
+
+- Conversão de datas brasileiras, ISO e seriais do Excel.
+- Cálculo de duração em horas e TMA em minutos.
+- Determinação da competência pela data de início.
+- Preservação de atendimentos iniciados no mês e finalizados no mês seguinte.
+
+### 4. Qualidade e validação
+
+- Classificação de cada linha como válida ou excluída.
+- Registro do primeiro motivo de exclusão para impedir dupla contagem.
+- Identificação de finalizações potencialmente automáticas.
+- Validação da escala de avaliação correspondente ao período.
+- Reconciliação entre total importado, válidos e excluídos.
+
+### 5. Transformação e agregação
+
+- Agrupamento dos registros válidos por funcionário.
+- Cálculo de quantidade, horas, média e percentis do TMA.
+- Cálculo de avaliação média e cobertura de CSAT.
+- Normalização dos indicadores pelo melhor resultado da equipe.
+
+### 6. Regra de negócio
+
+- Aplicação do perfil correspondente à competência.
+- Cálculo da nota final e do teto efetivo.
+- Definição de elegibilidade.
+- Ordenação do ranking e seleção do Top 3 premiado.
+
+### 7. Carga e persistência
+
+- Gravação transacional no PostgreSQL.
+- Snapshot completo da competência.
+- Substituição idempotente do mês reprocessado.
+- Histórico sem duplicidade.
+
+### 8. Consumo analítico
+
+- Sincronização dos dados com o frontend React.
+- Atualização dos painéis e feedbacks.
+- Geração de Excel de auditoria e PowerPoint executivo.
 
 ## Formatos e campos reconhecidos
 
@@ -63,66 +193,98 @@ flowchart TD
 - `.xls`
 - `.xlsm`
 
-### Campos obrigatórios
+### Mapeamento de campos
 
-| Campo lógico | Exemplos de nomes reconhecidos |
-|---|---|
-| Atendente | Atendente, User ID, Operador, Usuário, Agente |
-| Início | Iniciado, Início, Data Início, Criado, Data, Criado em |
-| Finalização | Fim, Data Última Mensagem, Última Mensagem, Finalizado |
-| Departamento | Filas, Fila, Departamento, Setor, Setores ou campos Transfers |
+| Campo lógico | Exemplos reconhecidos | Obrigatório |
+|---|---|---:|
+| Atendente | Atendente, User ID, Operador, Usuário, Agente | Sim |
+| Início | Iniciado, Início, Data Início, Criado, Data, Criado em | Sim |
+| Finalização | Fim, Data Última Mensagem, Última Mensagem, Finalizado | Sim |
+| Departamento | Filas, Fila, Departamento, Setor, Setores, Transfers | Sim |
+| Avaliação | Rating, Avaliação, Nota, Satisfação | Não |
+| Protocolo | Protocolo, Ticket, ID | Não |
+| Status | Status, Situação | Não |
 
-O protocolo é opcional. Quando não está disponível, o sistema gera uma identificação baseada na linha de origem para manter a rastreabilidade.
+Quando o protocolo não existe, o número da linha de origem é usado como identificador de auditoria.
 
-## Regras de validação
+## Regras de validação da base
 
 Um atendimento pode ser excluído pelos seguintes motivos:
 
-- Departamento diferente de Suporte.
-- Atendente não informado.
-- Atendente presente na lista de pessoas fora da campanha.
-- Data de início inválida ou pendente.
-- Data final não informada.
-- Data final anterior à data inicial.
-- Duração superior ao limite da competência.
-- Atendimento iniciado fora do expediente permitido.
-- Atendimento iniciado no domingo.
+- departamento diferente de Suporte;
+- atendente não informado;
+- atendente presente na lista de pessoas fora da campanha;
+- data de início inválida ou pendente;
+- data final não informada;
+- data final anterior à data inicial;
+- duração superior ao limite da competência;
+- atendimento iniciado fora do expediente permitido;
+- atendimento iniciado no domingo.
 
-Regras complementares:
+Regras adicionais:
 
-- O setor de Suporte pode aparecer em `Filas`, `Setores` ou nos campos de transferência.
-- Nomes fora da campanha aceitam correspondência parcial e são informados com separação por ponto e vírgula.
-- Cada registro recebe somente o primeiro motivo de exclusão, evitando dupla contagem.
-- Avaliações fora da escala configurada não excluem o atendimento; elas deixam de participar da média.
-- A competência é determinada pela **data de início**. Um atendimento iniciado em agosto e finalizado em `01/09` continua pertencendo a agosto.
-- Se a maioria dos registros iniciados pertencer a outro mês, o processamento é bloqueado e a competência correta é informada.
+- Suporte pode aparecer em `Filas`, `Setores` ou campos de transferência.
+- A lista de pessoas fora da campanha aceita nomes completos ou parciais separados por ponto e vírgula.
+- Cada linha recebe somente o primeiro motivo de exclusão.
+- Avaliações fora da escala não excluem o atendimento; apenas deixam de participar da média.
+- A competência é determinada pela data de início, não pela finalização.
+- Um registro iniciado em `31/08` e finalizado em `01/09` continua em agosto.
+- Se a maioria dos inícios pertencer a outro mês, o sistema bloqueia o processamento e informa a competência detectada.
+- Registros sem protocolo continuam rastreáveis pelo número da linha.
 
 ## Finalizações automáticas
 
-O sistema identifica um encerramento potencialmente automático quando:
+Um atendimento é marcado como potencialmente automático quando:
 
-- O horário final é exatamente `06:00`; ou
-- Vinte ou mais registros possuem encerramento no mesmo minuto.
+- o horário final é exatamente `06:00`; ou
+- pelo menos 20 registros terminam no mesmo minuto.
 
-Nas competências em que os automáticos são incluídos:
+Nas regras que incluem automáticos:
 
-- O atendimento participa da Quantidade.
-- Uma avaliação válida participa do indicador de Avaliação.
-- A duração artificial não participa de Tempo Total nem de TMA.
-- O registro permanece identificado na auditoria.
+- o registro conta em Quantidade;
+- a avaliação válida participa do indicador de Avaliação;
+- a duração artificial não participa de Tempo Total nem de TMA;
+- o registro continua identificado na auditoria e na exportação.
 
-## Regras versionadas por competência
+Esse tratamento permite aproveitar o atendimento sem deixar que um encerramento automático distorça os indicadores de duração.
 
-| Período | Escala | Duração | Pesos Qtd./Tempo/TMA/Aval. | Teto | Tratamento de Tempo/TMA |
-|---|---:|---:|---:|---:|---|
-| Até maio/2026 | 0 a 10 | Até 8 horas | 30 / 15 / 25 / 30 | 100,00 | Componentes separados e comparativos |
-| Junho/2026 | 0 a 5 | Até 9 horas | 20 / 10 / 30 / 40 | 100,00 | Componentes separados e comparativos |
-| Julho/2026 | 0 a 5 | Neutralizada | 20 / 10 / 30 / 40 | 91,50 | 31,50 pontos iguais para todos |
-| Agosto/2026 em diante | 0 a 5 | Até 9 horas | 20 / 10 / 30 / 40 | 91,50 | 31,50 pontos iguais para todos |
+## Regras de pontuação por competência
 
-No modelo regular, o expediente é de segunda-feira a sábado, das `08:00` às `19:59`. Julho/2026 preserva os atendimentos fora dessa janela conforme a exceção histórica registrada no projeto.
+| Período | Escala | Limite regular | Quantidade | Tempo | TMA | Avaliação | Teto | Tratamento de Tempo/TMA |
+|---|---:|---:|---:|---:|---:|---:|---:|---|
+| Até maio/2026 | 0–10 | 8 horas | 30 | 15 | 25 | 30 | 100,00 | Separados e comparativos |
+| Junho/2026 | 0–5 | 9 horas | 20 | 10 | 30 | 40 | 100,00 | Separados e comparativos |
+| Julho/2026 | 0–5 | Regra neutralizada | 20 | 7,88 fixos | 23,62 fixos | 40 | 91,50 | 31,50 iguais para todos |
+| Agosto/2026 em diante | 0–5 | 9 horas | 20 | 7,88 fixos | 23,62 fixos | 40 | 91,50 | 31,50 iguais para todos |
 
-Na primeira regra histórica, os 100 pontos não representam uma base fixa: **Tempo Total vale até 15 pontos e TMA vale até 25 pontos, calculados de forma independente**. Junho também mantém Tempo e TMA separados, com pesos de 10 e 30 pontos.
+### Modelo histórico de 100 pontos
+
+Na primeira regra, Tempo Total e TMA **não eram somados como uma base comum**. Os quatro indicadores eram calculados separadamente:
+
+- Quantidade: até 30 pontos;
+- Tempo Total: até 15 pontos;
+- TMA: até 25 pontos;
+- Avaliação: até 30 pontos.
+
+Junho/2026 também utiliza teto de 100 pontos e mantém Tempo e TMA independentes, com pesos de 10 e 30 pontos.
+
+### Regra protegida de 31,50 pontos
+
+Em julho/2026 e a partir de agosto/2026, Tempo e TMA recebem a mesma pontuação para todos:
+
+```text
+Tempo Total = 7,88 pontos
+TMA         = 23,62 pontos
+Base comum  = 31,50 pontos
+```
+
+O ranking dessas competências é decidido pelos critérios variáveis de Quantidade e Avaliação. O teto efetivo é:
+
+```text
+31,50 + 20,00 + 40,00 = 91,50 pontos
+```
+
+Julho/2026 preserva ainda os registros fora do expediente e os automáticos conforme a exceção histórica validada. De agosto/2026 em diante, o expediente regular volta a ser aplicado, mas os automáticos continuam incluídos com a duração neutralizada.
 
 ## Fórmulas utilizadas
 
@@ -136,35 +298,37 @@ Horas totaisᵢ = soma das durações consideradas
 TMA médioᵢ = média das durações consideradas em minutos
 
 Avaliação médiaᵢ = média das avaliações válidas
+
+Cobertura CSATᵢ = avaliações válidas / atendimentos válidos × 100
 ```
 
-### Quantidade
+### Pontuação de Quantidade
 
 ```text
-Pontos de Quantidadeᵢ =
+Pontos Quantidadeᵢ =
 (Quantidadeᵢ / maior Quantidade da equipe) × peso de Quantidade
 ```
 
-### Tempo Total
+### Pontuação de Tempo Total
 
 ```text
-Pontos de Tempoᵢ =
+Pontos Tempoᵢ =
 (Horas totaisᵢ / maior total de Horas da equipe) × peso de Tempo
 ```
 
-### TMA
+### Pontuação de TMA
 
 Como um TMA menor representa maior eficiência:
 
 ```text
-Pontos de TMAᵢ =
+Pontos TMAᵢ =
 (menor TMA positivo da equipe / TMA médioᵢ) × peso de TMA
 ```
 
-### Avaliação
+### Pontuação de Avaliação
 
 ```text
-Pontos de Avaliaçãoᵢ =
+Pontos Avaliaçãoᵢ =
 (Avaliação médiaᵢ / maior Avaliação média da equipe) × peso de Avaliação
 ```
 
@@ -172,57 +336,95 @@ Pontos de Avaliaçãoᵢ =
 
 ```text
 Nota finalᵢ =
-Pontos de Quantidade + Pontos de Tempo + Pontos de TMA + Pontos de Avaliação
+Pontos Quantidade + Pontos Tempo + Pontos TMA + Pontos Avaliação
 ```
 
-### Tempo e TMA protegidos
+Os cálculos utilizam a precisão completa. A interface arredonda os valores somente para apresentação.
 
-Em julho/2026 e de agosto/2026 em diante:
+## Elegibilidade, ranking e premiação
 
-```text
-Pontos de Tempo = 7,88
-Pontos de TMA   = 23,62
-Tempo + TMA     = 31,50 pontos fixos
-```
+- **Meta mínima:** nota final maior ou igual a 85 pontos.
+- **Elegível:** funcionário que atingiu a meta.
+- **Premiado:** somente um dos três primeiros elegíveis.
+- **Quarto elegível:** permanece elegível, mas fora das posições premiadas.
 
-Com os pesos atuais, o teto efetivo dessas competências é:
+Ordem do ranking:
 
-```text
-31,50 + 20,00 + 40,00 = 91,50 pontos
-```
+1. maior nota final;
+2. maior quantidade de atendimentos;
+3. maior avaliação média;
+4. ordem alfabética, caso o empate permaneça.
 
-## Elegibilidade e premiação
+A regra separa claramente **atingir a meta** de **receber a premiação**. Mesmo que quatro ou mais pessoas alcancem 85 pontos, apenas os três maiores resultados são premiados.
 
-- **Meta de elegibilidade:** nota final maior ou igual a `85 pontos`.
-- **Premiação:** somente os três primeiros funcionários elegíveis.
-- **Quarto elegível:** permanece identificado como elegível, mas fora das posições premiadas.
+## Análises e KPIs
 
-Critérios de ordenação:
+### Qualidade da base
 
-1. Maior nota final.
-2. Maior quantidade de atendimentos.
-3. Maior avaliação média.
-4. Ordem alfabética, se os critérios anteriores permanecerem empatados.
+- total importado;
+- quantidade e percentual de válidos;
+- quantidade e percentual de excluídos;
+- distribuição dos motivos de exclusão;
+- finalizações automáticas identificadas, recuperadas e neutralizadas;
+- avaliações válidas;
+- reconciliação entre base importada, base premiável e exceções.
 
-## Painéis disponíveis
+### Operação do suporte
 
-| Área | Conteúdo |
+- volume de atendimentos por funcionário;
+- participação no volume da equipe;
+- horas totais consideradas;
+- TMA médio e mediano;
+- TMA P90 para observar a cauda dos atendimentos longos;
+- avaliação média;
+- cobertura de CSAT;
+- distribuição por horário e dia da semana.
+
+### Performance e premiação
+
+- nota média e mediana da equipe;
+- líder da competência;
+- elegíveis e premiados;
+- distância individual até a meta;
+- distância até o Top 3;
+- composição da nota por critério;
+- comparação mensal;
+- ranking ordenado;
+- principal alavanca de melhoria.
+
+### Análise individual
+
+O histórico por funcionário apresenta posição, nota, atendimentos, avaliação, componentes da pontuação e evolução entre competências. Os feedbacks são produzidos por regras objetivas que destacam:
+
+- critério de melhor aproveitamento;
+- critério com maior oportunidade;
+- distância para a meta ou para o Top 3;
+- ação sugerida com base nos números observados.
+
+## Painéis do sistema
+
+| Área | Pergunta respondida | Conteúdo principal |
+|---|---|---|
+| Projeto | O que foi construído e quais regras são usadas? | Objetivo, pipeline, parâmetros e metodologia |
+| Gerencial | Qual decisão o responsável precisa tomar? | KPIs, ranking, comparação mensal e plano de acompanhamento |
+| Operação | Como o setor está funcionando? | Volume, TMA, P90, CSAT, cobertura e distribuição operacional |
+| Premiação | Quem atingiu a meta e quem será premiado? | Ranking, formação da nota, liderança e memória de cálculo |
+| Histórico | Como cada pessoa evoluiu? | Série mensal, comparação individual e feedback |
+| Auditoria | O resultado pode ser conferido? | Reconciliação, exclusões, automáticos, parâmetros e base validada |
+| Atualizar | Como processar a próxima competência? | Upload, competência, exclusões da campanha e reprocessamento |
+
+## Persistência e modelo de dados
+
+O Neon PostgreSQL utiliza quatro tabelas principais:
+
+| Tabela | Finalidade |
 |---|---|
-| Projeto | Objetivo, pipeline de engenharia de dados, regras e parâmetros da competência |
-| Gerencial | KPIs, ranking, comparação mensal, composição da nota e plano de acompanhamento |
-| Operação | Volume, TMA mediano, TMA P90, avaliação, cobertura e detalhamento da equipe |
-| Premiação | Regra oficial, ranking, formação da nota, comparação direta da liderança e memória de cálculo |
-| Histórico | Evolução mensal e análise individual por funcionário |
-| Auditoria | Reconciliação da base, motivos de exclusão, automáticos, parâmetros e registros válidos |
-| Atualizar | Importação, seleção da competência, pessoas fora da campanha e reprocessamento |
+| `competencias` | Configuração, origem, estatísticas, avisos e snapshot mensal |
+| `resultados` | Ranking, indicadores, nota, elegibilidade, premiação e feedback |
+| `atendimentos_validos` | Registros efetivamente utilizados no cálculo |
+| `exclusoes` | Registros retirados, código e descrição do motivo |
 
-## Histórico e feedbacks
-
-- Cada competência é salva como um snapshot completo com parâmetros, ranking, base válida, exclusões, estatísticas e avisos.
-- Reprocessar um mês substitui somente aquela competência e não cria duplicidades.
-- O usuário pode selecionar competências anteriores pelo menu do sistema.
-- Os feedbacks individuais são gerados por regras objetivas a partir dos KPIs e podem ser editados.
-- Não existe integração com serviço de inteligência artificial na versão atual.
+O reprocessamento é idempotente: os registros da competência informada são substituídos dentro de uma transação, sem duplicar os demais meses.
 
 ## Exportações
 
@@ -230,107 +432,136 @@ Critérios de ordenação:
 
 O arquivo Excel contém:
 
-- `Ranking`
-- `Historico_Notas`
-- `Base_Validada`
-- `Log_Exclusoes`
-- `Resumo_Validacao`
-- `Parametros_Auditoria`
-- `Finalizados_Automaticos`
+- `Ranking`;
+- `Historico_Notas`;
+- `Base_Validada`;
+- `Log_Exclusoes`;
+- `Resumo_Validacao`;
+- `Parametros_Auditoria`;
+- `Finalizados_Automaticos`.
 
 ### PowerPoint executivo
 
 A apresentação é gerada diretamente no navegador e inclui:
 
-- Capa e decisão da competência.
-- Indicadores centrais.
-- Regras aplicadas.
-- Pipeline de engenharia de dados.
-- Ranking e memória de cálculo.
-- Comparação mensal.
-- Indicadores operacionais.
-- Controle dos encerramentos automáticos.
-- Análise por funcionário.
-- Insights e recomendações para o próximo ciclo.
+- capa e decisão da competência;
+- indicadores centrais;
+- regras aplicadas;
+- pipeline de engenharia de dados;
+- ranking e memória de cálculo;
+- comparação mensal;
+- indicadores operacionais;
+- controle dos automáticos;
+- análise por funcionário;
+- insights e recomendações.
 
 ## Tecnologias utilizadas
 
-| Camada | Tecnologias | Aplicação no projeto |
+| Área | Tecnologias | Uso no projeto |
 |---|---|---|
-| Interface | React 19, React DOM e TypeScript 5 | Componentização, tipagem e renderização da aplicação |
-| Build | Vite 7 | Servidor de desenvolvimento, otimização e compilação de produção |
-| Rotas | React Router 7 | Navegação entre os painéis da SPA |
-| Estilo | Tailwind CSS 3, PostCSS e Autoprefixer | Design responsivo, tema executivo e compatibilidade CSS |
-| Componentes | Radix UI, shadcn/ui, CVA, clsx e tailwind-merge | Componentes acessíveis e composição das variações visuais |
-| Visualização | Recharts 3 e SVG nativo | Rankings, séries mensais, indicadores e gráficos personalizados |
-| Ícones e interação | Lucide React, Sonner e Framer Motion | Ícones, notificações e transições da interface |
-| Integração | Fetch API e TanStack Query | Comunicação do dashboard com a API e estado assíncrono |
-| Pipeline | Python 3.12 e Pandas 2 | Leitura, limpeza, normalização, qualidade, agrupamentos e cálculo dos KPIs |
-| API | FastAPI, Pydantic e Uvicorn | Endpoints tipados para importação, histórico, regras e feedbacks |
-| Persistência | PostgreSQL, SQLite e DB-API | Histórico central normalizado, transações e fallback de desenvolvimento |
-| Contingência | TypeScript, SheetJS, Local Storage e LZ-String | Processamento e cópia local quando a API não está configurada ou está indisponível |
-| Formulários | React Hook Form e Zod | Estrutura de formulários e validação tipada |
-| Datas | date-fns e parser próprio | Apoio a datas e tratamento dos formatos da base importada |
-| Planilhas | SheetJS (`xlsx`) | Leitura de arquivos Excel e geração da auditoria |
-| Apresentações | PptxGenJS | Geração do relatório executivo em `.pptx` |
-| Qualidade | Vitest, ESLint e TypeScript Compiler | Testes automatizados, análise estática e validação de tipos |
-| Pacotes | pnpm | Instalação reproduzível das dependências |
-| Infraestrutura | Vercel Functions, Neon Postgres, GitHub e Vercel | Execução serverless da API, banco persistente, versionamento e publicação contínua |
+| Linguagem de dados | Python 3.12 | Pipeline, regras, API e persistência |
+| Engenharia de dados | Pandas 2.2 | DataFrame, limpeza, transformação, qualidade, agregação e KPIs |
+| Arquivos Excel | OpenPyXL e xlrd | Leitura de formatos modernos e históricos |
+| Upload | python-multipart | Recebimento de arquivos pela API |
+| API | FastAPI e Pydantic | Endpoints, validação de contratos e respostas tipadas |
+| Servidor local | Uvicorn | Execução da API em desenvolvimento |
+| Driver de banco | Psycopg 3 | Conexão transacional com PostgreSQL |
+| Banco em produção | Neon PostgreSQL 18 | Histórico central, persistente e compartilhado |
+| Banco local | SQLite | Desenvolvimento e testes sem infraestrutura externa |
+| Frontend | React 19 e React DOM | Interface componentizada |
+| Linguagem do frontend | TypeScript 5.9 | Tipagem e segurança do código |
+| Build | Vite 7 | Desenvolvimento e compilação otimizada |
+| Rotas | React Router 7 | Navegação da SPA |
+| Dados assíncronos | Fetch API e TanStack Query | Comunicação com a API e gerenciamento das requisições |
+| Interface | Tailwind CSS, shadcn/ui e Radix UI | Design responsivo e componentes acessíveis |
+| Visualização | Recharts 3 e SVG | Gráficos, rankings, metas e séries históricas |
+| Interação | Lucide React, Sonner e Framer Motion | Ícones, avisos e transições |
+| Formulários | React Hook Form e Zod | Validação dos dados de entrada |
+| Datas | date-fns e parsers próprios | Exibição e conversão de datas operacionais |
+| Excel no navegador | SheetJS (`xlsx`) | Importação de contingência e exportação de auditoria |
+| PowerPoint | PptxGenJS | Relatório executivo em `.pptx` |
+| Cache local | Local Storage e LZ-String | Cópia comprimida para contingência no navegador |
+| Testes frontend | Vitest | Regras TypeScript e exportações |
+| Testes backend | Pytest | Pipeline Pandas, API e banco |
+| Qualidade de código | ESLint e TypeScript Compiler | Análise estática e validação de tipos |
+| Pacotes | pnpm | Instalação reproduzível do frontend |
+| Versionamento | Git e GitHub | Histórico, colaboração e integração contínua |
+| Hospedagem | Vercel CDN e Vercel Functions | Frontend e backend no mesmo domínio |
+| Infraestrutura anterior | Render | Etapa anterior de hospedagem, substituída pela Vercel |
+| Protótipos anteriores | Streamlit, Altair e Matplotlib | Primeiras versões da interface e validações visuais |
 
-### Papel do Pandas na versão atual
-
-O Pandas voltou a ser a camada principal do processamento de dados. A API recebe CSV ou Excel, localiza o cabeçalho, converte os campos em um `DataFrame`, normaliza textos, datas e avaliações, classifica cada registro, calcula as métricas por funcionário e produz o snapshot consumido pelo React.
-
-O motor TypeScript foi preservado como contingência e como referência de equivalência. Essa estratégia permite comparar resultados durante a migração e mantém a importação disponível caso a API central esteja temporariamente fora do ar. O modo utilizado aparece na tela após o processamento.
-
-## Contrato da API
+## API
 
 | Método e rota | Finalidade |
 |---|---|
-| `GET /api/health` | Saúde, versão da pipeline e mecanismo de armazenamento |
-| `POST /api/v1/detectar-competencia` | Identifica a competência pela data de início |
-| `POST /api/v1/competencias/processar` | Executa a pipeline e substitui a competência de forma idempotente |
-| `GET /api/v1/competencias` | Sincroniza o histórico completo com o dashboard |
+| `GET /api/health` | Informa versão, pipeline, banco e persistência |
+| `GET /api/v1/regras/{AAAA-MM}` | Retorna os parâmetros oficiais da competência |
+| `POST /api/v1/detectar-competencia` | Detecta o mês pela data de início |
+| `POST /api/v1/competencias/processar` | Executa a pipeline e grava a competência |
+| `GET /api/v1/competencias` | Sincroniza o histórico completo |
 | `GET /api/v1/competencias/{AAAA-MM}` | Consulta um snapshot mensal |
 | `PATCH /api/v1/competencias/{AAAA-MM}/feedback/{atendente}` | Atualiza o feedback individual |
 
-## Arquitetura da aplicação
+Em produção, a API é consumida pelo mesmo domínio do dashboard. Se a API estiver temporariamente indisponível, o motor TypeScript pode processar o arquivo localmente e informa que o resultado ainda não foi compartilhado com os demais navegadores.
+
+## Estrutura do repositório
 
 ```text
 backend/
-├── app/main.py                  # API FastAPI e CORS
-├── app/pipeline/rules.py        # Perfis versionados por competência
-├── app/pipeline/engine.py       # ETL/ELT com Pandas e cálculo do ranking
+├── app/main.py                  # FastAPI, endpoints e CORS
+├── app/pipeline/rules.py        # Regras versionadas por competência
+├── app/pipeline/engine.py       # Pipeline Pandas e cálculo do ranking
 └── app/database.py              # PostgreSQL/SQLite e carga idempotente
 
-api/index.py                     # Entrada da FastAPI como Vercel Function
+api/index.py                     # Entrada da Vercel Function
 
 src/
-├── components/                  # Layout, componentes e visualizações
+├── components/                  # Layout e componentes analíticos
 ├── data/support-data-runtime.ts # Adaptação dos snapshots aos painéis
-├── lib/data-pipeline-api.ts     # Integração API-first com fallback local
-├── lib/validation-engine.ts     # Motor TypeScript de contingência
+├── lib/data-pipeline-api.ts     # Integração API-first e contingência
+├── lib/validation-engine.ts     # Motor TypeScript equivalente
 ├── lib/dashboard-store.ts       # Cache local das competências
 ├── lib/report-export.ts         # Excel e PowerPoint
-└── pages/                       # Projeto, gestão, operação e auditoria
+└── pages/                       # Painéis do dashboard
 ```
 
-## Privacidade e persistência
+## Qualidade e testes
 
-- Em produção, a planilha é enviada à FastAPI no mesmo domínio da aplicação e processada pela pipeline Pandas.
-- O histórico oficial fica no PostgreSQL e pode ser acessado pelos diferentes operadores do setor.
-- `competencias`, `resultados`, `atendimentos_validos` e `exclusoes` preservam a rastreabilidade analítica.
-- O navegador mantém uma cópia comprimida com LZ-String para continuidade e leitura rápida.
-- Na Vercel, a API de mesma origem é ativada automaticamente; `VITE_DATA_API_URL` fica reservado para desenvolvimento ou backend externo.
-- O backend não armazena o arquivo original; persiste os dados tratados, parâmetros, resultados e evidências de auditoria.
-- Recomenda-se gerar e guardar o Excel de auditoria após cada fechamento oficial.
+A suíte automatizada cobre:
+
+- regras históricas e atuais;
+- teto de 100 e de 91,50 pontos;
+- Tempo Total e TMA separados no modelo histórico;
+- base fixa de 31,50 pontos no modelo protegido;
+- competência determinada pela data de início;
+- atendimento finalizado no mês seguinte;
+- filtros de setor, atendente, expediente e duração;
+- correspondência parcial de pessoas fora da campanha;
+- finalizações automáticas e neutralização da duração;
+- avaliações fora da escala;
+- elegibilidade a partir de 85;
+- somente três premiados entre os elegíveis;
+- desempate e ranking;
+- persistência e reprocessamento sem duplicidade;
+- endpoints da API;
+- geração de Excel e PowerPoint.
+
+Comandos de validação:
+
+```bash
+pnpm check
+python -m pytest backend/tests -q
+pnpm build:prod
+```
+
+A versão publicada foi validada com testes do frontend e backend, build de produção, saúde da API e conexão persistente com o PostgreSQL.
 
 ## Execução local
 
 Requisitos:
 
-- Node.js 20 ou superior.
-- pnpm compatível com o projeto.
+- Node.js 20 ou superior;
+- pnpm;
 - Python 3.12 ou superior.
 
 ```bash
@@ -338,49 +569,81 @@ git clone https://github.com/Pedroferreira32/support-performance-analytics.git
 cd support-performance-analytics
 pnpm install
 python -m venv .venv
-# Windows: .venv\Scripts\activate
-# Linux/macOS: source .venv/bin/activate
+```
+
+Ative o ambiente virtual:
+
+```bash
+# Windows
+.venv\Scripts\activate
+
+# Linux ou macOS
+source .venv/bin/activate
+```
+
+Instale e execute a API:
+
+```bash
 pip install -r backend/requirements-dev.txt
 uvicorn backend.app.main:app --reload --port 10000
 ```
 
-Em outro terminal:
+Em outro terminal, configure e inicie o frontend:
 
 ```bash
 cp .env.example .env
 pnpm dev
 ```
 
-O frontend ficará normalmente em `http://localhost:5173`, a API em `http://localhost:10000` e a documentação interativa em `http://localhost:10000/docs`.
+Endereços locais:
 
-## Testes e build
+- frontend: `http://localhost:5173`;
+- API: `http://localhost:10000`;
+- documentação da API: `http://localhost:10000/api/docs`.
 
-```bash
-# Executa lint, validação de tipos e testes automatizados
-pnpm check
+Sem `DATABASE_URL`, o backend local cria um banco SQLite em `backend/data/support_performance.db`.
 
-# Executa os testes da pipeline, banco e API
-python -m pytest backend/tests -q
+## Publicação na Vercel
 
-# Gera a versão otimizada para produção
-pnpm build:prod
-```
+O projeto utiliza uma única implantação:
 
-Os testes automatizados cobrem os perfis de regra, o teto histórico de 100 pontos, Tempo/TMA separados, validações da base, competência pela data de início, finalizações automáticas, reprocessamento idempotente, persistência, API, ranking, elegibilidade, Top 3 e geração dos arquivos Excel e PowerPoint.
+- React/Vite é distribuído pela CDN da Vercel;
+- `api/index.py` empacota a FastAPI como Vercel Function;
+- `/api/*` é direcionado ao backend;
+- as demais rotas são entregues pela SPA;
+- o Neon é acessado pela variável secreta `DATABASE_URL`;
+- a branch `main` aciona o deploy automático pelo GitHub.
 
-## Publicação
+Variáveis principais:
 
-O frontend e a API são publicados no mesmo projeto da Vercel:
+| Variável | Ambiente | Finalidade |
+|---|---|---|
+| `DATABASE_URL` | Production e Preview | Conexão privada com o Neon PostgreSQL |
+| `VITE_DATA_API_URL` | Desenvolvimento | URL do backend local; não é necessária em produção |
+| `VITE_ALLOW_LOCAL_PIPELINE_FALLBACK` | Opcional | Controla o motor TypeScript de contingência |
 
-- **Frontend:** React/Vite distribuído pela CDN da Vercel.
-- **API:** FastAPI/Pandas executada em uma Vercel Function por meio de `api/index.py`.
-- **Banco:** Neon Postgres conectado pelo Vercel Marketplace e disponibilizado pela variável privada `DATABASE_URL`.
-- **Rotas:** `/api/*` é direcionado à Function; as demais rotas permanecem na SPA.
+Nunca armazene senhas ou connection strings em arquivos versionados.
 
-Em produção, o frontend utiliza a API do próprio domínio, sem depender de `VITE_DATA_API_URL` e sem tráfego CORS entre provedores. Atualizações enviadas para a branch `main` acionam o deploy integrado pelo GitHub.
+## Privacidade e governança
 
-O PostgreSQL é obrigatório na Vercel. A aplicação não utiliza SQLite temporário em produção, evitando que o histórico desapareça após reinicializações das Functions.
+- A demonstração pública utiliza nomes e dados sintéticos.
+- O arquivo original não é mantido pelo backend.
+- O banco armazena os registros tratados, parâmetros e evidências necessárias à auditoria.
+- A connection string fica protegida como secret da Vercel.
+- O Excel de auditoria deve ser guardado após cada fechamento oficial.
+- O ambiente público atual não possui autenticação; dados reais exigem controle de acesso antes do uso operacional.
 
----
+## Resultado do projeto
 
-Projeto desenvolvido como demonstração prática de **engenharia de dados, análise de dados, automação de processos, qualidade de dados e inteligência operacional** aplicada ao setor de suporte.
+O sistema substitui uma validação mensal fragmentada por uma pipeline rastreável e uma camada analítica orientada à decisão. Além de identificar o Top 3 da premiação, demonstra na prática:
+
+- engenharia e qualidade de dados;
+- modelagem de regras de negócio;
+- integração entre frontend, API e banco;
+- análise de KPIs operacionais;
+- storytelling com dados;
+- automação de relatórios;
+- versionamento e CI/CD;
+- implantação serverless em produção.
+
+O projeto pode ser apresentado como um case completo de **Data Engineering + Data Analytics aplicado à gestão de desempenho do suporte**.
