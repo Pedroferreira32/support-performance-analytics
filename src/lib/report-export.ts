@@ -39,6 +39,8 @@ export async function exportExcel(snapshot: CompetenceSnapshot, history: Compete
   const validRows = snapshot.validos.map((row) => ({
     Linha: row.linhaOrigem,
     Protocolo: row.protocolo,
+    Cliente: row.cliente ?? "",
+    Contato: row.contato ?? "",
     Funcionário: row.atendente,
     Departamento: row.departamento,
     Início: row.inicio,
@@ -52,6 +54,8 @@ export async function exportExcel(snapshot: CompetenceSnapshot, history: Compete
   const excludedRows = snapshot.excluidos.map((row) => ({
     Linha: row.linhaOrigem,
     Protocolo: row.protocolo,
+    Cliente: row.cliente ?? "",
+    Contato: row.contato ?? "",
     Funcionário: row.atendente,
     Departamento: row.departamento,
     Início: row.inicio,

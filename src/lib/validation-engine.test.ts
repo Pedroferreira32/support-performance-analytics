@@ -61,6 +61,22 @@ describe("motor de validação", () => {
     expect(result.mapeamento.inicio).toBe("Iniciado");
   });
 
+  it("preserva a identificação do cliente para a análise de recorrência", async () => {
+    const file = upload(
+      "clientes.csv",
+      "Protocolo,Contact ID,Contact Number,User ID,Iniciado,Fim,Setores,Rating\n1,Cliente Exemplo,5511999999999,Ana Sofia,10/08/2026 10:00,10/08/2026 11:00,Suporte,5",
+    );
+
+    const result = await processFile(file, "08/2026");
+
+    expect(result.validos[0]).toMatchObject({
+      cliente: "Cliente Exemplo",
+      contato: "5511999999999",
+    });
+    expect(result.mapeamento.cliente).toBe("Contact ID");
+    expect(result.mapeamento.contato).toBe("Contact Number");
+  });
+
   it("rejeita datas de calendário inexistentes", () => {
     expect(parseDate("31/02/2026 10:00")).toBeNull();
     expect(parseDate("2026-02-31 10:00")).toBeNull();

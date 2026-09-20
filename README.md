@@ -21,6 +21,7 @@ A solução atual transforma a base operacional em uma decisão auditável. O si
 - premia somente o Top 3 entre os elegíveis, por maior nota;
 - registra válidos, exclusões, parâmetros, ranking e feedbacks no histórico;
 - apresenta análises gerenciais, operacionais e individuais;
+- identifica clientes com maior volume e recorrência de contatos;
 - exporta auditoria em Excel e relatório executivo em PowerPoint.
 
 O resultado é um produto completo de **engenharia de dados, análise de dados, automação de processos, visualização, qualidade de dados e inteligência operacional**.
@@ -408,10 +409,21 @@ O histórico por funcionário apresenta posição, nota, atendimentos, avaliaç�
 | Projeto | O que foi construído e quais regras são usadas? | Objetivo, pipeline, parâmetros e metodologia |
 | Gerencial | Qual decisão o responsável precisa tomar? | KPIs, ranking, comparação mensal e plano de acompanhamento |
 | Operação | Como o setor está funcionando? | Volume, TMA, P90, CSAT, cobertura e distribuição operacional |
+| Clientes críticos | Quais clientes mais acionaram o suporte? | Volume, recorrência, participação, dias ativos, atendentes e sinal de acompanhamento |
 | Premiação | Quem atingiu a meta e quem será premiado? | Ranking, formação da nota, liderança e memória de cálculo |
 | Histórico | Como cada pessoa evoluiu? | Série mensal, comparação individual e feedback |
 | Auditoria | O resultado pode ser conferido? | Reconciliação, exclusões, automáticos, parâmetros e base validada |
 | Atualizar | Como processar a próxima competência? | Upload, competência, exclusões da campanha e reprocessamento |
+
+### Critério de clientes críticos
+
+O painel usa `Contact ID` como identificação principal e `Contact Number` como referência de contingência. Os telefones são mascarados na interface. A classificação indica concentração de demanda, não gravidade técnica:
+
+- **Crítico:** volume no percentil 90 da competência, com pelo menos dois contatos;
+- **Atenção:** volume no percentil 75 da competência, com pelo menos dois contatos;
+- **Regular:** demais clientes identificados.
+
+Na demonstração pública, todos os nomes, contatos, atendentes e protocolos exibidos nesse painel são fictícios.
 
 ## Persistência e modelo de dados
 

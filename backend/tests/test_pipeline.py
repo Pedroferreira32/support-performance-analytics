@@ -41,6 +41,20 @@ def test_competence_uses_start_date_when_end_is_next_month() -> None:
     assert len(result["validos"]) == 1
 
 
+def test_client_identity_is_preserved_for_recurrence_analysis() -> None:
+    content = (
+        "Protocolo,Contact ID,Contact Number,User ID,Iniciado,Fim,Setores,Rating\n"
+        "1,Cliente Exemplo,5511999999999,Ana,10/08/2026 10:00,10/08/2026 11:00,Suporte,5"
+    ).encode("utf-8")
+
+    result = process_upload(content, "clientes.csv", "08/2026")
+
+    assert result["validos"][0]["cliente"] == "Cliente Exemplo"
+    assert result["validos"][0]["contato"] == "5511999999999"
+    assert result["mapeamento"]["cliente"] == "Contact ID"
+    assert result["mapeamento"]["contato"] == "Contact Number"
+
+
 def test_automatic_closures_are_included_but_duration_is_neutralized() -> None:
     rows = [
         f"{index},Ana,31/08/2026 10:{index:02d},01/09/2026 02:47,Suporte,,5"
@@ -81,4 +95,3 @@ def test_partial_exclusion_and_invalid_rating_are_auditable() -> None:
     assert [row["atendente"] for row in result["validos"]] == ["Ana Sofia"]
     assert result["validos"][0]["avaliacao"] is None
     assert result["excluidos"][0]["motivoCodigo"] == "ATENDENTE_EXCLUIDO"
-

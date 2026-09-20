@@ -25,6 +25,7 @@ const paineis = [
   { to: "/projeto", label: "Projeto" },
   { to: "/gerencial", label: "Gerencial" },
   { to: "/operacao", label: "Operação" },
+  { to: "/clientes", label: "Clientes críticos" },
   { to: "/premiacao", label: "Premiação" },
   { to: "/historico", label: "Histórico" },
   { to: "/auditoria", label: "Auditoria" },

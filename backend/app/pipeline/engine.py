@@ -38,6 +38,8 @@ MOTIVOS = {
 
 ALIASES = {
     "protocolo": ["PROTOCOLO", "ID DO TICKET", "IDTICKET", "TICKET", "TICKET ID"],
+    "cliente": ["CONTACT ID", "CONTACTID", "CLIENTE", "NOME DO CLIENTE", "RAZAO SOCIAL"],
+    "contato": ["CONTACT NUMBER", "CONTACTNUMBER", "TELEFONE", "CELULAR", "WHATSAPP"],
     "atendente": ["ATENDENTE", "USER ID", "USERID", "OPERADOR", "USUARIO", "AGENTE"],
     "filas": ["FILAS", "FILA", "DEPARTAMENTO", "SETOR", "SETORES"],
     "filasTransfers": [
@@ -225,6 +227,8 @@ def _prepare(frame: pd.DataFrame, header_index: int, mapping: dict[str, int], co
     prepared["protocolo"] = column("protocolo").map(clean_text)
     missing_protocol = prepared["protocolo"].eq("")
     prepared.loc[missing_protocol, "protocolo"] = prepared.loc[missing_protocol, "linhaOrigem"].map(lambda value: f"LINHA-{value}")
+    prepared["cliente"] = column("cliente").map(clean_text)
+    prepared["contato"] = column("contato").map(clean_text)
     prepared["atendente"] = column("atendente").map(clean_text)
     prepared["fila"] = column("filas").map(clean_text)
     prepared["transfer"] = column("filasTransfers").map(clean_text)
@@ -373,6 +377,8 @@ def _record(row: pd.Series, automatic: bool, duration_considered: bool | None = 
     result: dict[str, Any] = {
         "linhaOrigem": int(row["linhaOrigem"]),
         "protocolo": str(row["protocolo"]),
+        "cliente": str(row["cliente"]),
+        "contato": str(row["contato"]),
         "atendente": str(row["atendente"]),
         "departamento": str(row["departamento"]),
         "status": str(row["status"]),
@@ -483,6 +489,8 @@ def process_upload(content: bytes, filename: str, competence_input: str, exclude
     warnings: list[str] = []
     if "protocolo" not in mapping:
         warnings.append("Protocolo ausente: foi usado o número da linha para auditoria.")
+    if "cliente" not in mapping:
+        warnings.append("Cliente ausente: o painel de clientes críticos exige Contact ID ou coluna equivalente.")
     if config.incluir_finalizados_automaticamente:
         warnings.append(
             "Finalizados automaticamente incluídos em Quantidade e Avaliação; a duração artificial não participa de Tempo/TMA."
@@ -510,4 +518,3 @@ def process_upload(content: bytes, filename: str, competence_input: str, exclude
         "estatisticas": stats,
         "avisos": warnings,
     }
-

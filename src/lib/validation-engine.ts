@@ -32,6 +32,8 @@ export interface RuleConfig {
 export interface ValidRecord {
   linhaOrigem: number;
   protocolo: string;
+  cliente?: string;
+  contato?: string;
   atendente: string;
   departamento: string;
   status: string;
@@ -113,6 +115,8 @@ const MOTIVOS: Record<string, string> = {
 
 const ALIASES: Record<string, string[]> = {
   protocolo: ["PROTOCOLO", "ID DO TICKET", "IDTICKET", "TICKET", "TICKET ID"],
+  cliente: ["CONTACT ID", "CONTACTID", "CLIENTE", "NOME DO CLIENTE", "RAZAO SOCIAL"],
+  contato: ["CONTACT NUMBER", "CONTACTNUMBER", "TELEFONE", "CELULAR", "WHATSAPP"],
   atendente: ["ATENDENTE", "USER ID", "USERID", "OPERADOR", "USUARIO", "AGENTE"],
   filas: ["FILAS", "FILA", "DEPARTAMENTO", "SETOR", "SETORES"],
   filasTransfers: [
@@ -533,6 +537,8 @@ export async function processFile(
     return {
       linhaOrigem: headerIndex + index + 2,
       protocolo: protocoloRaw || `LINHA-${headerIndex + index + 2}`,
+      cliente: cleanText(get("cliente")),
+      contato: cleanText(get("contato")),
       atendente: cleanText(get("atendente")),
       fila,
       transfer,
@@ -600,6 +606,8 @@ export async function processFile(
     const common = {
       linhaOrigem: row.linhaOrigem,
       protocolo: row.protocolo,
+      cliente: row.cliente,
+      contato: row.contato,
       atendente: row.atendente,
       departamento: row.departamento,
       status: row.status,
@@ -639,6 +647,7 @@ export async function processFile(
 
   const warnings: string[] = [];
   if (headers[mapping.protocolo] === undefined) warnings.push("Protocolo ausente: foi usado o número da linha para auditoria.");
+  if (headers[mapping.cliente] === undefined) warnings.push("Cliente ausente: o painel de clientes críticos exige Contact ID ou coluna equivalente.");
   if (config.incluirFinalizadosAutomaticamente) warnings.push("Finalizados automaticamente incluídos em Quantidade e Avaliação; a duração artificial não participa de Tempo/TMA.");
   if (config.pontuacaoTempoTmaFixa) warnings.push("Tempo Total e TMA recebem 31,50 pontos iguais para todos os funcionários.");
   else warnings.push(`Teto de ${config.tetoPontuacao.toFixed(0)} pontos: Tempo Total e TMA são componentes separados e comparativos.`);
