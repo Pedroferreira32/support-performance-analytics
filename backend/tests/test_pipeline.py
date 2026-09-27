@@ -43,28 +43,33 @@ def test_competence_uses_start_date_when_end_is_next_month() -> None:
 
 def test_client_identity_is_preserved_for_recurrence_analysis() -> None:
     content = (
-        "Protocolo,Contact ID,Contact Number,User ID,Iniciado,Fim,Setores,Rating\n"
-        "1,Cliente Exemplo,5511999999999,Ana,10/08/2026 10:00,10/08/2026 11:00,Suporte,5"
+        "Protocolo,Contact ID,Contact Number,Revenda,User ID,Iniciado,Fim,Setores,Rating\n"
+        "1,Cliente Exemplo,5511999999999,Revenda Demo,Ana,10/08/2026 10:00,10/08/2026 11:00,Suporte,5"
     ).encode("utf-8")
 
     result = process_upload(content, "clientes.csv", "08/2026")
 
     assert result["validos"][0]["cliente"] == "Cliente Exemplo"
     assert result["validos"][0]["contato"] == "5511999999999"
+    assert result["validos"][0]["revenda"] == "Revenda Demo"
+    assert result["revendas"][0]["revenda"] == "Revenda Demo"
+    assert result["revendas"][0]["atendimentos"] == 1
     assert result["mapeamento"]["cliente"] == "Contact ID"
     assert result["mapeamento"]["contato"] == "Contact Number"
+    assert result["mapeamento"]["revenda"] == "Revenda"
 
 
-def test_automatic_closures_are_included_but_duration_is_neutralized() -> None:
+def test_automatic_closures_follow_the_regular_duration_rule() -> None:
     rows = [
         f"{index},Ana,31/08/2026 10:{index:02d},01/09/2026 02:47,Suporte,,5"
         for index in range(20)
     ]
+    rows.append("normal,Ana,31/08/2026 10:30,31/08/2026 11:30,Suporte,,5")
     result = process_upload(csv_bytes(*rows), "automaticos.csv", "08/2026")
-    assert len(result["validos"]) == 20
-    assert result["estatisticas"]["AUTOMATICOS_VALIDOS"] == 20
-    assert all(not row["duracaoConsiderada"] for row in result["validos"])
-    assert round(result["ranking"][0]["pontosTempo"] + result["ranking"][0]["pontosTma"], 6) == 31.5
+    assert len(result["validos"]) == 1
+    assert result["estatisticas"]["AUTOMATICOS_VALIDOS"] == 0
+    assert result["estatisticas"]["AUTOMATICOS_EXCLUIDOS"] == 20
+    assert result["ranking"][0]["notaFinal"] == 100
 
 
 def test_only_top_three_eligible_are_awarded() -> None:

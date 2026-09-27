@@ -10,7 +10,7 @@ from typing import Any
 
 import pandas as pd
 
-from .rules import PONTOS_TEMPO_FIXO, PONTOS_TMA_FIXO, RuleConfig, official_config
+from .rules import RuleConfig, official_config
 
 
 INVALIDOS = {
@@ -40,6 +40,7 @@ ALIASES = {
     "protocolo": ["PROTOCOLO", "ID DO TICKET", "IDTICKET", "TICKET", "TICKET ID"],
     "cliente": ["CONTACT ID", "CONTACTID", "CLIENTE", "NOME DO CLIENTE", "RAZAO SOCIAL"],
     "contato": ["CONTACT NUMBER", "CONTACTNUMBER", "TELEFONE", "CELULAR", "WHATSAPP"],
+    "revenda": ["REVENDA", "PARCEIRO", "CANAL", "NOME DA REVENDA", "RESELLER"],
     "atendente": ["ATENDENTE", "USER ID", "USERID", "OPERADOR", "USUARIO", "AGENTE"],
     "filas": ["FILAS", "FILA", "DEPARTAMENTO", "SETOR", "SETORES"],
     "filasTransfers": [
@@ -229,6 +230,7 @@ def _prepare(frame: pd.DataFrame, header_index: int, mapping: dict[str, int], co
     prepared.loc[missing_protocol, "protocolo"] = prepared.loc[missing_protocol, "linhaOrigem"].map(lambda value: f"LINHA-{value}")
     prepared["cliente"] = column("cliente").map(clean_text)
     prepared["contato"] = column("contato").map(clean_text)
+    prepared["revenda"] = column("revenda").map(clean_text)
     prepared["atendente"] = column("atendente").map(clean_text)
     prepared["fila"] = column("filas").map(clean_text)
     prepared["transfer"] = column("filasTransfers").map(clean_text)
@@ -321,17 +323,9 @@ def _calculate_ranking(valid: pd.DataFrame, config: RuleConfig) -> list[dict[str
 
     for row in base:
         row["pontosQuantidade"] = row["atendimentos"] / max_quantity * config.peso_quantidade if max_quantity else 0.0
-        row["pontosTempo"] = (
-            PONTOS_TEMPO_FIXO
-            if config.pontuacao_tempo_tma_fixa
-            else row["horasTotal"] / max_hours * config.peso_tempo
-            if max_hours
-            else 0.0
-        )
+        row["pontosTempo"] = row["horasTotal"] / max_hours * config.peso_tempo if max_hours else 0.0
         row["pontosTma"] = (
-            PONTOS_TMA_FIXO
-            if config.pontuacao_tempo_tma_fixa
-            else min_tma / row["tmaMedioMin"] * config.peso_tma
+            min_tma / row["tmaMedioMin"] * config.peso_tma
             if min_tma and row["tmaMedioMin"]
             else 0.0
         )
@@ -372,6 +366,45 @@ def _calculate_ranking(valid: pd.DataFrame, config: RuleConfig) -> list[dict[str
     return base
 
 
+def _calculate_resellers(valid: pd.DataFrame) -> list[dict[str, Any]]:
+    if valid.empty or "revenda" not in valid.columns:
+        return []
+    base = valid.copy()
+    base["revenda"] = base["revenda"].map(clean_text).replace("", "Sem revenda identificada")
+    result: list[dict[str, Any]] = []
+    for reseller, group in base.groupby("revenda", sort=False):
+        ratings = group["avaliacao"].dropna().astype(float).tolist()
+        timed = group.loc[group["duracaoConsiderada"]]
+        result.append(
+            {
+                "revenda": str(reseller),
+                "atendimentos": int(len(group)),
+                "clientes": int(group["cliente"].map(clean_text).replace("", pd.NA).nunique()),
+                "atendentes": int(group["atendente"].map(clean_text).replace("", pd.NA).nunique()),
+                "diasAtivos": int(group["inicio"].map(lambda value: str(value)[:10]).replace("", pd.NA).nunique()),
+                "avaliacaoMedia": float(pd.Series(ratings).mean()) if ratings else None,
+                "avaliacoes": len(ratings),
+                "coberturaAvaliacao": len(ratings) / len(group) * 100 if len(group) else 0.0,
+                "tmaMedioMin": float(timed["tmaMinutos"].mean()) if not timed.empty else None,
+            }
+        )
+    result.sort(key=lambda item: (-item["atendimentos"], normalize(item["revenda"])))
+    return result
+
+
+def _calculate_operation(valid: pd.DataFrame) -> dict[str, Any]:
+    timed = valid.loc[valid["duracaoConsiderada"], "tmaMinutos"].astype(float).tolist()
+    ratings = valid["avaliacao"].dropna().astype(float).tolist()
+    return {
+        "atendimentos": int(len(valid)),
+        "tmaMedianoMin": _percentile(timed, 0.5),
+        "tmaP90Min": _percentile(timed, 0.9),
+        "avaliacaoMedia": float(pd.Series(ratings).mean()) if ratings else None,
+        "avaliacoes": len(ratings),
+        "coberturaAvaliacao": len(ratings) / len(valid) * 100 if len(valid) else 0.0,
+    }
+
+
 def _record(row: pd.Series, automatic: bool, duration_considered: bool | None = None) -> dict[str, Any]:
     duration = float(row["duracaoHoras"]) if not pd.isna(row["duracaoHoras"]) else 0.0
     result: dict[str, Any] = {
@@ -379,6 +412,7 @@ def _record(row: pd.Series, automatic: bool, duration_considered: bool | None = 
         "protocolo": str(row["protocolo"]),
         "cliente": str(row["cliente"]),
         "contato": str(row["contato"]),
+        "revenda": str(row["revenda"]),
         "atendente": str(row["atendente"]),
         "departamento": str(row["departamento"]),
         "status": str(row["status"]),
@@ -491,16 +525,9 @@ def process_upload(content: bytes, filename: str, competence_input: str, exclude
         warnings.append("Protocolo ausente: foi usado o número da linha para auditoria.")
     if "cliente" not in mapping:
         warnings.append("Cliente ausente: o painel de clientes críticos exige Contact ID ou coluna equivalente.")
-    if config.incluir_finalizados_automaticamente:
-        warnings.append(
-            "Finalizados automaticamente incluídos em Quantidade e Avaliação; a duração artificial não participa de Tempo/TMA."
-        )
-    if config.pontuacao_tempo_tma_fixa:
-        warnings.append("Tempo Total e TMA recebem 31,50 pontos iguais para todos os funcionários.")
-    else:
-        warnings.append(
-            f"Teto de {config.teto_pontuacao:.0f} pontos: Tempo Total e TMA são componentes separados e comparativos."
-        )
+    warnings.append(
+        f"Teto de {config.teto_pontuacao:.0f} pontos: Tempo Total e TMA são componentes separados e comparativos."
+    )
 
     ranking_frame = pd.DataFrame(valid_records)
     return {
@@ -514,6 +541,8 @@ def process_upload(content: bytes, filename: str, competence_input: str, exclude
         "validos": valid_records,
         "excluidos": excluded_records,
         "ranking": _calculate_ranking(ranking_frame, config),
+        "revendas": _calculate_resellers(ranking_frame),
+        "operacao": _calculate_operation(ranking_frame),
         "mapeamento": mapping_names,
         "estatisticas": stats,
         "avisos": warnings,

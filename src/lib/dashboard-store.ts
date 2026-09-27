@@ -6,6 +6,10 @@ const HISTORY_KEY = "support-performance-history-v2";
 const SELECTED_KEY = "support-performance-selected-v2";
 const EXCLUDED_KEY = "support-performance-excluded-v2";
 
+function compactSnapshot(snapshot: CompetenceSnapshot): CompetenceSnapshot {
+  return { ...snapshot, validos: [], excluidos: [] };
+}
+
 function browserAvailable(): boolean {
   return typeof window !== "undefined" && typeof window.localStorage !== "undefined";
 }
@@ -25,7 +29,9 @@ export function loadSnapshots(): CompetenceSnapshot[] {
 
 export function saveSnapshot(snapshot: CompetenceSnapshot): void {
   if (!browserAvailable()) return;
-  const snapshots = loadSnapshots().filter((item) => item.competencia !== snapshot.competencia);
+  const snapshots = loadSnapshots()
+    .filter((item) => item.competencia !== snapshot.competencia)
+    .map(compactSnapshot);
   snapshots.push(snapshot);
   snapshots.sort((a, b) => a.competencia.localeCompare(b.competencia));
   const packed = LZString.compressToUTF16(JSON.stringify(snapshots));

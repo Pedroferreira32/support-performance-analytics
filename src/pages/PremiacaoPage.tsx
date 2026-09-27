@@ -1,4 +1,4 @@
-import { Equal, FileDown, Plus } from "lucide-react";
+import { FileDown } from "lucide-react";
 import { toast } from "sonner";
 
 import { AppShell } from "@/components/layout/app-shell";
@@ -53,44 +53,12 @@ export default function PremiacaoPage() {
         <SectionCard
           eyebrow="Regra oficial"
           title="Composição da nota final"
-          description="O perfil da competência define os pesos e identifica quais parcelas são fixas ou comparativas."
+          description="O perfil da competência define quatro componentes comparativos que somam até 100 pontos."
         >
           <div className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-sm bg-primary-soft px-4 py-3.5">
-            {competencia.baseFixa > 0 ? (
-              <>
-            <span className="text-sm">
-              <span className="font-semibold">Base fixa </span>
-              <span className="tnum font-bold">{fmtBR(competencia.baseFixa, 2)}</span>
-              <span className="ml-1 text-xs text-muted-foreground">
-                Tempo + TMA
-              </span>
+            <span className="text-sm font-semibold">
+              Pontuação comparativa por equipe · Quantidade {currentSnapshot?.config.pesoQuantidade ?? 20} · Tempo {currentSnapshot?.config.pesoTempo ?? 10} · TMA {currentSnapshot?.config.pesoTma ?? 30} · Avaliação {currentSnapshot?.config.pesoAvaliacao ?? 40} · Teto {fmtBR(competencia.teto, 2)}
             </span>
-            <Plus className="size-4 text-muted-foreground" />
-            <span className="text-sm">
-              <span className="font-semibold">Variável </span>
-              <span className="tnum font-bold">{fmtBR(competencia.pesoQuantidade, 2)}</span>
-              <span className="ml-1 text-xs text-muted-foreground">
-                Quantidade
-              </span>
-            </span>
-            <Plus className="size-4 text-muted-foreground" />
-            <span className="text-sm">
-              <span className="font-semibold">Variável </span>
-              <span className="tnum font-bold">{fmtBR(competencia.pesoAvaliacao, 2)}</span>
-              <span className="ml-1 text-xs text-muted-foreground">
-                Avaliação
-              </span>
-            </span>
-            <Equal className="size-4 text-muted-foreground" />
-            <span className="text-sm font-bold">
-              Teto efetivo <span className="tnum">{fmtBR(competencia.teto, 2)}</span>
-            </span>
-              </>
-            ) : (
-              <span className="text-sm font-semibold">
-                Pontuação comparativa por equipe · Quantidade {currentSnapshot?.config.pesoQuantidade ?? 20} · Tempo {currentSnapshot?.config.pesoTempo ?? 10} · TMA {currentSnapshot?.config.pesoTma ?? 30} · Avaliação {currentSnapshot?.config.pesoAvaliacao ?? 40}
-              </span>
-            )}
             <span className="ml-1 rounded-sm bg-warning-soft px-2 py-0.5 mono text-[11px] font-bold text-warning-foreground">
               meta {fmtBR(competencia.meta, 2)}
             </span>

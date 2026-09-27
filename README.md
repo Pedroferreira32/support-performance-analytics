@@ -240,23 +240,14 @@ Um atendimento é marcado como potencialmente automático quando:
 - o horário final é exatamente `06:00`; ou
 - pelo menos 20 registros terminam no mesmo minuto.
 
-Nas regras que incluem automáticos:
-
-- o registro conta em Quantidade;
-- a avaliação válida participa do indicador de Avaliação;
-- a duração artificial não participa de Tempo Total nem de TMA;
-- o registro continua identificado na auditoria e na exportação.
-
-Esse tratamento permite aproveitar o atendimento sem deixar que um encerramento automático distorça os indicadores de duração.
+O sinalizador permanece disponível para auditoria, mas esses registros seguem as mesmas regras de período e duração dos demais atendimentos. Não existe neutralização especial de Tempo Total ou TMA no projeto público.
 
 ## Regras de pontuação por competência
 
 | Período | Escala | Limite regular | Quantidade | Tempo | TMA | Avaliação | Teto | Tratamento de Tempo/TMA |
 |---|---:|---:|---:|---:|---:|---:|---:|---|
 | Até maio/2026 | 0–10 | 8 horas | 30 | 15 | 25 | 30 | 100,00 | Separados e comparativos |
-| Junho/2026 | 0–5 | 9 horas | 20 | 10 | 30 | 40 | 100,00 | Separados e comparativos |
-| Julho/2026 | 0–5 | Regra neutralizada | 20 | 7,88 fixos | 23,62 fixos | 40 | 91,50 | 31,50 iguais para todos |
-| Agosto/2026 em diante | 0–5 | 9 horas | 20 | 7,88 fixos | 23,62 fixos | 40 | 91,50 | 31,50 iguais para todos |
+| Junho/2026 em diante | 0–5 | 9 horas | 20 | 10 | 30 | 40 | 100,00 | Separados e comparativos |
 
 ### Modelo histórico de 100 pontos
 
@@ -267,25 +258,7 @@ Na primeira regra, Tempo Total e TMA **não eram somados como uma base comum**. 
 - TMA: até 25 pontos;
 - Avaliação: até 30 pontos.
 
-Junho/2026 também utiliza teto de 100 pontos e mantém Tempo e TMA independentes, com pesos de 10 e 30 pontos.
-
-### Regra protegida de 31,50 pontos
-
-Em julho/2026 e a partir de agosto/2026, Tempo e TMA recebem a mesma pontuação para todos:
-
-```text
-Tempo Total = 7,88 pontos
-TMA         = 23,62 pontos
-Base comum  = 31,50 pontos
-```
-
-O ranking dessas competências é decidido pelos critérios variáveis de Quantidade e Avaliação. O teto efetivo é:
-
-```text
-31,50 + 20,00 + 40,00 = 91,50 pontos
-```
-
-Julho/2026 preserva ainda os registros fora do expediente e os automáticos conforme a exceção histórica validada. De agosto/2026 em diante, o expediente regular volta a ser aplicado, mas os automáticos continuam incluídos com a duração neutralizada.
+De junho/2026 em diante, o teto continua em 100 pontos e mantém Tempo Total e TMA independentes, com pesos de 10 e 30 pontos. As notas demonstrativas originalmente reportadas são preservadas como referência histórica; novos processamentos sempre usam a regra de 100 pontos.
 
 ## Fórmulas utilizadas
 
@@ -366,7 +339,7 @@ A regra separa claramente **atingir a meta** de **receber a premiação**. Mesmo
 - quantidade e percentual de válidos;
 - quantidade e percentual de excluídos;
 - distribuição dos motivos de exclusão;
-- finalizações automáticas identificadas, recuperadas e neutralizadas;
+- finalizações automáticas identificadas e auditadas;
 - avaliações válidas;
 - reconciliação entre base importada, base premiável e exceções.
 
@@ -542,14 +515,13 @@ src/
 A suíte automatizada cobre:
 
 - regras históricas e atuais;
-- teto de 100 e de 91,50 pontos;
-- Tempo Total e TMA separados no modelo histórico;
-- base fixa de 31,50 pontos no modelo protegido;
+- teto de 100 pontos em todas as competências;
+- Tempo Total e TMA separados e comparativos;
 - competência determinada pela data de início;
 - atendimento finalizado no mês seguinte;
 - filtros de setor, atendente, expediente e duração;
 - correspondência parcial de pessoas fora da campanha;
-- finalizações automáticas e neutralização da duração;
+- finalizações automáticas submetidas às regras regulares;
 - avaliações fora da escala;
 - elegibilidade a partir de 85;
 - somente três premiados entre os elegíveis;

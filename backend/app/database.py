@@ -259,6 +259,22 @@ class SnapshotRepository:
             rows = connection.cursor().execute("SELECT snapshot FROM competencias ORDER BY competencia").fetchall()
             return [json.loads(row[0]) for row in rows]
 
+    def list_compact(self) -> list[dict[str, Any]]:
+        with self._connect() as connection:
+            cursor = connection.cursor()
+            if self.dialect == "postgresql":
+                rows = cursor.execute(
+                    "SELECT (snapshot::jsonb - 'validos' - 'excluidos')::text "
+                    "FROM competencias ORDER BY competencia"
+                ).fetchall()
+                return [json.loads(row[0]) for row in rows]
+            rows = cursor.execute("SELECT snapshot FROM competencias ORDER BY competencia").fetchall()
+            snapshots = [json.loads(row[0]) for row in rows]
+        for snapshot in snapshots:
+            snapshot["validos"] = []
+            snapshot["excluidos"] = []
+        return snapshots
+
     def get(self, competence: str) -> dict[str, Any] | None:
         with self._connect() as connection:
             row = connection.cursor().execute(

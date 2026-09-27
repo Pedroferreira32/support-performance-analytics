@@ -98,7 +98,7 @@ export default function AuditoriaPage() {
                     ["Perfil", currentSnapshot.config.perfilRegra],
                     ["Escala de avaliação", `0 a ${currentSnapshot.config.escalaAvaliacaoMax}`],
                     ["Duração regular", `até ${currentSnapshot.config.maxHoras} horas`],
-                    ["Tempo e TMA", currentSnapshot.config.pontuacaoTempoTmaFixa ? "31,50 pontos iguais para todos" : "componentes separados e comparativos"],
+                    ["Tempo e TMA", "componentes separados e comparativos"],
                     ["Teto da pontuação", `${(currentSnapshot.config.tetoPontuacao ?? 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })} pontos`],
                     ["Meta e premiação", `${currentSnapshot.config.notaMinima} pontos · Top 3 elegível`],
                   ].map(([term, value]) => (
@@ -128,7 +128,7 @@ export default function AuditoriaPage() {
           <SectionCard
             eyebrow="Finalizados automaticamente"
             title={`${automaticos.length.toLocaleString("pt-BR")} registros incluídos e rastreáveis`}
-            description="Eles contam em Quantidade e Avaliação. A duração artificial não participa de Tempo Total nem de TMA."
+            description="O sinalizador permite conferência, mas os registros seguem as mesmas regras de período, duração, Tempo Total e TMA."
             contentClassName="p-0"
           >
             <div className="overflow-x-auto">

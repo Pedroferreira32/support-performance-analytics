@@ -64,7 +64,7 @@ describe("motor de validação", () => {
   it("preserva a identificação do cliente para a análise de recorrência", async () => {
     const file = upload(
       "clientes.csv",
-      "Protocolo,Contact ID,Contact Number,User ID,Iniciado,Fim,Setores,Rating\n1,Cliente Exemplo,5511999999999,Ana Sofia,10/08/2026 10:00,10/08/2026 11:00,Suporte,5",
+      "Protocolo,Contact ID,Contact Number,Revenda,User ID,Iniciado,Fim,Setores,Rating\n1,Cliente Exemplo,5511999999999,Revenda Demo,Ana Sofia,10/08/2026 10:00,10/08/2026 11:00,Suporte,5",
     );
 
     const result = await processFile(file, "08/2026");
@@ -72,9 +72,12 @@ describe("motor de validação", () => {
     expect(result.validos[0]).toMatchObject({
       cliente: "Cliente Exemplo",
       contato: "5511999999999",
+      revenda: "Revenda Demo",
     });
+    expect(result.revendas?.[0]).toMatchObject({ revenda: "Revenda Demo", atendimentos: 1 });
     expect(result.mapeamento.cliente).toBe("Contact ID");
     expect(result.mapeamento.contato).toBe("Contact Number");
+    expect(result.mapeamento.revenda).toBe("Revenda");
   });
 
   it("rejeita datas de calendário inexistentes", () => {
@@ -92,17 +95,17 @@ describe("motor de validação", () => {
     expect(result.mapeamento.filasTransfers).toBe("Setores Transfers");
   });
 
-  it("inclui finalizações automáticas, mas protege sua duração de Tempo e TMA", async () => {
+  it("submete finalizações automáticas à regra regular de duração", async () => {
     const rows = Array.from({ length: 20 }, (_, index) =>
       `${index + 1},Ana Sofia,31/08/2026 10:${String(index).padStart(2, "0")},01/09/2026 02:47,Suporte,,5`,
     );
+    rows.push("normal,Ana Sofia,31/08/2026 10:30,31/08/2026 11:30,Suporte,,5");
     const result = await processFile(upload("automaticos.csv", [header, ...rows].join("\n")), "08/2026");
 
-    expect(result.validos).toHaveLength(20);
-    expect(result.estatisticas.AUTOMATICOS_VALIDOS).toBe(20);
-    expect(result.estatisticas.AUTOMATICOS_RECUPERADOS).toBe(20);
-    expect(result.validos.every((row) => !row.duracaoConsiderada)).toBe(true);
-    expect(result.ranking[0].pontosTempo + result.ranking[0].pontosTma).toBeCloseTo(31.5, 6);
+    expect(result.validos).toHaveLength(1);
+    expect(result.estatisticas.AUTOMATICOS_VALIDOS).toBe(0);
+    expect(result.estatisticas.AUTOMATICOS_EXCLUIDOS).toBe(20);
+    expect(result.ranking[0].notaFinal).toBeCloseTo(100, 6);
   });
 
   it("aplica exclusão parcial de nomes sem rejeitar os demais atendentes", async () => {

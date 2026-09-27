@@ -30,6 +30,11 @@ export const routers = [
     lazy: async () => ({ Component: (await import("./pages/ClientesPage")).default }),
   },
   {
+    path: "/revendas",
+    name: "revendas",
+    lazy: async () => ({ Component: (await import("./pages/RevendasPage")).default }),
+  },
+  {
     path: "/premiacao",
     name: "premiacao",
     lazy: async () => ({ Component: (await import("./pages/PremiacaoPage")).default }),

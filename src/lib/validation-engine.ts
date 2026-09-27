@@ -1,6 +1,4 @@
 export const META_ELEGIBILIDADE = 85;
-export const PONTOS_TEMPO_FIXO = 7.88;
-export const PONTOS_TMA_FIXO = 23.62;
 
 export type CellValue = string | number | boolean | Date | null | undefined;
 
@@ -34,6 +32,7 @@ export interface ValidRecord {
   protocolo: string;
   cliente?: string;
   contato?: string;
+  revenda?: string;
   atendente: string;
   departamento: string;
   status: string;
@@ -44,6 +43,27 @@ export interface ValidRecord {
   tmaMinutos: number;
   suspeitoAutomatico: boolean;
   duracaoConsiderada: boolean;
+}
+
+export interface ResellerSummary {
+  revenda: string;
+  atendimentos: number;
+  clientes: number;
+  atendentes: number;
+  diasAtivos: number;
+  avaliacaoMedia: number | null;
+  avaliacoes: number;
+  coberturaAvaliacao: number;
+  tmaMedioMin: number | null;
+}
+
+export interface OperationalSummary {
+  atendimentos: number;
+  tmaMedianoMin: number | null;
+  tmaP90Min: number | null;
+  avaliacaoMedia: number | null;
+  avaliacoes: number;
+  coberturaAvaliacao: number;
 }
 
 export interface ExcludedRecord extends Omit<ValidRecord, "duracaoConsiderada"> {
@@ -85,6 +105,8 @@ export interface CompetenceSnapshot {
   validos: ValidRecord[];
   excluidos: ExcludedRecord[];
   ranking: RankingRecord[];
+  revendas?: ResellerSummary[];
+  operacao?: OperationalSummary;
   mapeamento: Record<string, string>;
   estatisticas: Record<string, number>;
   avisos: string[];
@@ -117,6 +139,7 @@ const ALIASES: Record<string, string[]> = {
   protocolo: ["PROTOCOLO", "ID DO TICKET", "IDTICKET", "TICKET", "TICKET ID"],
   cliente: ["CONTACT ID", "CONTACTID", "CLIENTE", "NOME DO CLIENTE", "RAZAO SOCIAL"],
   contato: ["CONTACT NUMBER", "CONTACTNUMBER", "TELEFONE", "CELULAR", "WHATSAPP"],
+  revenda: ["REVENDA", "PARCEIRO", "CANAL", "NOME DA REVENDA", "RESELLER"],
   atendente: ["ATENDENTE", "USER ID", "USERID", "OPERADOR", "USUARIO", "AGENTE"],
   filas: ["FILAS", "FILA", "DEPARTAMENTO", "SETOR", "SETORES"],
   filasTransfers: [
@@ -261,28 +284,6 @@ export function officialConfig(competencia: string): RuleConfig {
       pesoTempo: 15,
       pesoTma: 25,
       pesoAvaliacao: 30,
-    };
-  }
-  if (competencia === "2026-07") {
-    return {
-      ...base,
-      perfilRegra: "Julho/2026 validado — Tempo/TMA fixos em 31,5",
-      modo: "neutralizado",
-      incluirForaExpediente: true,
-      incluirFinalizadosAutomaticamente: true,
-      neutralizarTempoAutomaticos: true,
-      pontuacaoTempoTmaFixa: true,
-      tetoPontuacao: 91.5,
-    };
-  }
-  if (competencia >= "2026-08") {
-    return {
-      ...base,
-      perfilRegra: "Novo modelo oficial — automáticos incluídos e Tempo/TMA fixos em 31,5",
-      incluirFinalizadosAutomaticamente: true,
-      neutralizarTempoAutomaticos: true,
-      pontuacaoTempoTmaFixa: true,
-      tetoPontuacao: 91.5,
     };
   }
   return base;
@@ -467,16 +468,12 @@ function calculateRanking(validos: ValidRecord[], config: RuleConfig): RankingRe
 
   const scored = base.map((row) => {
     const pontosQuantidade = maxQuantidade ? (row.atendimentos / maxQuantidade) * config.pesoQuantidade : 0;
-    const pontosTempo = config.pontuacaoTempoTmaFixa
-      ? PONTOS_TEMPO_FIXO
-      : maxHoras
-        ? (row.horasTotal / maxHoras) * config.pesoTempo
-        : 0;
-    const pontosTma = config.pontuacaoTempoTmaFixa
-      ? PONTOS_TMA_FIXO
-      : row.tmaMedioMin && minTma
-        ? (minTma / row.tmaMedioMin) * config.pesoTma
-        : 0;
+    const pontosTempo = maxHoras
+      ? (row.horasTotal / maxHoras) * config.pesoTempo
+      : 0;
+    const pontosTma = row.tmaMedioMin && minTma
+      ? (minTma / row.tmaMedioMin) * config.pesoTma
+      : 0;
     const pontosAvaliacao = row.avaliacaoMedia != null && maxRating
       ? (row.avaliacaoMedia / maxRating) * config.pesoAvaliacao
       : 0;
@@ -512,6 +509,46 @@ function calculateRanking(validos: ValidRecord[], config: RuleConfig): RankingRe
   });
 }
 
+function calculateResellers(validos: ValidRecord[]): ResellerSummary[] {
+  const groups = new Map<string, ValidRecord[]>();
+  validos.forEach((record) => {
+    const reseller = record.revenda?.trim() || "Sem revenda identificada";
+    const rows = groups.get(reseller) ?? [];
+    rows.push(record);
+    groups.set(reseller, rows);
+  });
+  return [...groups.entries()]
+    .map(([revenda, records]) => {
+      const ratings = records.flatMap((record) => record.avaliacao == null ? [] : [record.avaliacao]);
+      const timed = records.filter((record) => record.duracaoConsiderada);
+      return {
+        revenda,
+        atendimentos: records.length,
+        clientes: new Set(records.map((record) => record.cliente?.trim()).filter(Boolean)).size,
+        atendentes: new Set(records.map((record) => record.atendente).filter(Boolean)).size,
+        diasAtivos: new Set(records.map((record) => record.inicio.slice(0, 10)).filter(Boolean)).size,
+        avaliacaoMedia: ratings.length ? ratings.reduce((sum, value) => sum + value, 0) / ratings.length : null,
+        avaliacoes: ratings.length,
+        coberturaAvaliacao: records.length ? ratings.length / records.length * 100 : 0,
+        tmaMedioMin: timed.length ? timed.reduce((sum, record) => sum + record.tmaMinutos, 0) / timed.length : null,
+      };
+    })
+    .sort((a, b) => b.atendimentos - a.atendimentos || a.revenda.localeCompare(b.revenda, "pt-BR"));
+}
+
+function calculateOperation(validos: ValidRecord[]): OperationalSummary {
+  const timed = validos.filter((record) => record.duracaoConsiderada).map((record) => record.tmaMinutos);
+  const ratings = validos.flatMap((record) => record.avaliacao == null ? [] : [record.avaliacao]);
+  return {
+    atendimentos: validos.length,
+    tmaMedianoMin: percentile(timed, 0.5),
+    tmaP90Min: percentile(timed, 0.9),
+    avaliacaoMedia: ratings.length ? ratings.reduce((sum, value) => sum + value, 0) / ratings.length : null,
+    avaliacoes: ratings.length,
+    coberturaAvaliacao: validos.length ? ratings.length / validos.length * 100 : 0,
+  };
+}
+
 export async function processFile(
   file: UploadFile,
   competenceInput: string,
@@ -539,6 +576,7 @@ export async function processFile(
       protocolo: protocoloRaw || `LINHA-${headerIndex + index + 2}`,
       cliente: cleanText(get("cliente")),
       contato: cleanText(get("contato")),
+      revenda: cleanText(get("revenda")),
       atendente: cleanText(get("atendente")),
       fila,
       transfer,
@@ -608,6 +646,7 @@ export async function processFile(
       protocolo: row.protocolo,
       cliente: row.cliente,
       contato: row.contato,
+      revenda: row.revenda,
       atendente: row.atendente,
       departamento: row.departamento,
       status: row.status,
@@ -648,9 +687,7 @@ export async function processFile(
   const warnings: string[] = [];
   if (headers[mapping.protocolo] === undefined) warnings.push("Protocolo ausente: foi usado o número da linha para auditoria.");
   if (headers[mapping.cliente] === undefined) warnings.push("Cliente ausente: o painel de clientes críticos exige Contact ID ou coluna equivalente.");
-  if (config.incluirFinalizadosAutomaticamente) warnings.push("Finalizados automaticamente incluídos em Quantidade e Avaliação; a duração artificial não participa de Tempo/TMA.");
-  if (config.pontuacaoTempoTmaFixa) warnings.push("Tempo Total e TMA recebem 31,50 pontos iguais para todos os funcionários.");
-  else warnings.push(`Teto de ${config.tetoPontuacao.toFixed(0)} pontos: Tempo Total e TMA são componentes separados e comparativos.`);
+  warnings.push(`Teto de ${config.tetoPontuacao.toFixed(0)} pontos: Tempo Total e TMA são componentes separados e comparativos.`);
 
   const mappingNames = Object.fromEntries(Object.entries(mapping).map(([key, index]) => [key, cleanText(headers[index])]));
   return {
@@ -664,6 +701,8 @@ export async function processFile(
     validos,
     excluidos,
     ranking: calculateRanking(validos, config),
+    revendas: calculateResellers(validos),
+    operacao: calculateOperation(validos),
     mapeamento: mappingNames,
     estatisticas: stats,
     avisos: warnings,

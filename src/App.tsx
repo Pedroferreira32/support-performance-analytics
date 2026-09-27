@@ -4,7 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import { replaceSnapshots } from "@/lib/dashboard-store";
+import { replaceSnapshots, selectedCompetence } from "@/lib/dashboard-store";
 import { loadPipelineSnapshots, pipelineApiEnabled } from "@/lib/data-pipeline-api";
 import { routers } from "./router";
 
@@ -16,7 +16,7 @@ const App = () => {
 
   useEffect(() => {
     if (!pipelineApiEnabled()) return;
-    void loadPipelineSnapshots()
+    void loadPipelineSnapshots(selectedCompetence())
       .then((snapshots) => {
         if (snapshots?.length) replaceSnapshots(snapshots);
       })

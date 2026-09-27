@@ -5,8 +5,6 @@ import re
 
 
 META_ELEGIBILIDADE = 85.0
-PONTOS_TEMPO_FIXO = 7.88
-PONTOS_TMA_FIXO = 23.62
 
 
 @dataclass(frozen=True)
@@ -89,31 +87,4 @@ def official_config(competencia: str) -> RuleConfig:
             }
         )
 
-    if competencia == "2026-07":
-        return RuleConfig(
-            **{
-                **asdict(base),
-                "perfil_regra": "Julho/2026 validado — Tempo/TMA fixos em 31,5",
-                "modo": "neutralizado",
-                "incluir_fora_expediente": True,
-                "incluir_finalizados_automaticamente": True,
-                "neutralizar_tempo_automaticos": True,
-                "pontuacao_tempo_tma_fixa": True,
-                "teto_pontuacao": 91.5,
-            }
-        )
-
-    if competencia >= "2026-08":
-        return RuleConfig(
-            **{
-                **asdict(base),
-                "perfil_regra": "Novo modelo oficial — automáticos incluídos e Tempo/TMA fixos em 31,5",
-                "incluir_finalizados_automaticamente": True,
-                "neutralizar_tempo_automaticos": True,
-                "pontuacao_tempo_tma_fixa": True,
-                "teto_pontuacao": 91.5,
-            }
-        )
-
     return base
-

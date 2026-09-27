@@ -16,6 +16,7 @@ reports
 .venv/
 backend/data/*.db
 backend/data/*.db-*
+generated_demo_history/
 **/__pycache__/
 *.py[cod]
 

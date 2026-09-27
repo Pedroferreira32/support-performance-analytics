@@ -51,6 +51,8 @@ function makeEmployees(snapshot: CompetenceSnapshot): Employee[] {
     note: row.notaFinal,
     volume: row.atendimentos,
     ptsQuantidade: row.pontosQuantidade,
+    ptsTempo: row.pontosTempo,
+    ptsTma: row.pontosTma,
     csat: row.avaliacaoMedia ?? 0,
     cobertura: row.coberturaAvaliacao,
     ptsAvaliacao: row.pontosAvaliacao,
@@ -90,10 +92,8 @@ export const competencia = current ? {
   atualizadoEm: new Date(current.processadoEm).toLocaleString("pt-BR"),
   regra: current.config.perfilRegra,
   meta: current.config.notaMinima,
-  teto: current.config.tetoPontuacao ?? (current.config.pontuacaoTempoTmaFixa
-    ? current.config.pesoQuantidade + current.config.pesoAvaliacao + 31.5
-    : current.config.pesoQuantidade + current.config.pesoTempo + current.config.pesoTma + current.config.pesoAvaliacao),
-  baseFixa: current.config.pontuacaoTempoTmaFixa ? 31.5 : 0,
+  teto: current.config.tetoPontuacao ?? current.config.pesoQuantidade + current.config.pesoTempo + current.config.pesoTma + current.config.pesoAvaliacao,
+  baseFixa: 0,
   pesoQuantidade: current.config.pesoQuantidade,
   pesoAvaliacao: current.config.pesoAvaliacao,
 } : demo.competencia;
@@ -216,7 +216,7 @@ export const selectedRule = current ? [
   { label: "Escopo", value: "Suporte · atendimentos finalizados" },
   { label: "Período", value: current.config.incluirForaExpediente ? "Período integral preservado pela regra" : "Segunda a sábado · 08:00–19:59" },
   { label: "Duração máxima", value: `${fmt(current.config.maxHoras, 0)} horas no máximo` },
-  { label: "Finalizados automáticos", value: current.config.incluirFinalizadosAutomaticamente ? "Incluídos; duração artificial sem impacto em Tempo/TMA" : "Submetidos às regras regulares" },
+  { label: "Finalizados automáticos", value: "Submetidos às regras regulares" },
   { label: "Elegibilidade", value: `Nota final ≥ ${fmt(current.config.notaMinima)}` },
   { label: "Teto da pontuação", value: `${fmt(current.config.tetoPontuacao ?? competencia.teto)} pontos` },
   { label: "Premiação", value: "Somente os três maiores elegíveis" },
@@ -274,11 +274,11 @@ export const operationalMonths: OperationalMonth[] = current ? snapshots.map((sn
   const csat = evaluated ? snapshot.ranking.reduce((sum, row) => sum + (row.avaliacaoMedia ?? 0) * row.avaliacoes, 0) / evaluated : null;
   return {
     competencia: snapshot.competenciaBr,
-    volume: snapshot.validos.length,
-    tmaMediano: regular.length ? median(regular) : null,
-    tmaP90: regular.length ? percentile(regular, 0.9) : null,
-    csat,
-    cobertura: snapshot.validos.length ? (evaluated / snapshot.validos.length) * 100 : null,
+    volume: snapshot.operacao?.atendimentos ?? snapshot.validos.length,
+    tmaMediano: snapshot.operacao?.tmaMedianoMin ?? (regular.length ? median(regular) : null),
+    tmaP90: snapshot.operacao?.tmaP90Min ?? (regular.length ? percentile(regular, 0.9) : null),
+    csat: snapshot.operacao?.avaliacaoMedia ?? csat,
+    cobertura: snapshot.operacao?.coberturaAvaliacao ?? (snapshot.validos.length ? evaluated / snapshot.validos.length * 100 : null),
     validade: snapshot.competencia === current.competencia ? "Atual" : "Validado",
   };
 }) : demo.operationalMonths;
@@ -293,7 +293,8 @@ export const premiacaoResumo = current ? [
   { label: "Automáticos incluídos", value: intFmt(current.estatisticas.AUTOMATICOS_VALIDOS ?? 0), hint: "mantidos e rastreáveis", icon: "bot" },
 ] : demo.premiacaoResumo;
 export const leaderBreakdown = current && leader ? [
-  { label: current.config.pontuacaoTempoTmaFixa ? "Base fixa" : "Tempo + TMA", value: fmt(leader.pontosTempo + leader.pontosTma), hint: current.config.pontuacaoTempoTmaFixa ? "Tempo + TMA iguais para a equipe" : "componentes operacionais", color: "muted" as const },
+  { label: "Tempo Total", value: fmt(leader.pontosTempo), hint: "componente comparativo", color: "muted" as const },
+  { label: "TMA", value: fmt(leader.pontosTma), hint: "componente comparativo", color: "muted" as const },
   { label: "Quantidade", value: fmt(leader.pontosQuantidade), hint: `${leader.atendimentos} atendimentos válidos`, color: "primary" as const },
   { label: "Avaliação", value: fmt(leader.pontosAvaliacao), hint: `CSAT ${fmt(leader.avaliacaoMedia ?? 0)}`, color: "primary" as const },
 ] : demo.leaderBreakdown;

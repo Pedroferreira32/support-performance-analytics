@@ -97,56 +97,26 @@ export default function ProjectPage() {
           </dl>
 
           <div className="mt-6 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-sm bg-primary-soft px-4 py-3.5">
-            {!currentSnapshot || currentSnapshot.config.pontuacaoTempoTmaFixa ? (
-              <>
-            <span className="text-sm">
-              <span className="font-semibold">Base fixa </span>
-              <span className="tnum font-bold">31,50</span>
-              <span className="ml-1 text-xs text-muted-foreground">
-                Tempo + TMA
+            {[
+              ["Quantidade", currentSnapshot?.config.pesoQuantidade ?? 20],
+              ["Tempo Total", currentSnapshot?.config.pesoTempo ?? 10],
+              ["TMA", currentSnapshot?.config.pesoTma ?? 30],
+              ["Avaliação", currentSnapshot?.config.pesoAvaliacao ?? 40],
+            ].map(([label, value], index) => (
+              <span key={label} className="contents">
+                {index > 0 && <Plus className="size-4 text-muted-foreground" />}
+                <span className="text-sm">
+                  <span className="font-semibold">{label} </span>
+                  <span className="tnum font-bold">{Number(value).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</span>
+                </span>
               </span>
-            </span>
-            <Plus className="size-4 text-muted-foreground" />
-            <span className="text-sm">
-              <span className="font-semibold">Quantidade </span>
-              <span className="tnum font-bold">20,00</span>
-              <span className="ml-1 text-xs text-muted-foreground">variável</span>
-            </span>
-            <Plus className="size-4 text-muted-foreground" />
-            <span className="text-sm">
-              <span className="font-semibold">Avaliação </span>
-              <span className="tnum font-bold">40,00</span>
-              <span className="ml-1 text-xs text-muted-foreground">variável</span>
-            </span>
+            ))}
             <Equal className="size-4 text-muted-foreground" />
-            <span className="text-sm font-bold">
-              Teto efetivo <span className="tnum">91,50</span>
-            </span>
+            <span className="text-sm font-bold">Teto <span className="tnum">{competencia.teto.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</span></span>
             <span className="ml-1 rounded-full bg-warning-soft px-2 py-0.5 text-[11px] font-bold text-warning-foreground">
               meta {competencia.meta.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
             </span>
-              </>
-            ) : (
-              <>
-                {[
-                  ["Quantidade", currentSnapshot?.config.pesoQuantidade ?? 20],
-                  ["Tempo Total", currentSnapshot?.config.pesoTempo ?? 10],
-                  ["TMA", currentSnapshot?.config.pesoTma ?? 30],
-                  ["Avaliação", currentSnapshot?.config.pesoAvaliacao ?? 40],
-                ].map(([label, value], index) => (
-                  <span key={label} className="contents">
-                    {index > 0 && <Plus className="size-4 text-muted-foreground" />}
-                    <span className="text-sm">
-                      <span className="font-semibold">{label} </span>
-                      <span className="tnum font-bold">{Number(value).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</span>
-                    </span>
-                  </span>
-                ))}
-                <Equal className="size-4 text-muted-foreground" />
-                <span className="text-sm font-bold">Teto <span className="tnum">{competencia.teto.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</span></span>
-                <span className="w-full text-xs text-muted-foreground">Tempo Total e TMA são componentes independentes nesta regra.</span>
-              </>
-            )}
+            <span className="w-full text-xs text-muted-foreground">Tempo Total e TMA são componentes independentes e comparativos.</span>
           </div>
         </SectionCard>
 

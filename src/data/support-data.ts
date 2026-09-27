@@ -18,10 +18,10 @@ export const competencia = {
   anterior: "07/2026",
   fonte: "atendimentos_sinteticos_2026-08.csv",
   atualizadoEm: "09/09/2026, 21:34",
-  regra: "Novo modelo oficial — automáticos incluídos e Tempo/TMA fixos em 31,5",
+  regra: "Novo modelo oficial — 100 pontos com Tempo e TMA separados",
   meta: 85,
-  teto: 91.5,
-  baseFixa: 31.5,
+  teto: 100,
+  baseFixa: 0,
   pesoQuantidade: 20,
   pesoAvaliacao: 40,
 };
@@ -35,6 +35,8 @@ export interface Employee {
   note: number;
   volume: number;
   ptsQuantidade: number;
+  ptsTempo: number;
+  ptsTma: number;
   csat: number;
   cobertura: number; // %
   ptsAvaliacao: number;
@@ -54,6 +56,8 @@ export const employees: Employee[] = [
     note: 91.09,
     volume: 412,
     ptsQuantidade: 20.0,
+    ptsTempo: 9.8,
+    ptsTma: 21.7,
     csat: 4.77,
     cobertura: 87.9,
     ptsAvaliacao: 39.59,
@@ -71,6 +75,8 @@ export const employees: Employee[] = [
     note: 89.07,
     volume: 362,
     ptsQuantidade: 17.57,
+    ptsTempo: 9.45,
+    ptsTma: 22.05,
     csat: 4.82,
     cobertura: 90.1,
     ptsAvaliacao: 40.0,
@@ -88,6 +94,8 @@ export const employees: Employee[] = [
     note: 87.81,
     volume: 351,
     ptsQuantidade: 17.04,
+    ptsTempo: 9.6,
+    ptsTma: 21.9,
     csat: 4.73,
     cobertura: 88.6,
     ptsAvaliacao: 39.27,
@@ -105,6 +113,8 @@ export const employees: Employee[] = [
     note: 86.08,
     volume: 351,
     ptsQuantidade: 17.04,
+    ptsTempo: 9.15,
+    ptsTma: 22.35,
     csat: 4.52,
     cobertura: 88.6,
     ptsAvaliacao: 37.54,
@@ -122,6 +132,8 @@ export const employees: Employee[] = [
     note: 83.14,
     volume: 304,
     ptsQuantidade: 14.76,
+    ptsTempo: 9.35,
+    ptsTma: 22.15,
     csat: 4.44,
     cobertura: 89.8,
     ptsAvaliacao: 36.88,
@@ -139,6 +151,8 @@ export const employees: Employee[] = [
     note: 81.34,
     volume: 292,
     ptsQuantidade: 14.17,
+    ptsTempo: 9.05,
+    ptsTma: 22.45,
     csat: 4.29,
     cobertura: 86.6,
     ptsAvaliacao: 35.67,
@@ -156,6 +170,8 @@ export const employees: Employee[] = [
     note: 78.98,
     volume: 278,
     ptsQuantidade: 13.5,
+    ptsTempo: 8.85,
+    ptsTma: 22.65,
     csat: 4.09,
     cobertura: 87.8,
     ptsAvaliacao: 33.99,
@@ -173,9 +189,9 @@ export const employees: Employee[] = [
 export const resultado = {
   titulo: "Top 3 definido; 4 de 7 atingiram o corte",
   descricao:
-    "3 profissionais ocupam as posições premiadas e 3 ficaram abaixo de 85. O índice médio fechou em 85,36 de 91,50 possíveis; Quantidade é a principal alavanca observada.",
+    "3 profissionais ocupam as posições premiadas e 3 ficaram abaixo de 85. As notas originalmente reportadas foram preservadas na demonstração, agora no modelo de 100 pontos com Tempo Total e TMA separados.",
   kpis: [
-    { label: "Nota média", value: "85,36", hint: "teto efetivo 91,50", icon: "gauge", trend: [87.52, 85.71, 85.36] },
+    { label: "Nota média", value: "85,36", hint: "teto efetivo 100,00", icon: "gauge", trend: [87.52, 85.71, 85.36] },
     { label: "Mediana", value: "86,08", hint: "centro das notas", icon: "medal", trend: [86.54, 86.16, 86.08] },
     { label: "Elegíveis", value: "4", hint: "nota a partir de 85", icon: "check", trend: [5, 4, 4] },
     { label: "Premiados", value: "3", hint: "3 de 4 elegíveis", icon: "trophy", trend: [3, 3, 3] },
@@ -242,8 +258,8 @@ export const monthlyClosures: MonthlyClosure[] = [
     lideranca: 91.06,
     elegiveis: "4 de 7",
     premiados: 3,
-    nota: "Julho/2026 validado — Tempo/TMA fixos em 31,5",
-    tag: "Nova versão de regra",
+    nota: "Novo modelo oficial — 100 pontos com Tempo e TMA separados",
+    tag: "Regra de 100 pontos",
   },
   {
     competencia: "08/2026",
@@ -253,8 +269,8 @@ export const monthlyClosures: MonthlyClosure[] = [
     lideranca: 91.09,
     elegiveis: "4 de 7",
     premiados: 3,
-    nota: "Novo modelo oficial — automáticos incluídos e Tempo/TMA fixos em 31,5",
-    tag: "Nova versão de regra",
+    nota: "Novo modelo oficial — 100 pontos com Tempo e TMA separados",
+    tag: "Regra de 100 pontos",
   },
 ];
 
@@ -262,12 +278,20 @@ export const monthlyClosures: MonthlyClosure[] = [
 
 export const scoreComposition = [
   {
-    tipo: "Base comum",
-    label: "Base fixa",
-    obtido: 31.5,
-    maximo: 31.5,
-    percentual: 100.0,
-    descricao: "Mesma pontuação para todos; não altera a posição.",
+    tipo: "Critério variável",
+    label: "Tempo Total",
+    obtido: 9.32,
+    maximo: 10,
+    percentual: 93.2,
+    descricao: "0,68 ponto médio ainda disponível.",
+  },
+  {
+    tipo: "Critério variável",
+    label: "TMA",
+    obtido: 22.18,
+    maximo: 30,
+    percentual: 73.9,
+    descricao: "7,82 pontos médios ainda disponíveis.",
   },
   {
     tipo: "Critério variável",
@@ -288,9 +312,9 @@ export const scoreComposition = [
 ];
 
 export const principalAlavanca = {
-  label: "Quantidade",
+  label: "TMA",
   descricao:
-    "É o componente variável com maior distância média para o máximo: 3,70 pontos.",
+    "É o componente variável com maior distância média para o máximo: 7,82 pontos.",
 };
 
 // --------------------------- Plano de acompanhamento --------------------------
@@ -409,12 +433,9 @@ export const selectedRule = [
   { label: "Escopo", value: "Suporte · atendimentos finalizados" },
   { label: "Período", value: "Segunda a sábado · 08:00–19:59" },
   { label: "Duração máxima", value: "9 horas no máximo" },
-  {
-    label: "Finalizados automáticos",
-    value: "Incluídos; duração artificial sem impacto em Tempo/TMA",
-  },
+  { label: "Finalizados automáticos", value: "Submetidos às regras regulares" },
   { label: "Elegibilidade", value: "Nota final ≥ 85,00" },
-  { label: "Teto da pontuação", value: "91,50 pontos" },
+  { label: "Teto da pontuação", value: "100,00 pontos" },
   { label: "Premiação", value: "Somente os três maiores elegíveis" },
   { label: "Desempate", value: "Nota, quantidade e avaliação" },
 ];
@@ -430,9 +451,7 @@ export interface VersionedRule {
 
 export const versionedRules: VersionedRule[] = [
   { periodo: "Até maio/2026", avaliacao: "0 a 10", duracao: "Até 8h", pesos: "30 / 15 / 25 / 30", teto: "100,00", tratamento: "Tempo e TMA separados" },
-  { periodo: "Junho/2026", avaliacao: "0 a 5", duracao: "Até 9h", pesos: "20 / 10 / 30 / 40", teto: "100,00", tratamento: "Tempo e TMA separados" },
-  { periodo: "Julho/2026", avaliacao: "0 a 5", duracao: "Neutralizada", pesos: "20 / 10 / 30 / 40", teto: "91,50", tratamento: "31,50 pontos fixos" },
-  { periodo: "Agosto/2026 em diante", avaliacao: "0 a 5", duracao: "Até 9h", pesos: "20 / 10 / 30 / 40", teto: "91,50", tratamento: "31,50 pontos fixos" },
+  { periodo: "Junho/2026 em diante", avaliacao: "0 a 5", duracao: "Até 9h", pesos: "20 / 10 / 30 / 40", teto: "100,00", tratamento: "Tempo e TMA separados" },
 ];
 
 export const validationGroups = [
@@ -461,7 +480,7 @@ export const validationGroups = [
       "Modelo padrão: segunda a sábado, das 08:00 às 19:59.",
       "Atendimentos regulares acima do limite da competência são excluídos.",
       "Fim às 06:00 ou 20+ encerramentos no mesmo minuto sinalizam automático.",
-      "Automáticos válidos contam em Quantidade e Avaliação; sua duração não altera Tempo/TMA.",
+      "Registros automáticos seguem as mesmas regras de período e duração dos demais atendimentos.",
     ],
   },
   {
@@ -469,8 +488,7 @@ export const validationGroups = [
     itens: [
       "Os componentes são normalizados pelo melhor resultado da equipe.",
       "Quantidade, Tempo Total, TMA e Avaliação usam os pesos do mês.",
-      "Na regra histórica de 100 pontos, Tempo Total e TMA são calculados separadamente.",
-      "Quando protegidos, Tempo e TMA somam 31,50 pontos para todos.",
+      "Tempo Total e TMA são calculados separadamente e comparados dentro da equipe.",
       "Nota final a partir de 85 gera elegibilidade; apenas o Top 3 é premiado.",
     ],
   },
@@ -637,13 +655,14 @@ export const premiacaoResumo = [
   { label: "Base premiável", value: "2.350", hint: "94,9% da base importada", icon: "database" },
   { label: "Excluídos", value: "127", hint: "5,1% dos registros analisados", icon: "x" },
   { label: "Líder", value: "Marina Costa", hint: "1ª posição oficial", icon: "flag" },
-  { label: "Nota do líder", value: "91,09", hint: "de 91,50 pontos possíveis", icon: "gauge" },
+  { label: "Nota do líder", value: "91,09", hint: "de 100,00 pontos possíveis", icon: "gauge" },
   { label: "Premiados", value: "3", hint: "3 de 4 elegíveis", icon: "trophy" },
   { label: "Automáticos incluídos", value: "40", hint: "mantidos e rastreáveis", icon: "bot" },
 ];
 
 export const leaderBreakdown = [
-  { label: "Base fixa", value: "31,50", hint: "Tempo + TMA iguais para a equipe", color: "muted" as const },
+  { label: "Tempo Total", value: "9,80", hint: "componente comparativo", color: "muted" as const },
+  { label: "TMA", value: "21,70", hint: "componente comparativo", color: "muted" as const },
   { label: "Quantidade", value: "20,00", hint: "412 atendimentos válidos", color: "primary" as const },
   { label: "Avaliação", value: "39,59", hint: "CSAT 4,77", color: "primary" as const },
 ];
@@ -651,7 +670,7 @@ export const leaderBreakdown = [
 export const leaderTotal = {
   label: "Índice final",
   value: "91,09",
-  hint: "99,5% do teto efetivo",
+  hint: "91,1% do teto efetivo",
 };
 
 // ------------------------------ Histórico -----------------------------------

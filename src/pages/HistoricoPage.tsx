@@ -117,7 +117,7 @@ export default function HistoricoPage() {
             <KpiCard
               label="TMA observado"
               value={`${fmtBR(emp.tmaMediano, 1)} min`}
-              hint="não altera a nota fixa"
+              hint="componente da nota"
               icon="timer"
             />
             <KpiCard

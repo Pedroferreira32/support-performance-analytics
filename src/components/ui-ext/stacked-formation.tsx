@@ -12,19 +12,12 @@ type MetricCell = {
 
 const rows = currentSnapshot
   ? currentSnapshot.ranking.map((row) => {
-      const fixed = currentSnapshot.config.pontuacaoTempoTmaFixa;
-      const metrics: MetricCell[] = fixed
-        ? [
-            { key: "base", label: "Base fixa", max: 31.5, value: row.pontosTempo + row.pontosTma, barClass: "bg-muted-foreground/30" },
-            { key: "qtd", label: "Quantidade", max: currentSnapshot.config.pesoQuantidade, value: row.pontosQuantidade, barClass: "bg-primary/35" },
-            { key: "aval", label: "Avaliação", max: currentSnapshot.config.pesoAvaliacao, value: row.pontosAvaliacao, barClass: "bg-blue-500/35" },
-          ]
-        : [
-            { key: "qtd", label: "Quantidade", max: currentSnapshot.config.pesoQuantidade, value: row.pontosQuantidade, barClass: "bg-primary/35" },
-            { key: "tempo", label: "Tempo", max: currentSnapshot.config.pesoTempo, value: row.pontosTempo, barClass: "bg-sky-500/35" },
-            { key: "tma", label: "TMA", max: currentSnapshot.config.pesoTma, value: row.pontosTma, barClass: "bg-amber-400/30" },
-            { key: "aval", label: "Avaliação", max: currentSnapshot.config.pesoAvaliacao, value: row.pontosAvaliacao, barClass: "bg-blue-500/35" },
-          ];
+      const metrics: MetricCell[] = [
+        { key: "qtd", label: "Quantidade", max: currentSnapshot.config.pesoQuantidade, value: row.pontosQuantidade, barClass: "bg-primary/35" },
+        { key: "tempo", label: "Tempo", max: currentSnapshot.config.pesoTempo, value: row.pontosTempo, barClass: "bg-sky-500/35" },
+        { key: "tma", label: "TMA", max: currentSnapshot.config.pesoTma, value: row.pontosTma, barClass: "bg-amber-400/30" },
+        { key: "aval", label: "Avaliação", max: currentSnapshot.config.pesoAvaliacao, value: row.pontosAvaliacao, barClass: "bg-blue-500/35" },
+      ];
       return { rank: row.rank, name: row.atendente, note: row.notaFinal, metrics };
     })
   : employees.map((employee) => ({
@@ -32,8 +25,9 @@ const rows = currentSnapshot
       name: employee.name,
       note: employee.note,
       metrics: [
-        { key: "base", label: "Base fixa", max: competencia.baseFixa, value: competencia.baseFixa, barClass: "bg-muted-foreground/30" },
         { key: "qtd", label: "Quantidade", max: competencia.pesoQuantidade, value: employee.ptsQuantidade, barClass: "bg-primary/35" },
+        { key: "tempo", label: "Tempo", max: 10, value: employee.ptsTempo, barClass: "bg-sky-500/35" },
+        { key: "tma", label: "TMA", max: 30, value: employee.ptsTma, barClass: "bg-amber-400/30" },
         { key: "aval", label: "Avaliação", max: competencia.pesoAvaliacao, value: employee.ptsAvaliacao, barClass: "bg-blue-500/35" },
       ] satisfies MetricCell[],
     }));

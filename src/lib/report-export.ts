@@ -175,9 +175,9 @@ export async function exportPowerPoint(snapshot: CompetenceSnapshot, history: Co
     `Escopo: Suporte em Filas/Setores ou Transfers`,
     `Janela: ${snapshot.config.incluirForaExpediente ? "período integral preservado" : "segunda a sábado, 08:00–19:59"}`,
     `Duração: até ${snapshot.config.maxHoras} horas para atendimentos regulares`,
-    `Automáticos: ${snapshot.config.incluirFinalizadosAutomaticamente ? "incluídos; duração não altera Tempo/TMA" : "tratamento regular"}`,
-    `Tempo/TMA: ${snapshot.config.pontuacaoTempoTmaFixa ? "31,50 pontos iguais para todos" : "componentes separados, normalizados pela equipe"}`,
-    `Teto: ${(snapshot.config.tetoPontuacao ?? (snapshot.config.pontuacaoTempoTmaFixa ? 91.5 : 100)).toLocaleString("pt-BR", { minimumFractionDigits: 2 })} pontos`,
+    "Automáticos: submetidos às regras regulares",
+    "Tempo/TMA: componentes separados, normalizados pela equipe",
+    `Teto: ${(snapshot.config.tetoPontuacao ?? 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })} pontos`,
     `Elegibilidade: nota final ≥ ${snapshot.config.notaMinima}; premiação: Top 3 elegível`,
   ];
   s.addText(rules.map((text) => ({ text, options: { bullet: { indent: 14 }, breakLine: true } })), { x: 0.9, y: 2.05, w: 11.4, h: 3.7, fontFace: "Aptos", fontSize: 17, color: COLORS.white, breakLine: false, paraSpaceAfterPt: 13 });
@@ -194,13 +194,13 @@ export async function exportPowerPoint(snapshot: CompetenceSnapshot, history: Co
   s = slide("Resultado", "Ranking oficial", "Ordenação por nota, quantidade e avaliação.");
   s.addTable([["Rank", "Funcionário", "Volume", "CSAT", "Nota", "Situação"], ...tableRows(snapshot)], { x: 0.65, y: 1.95, w: 12, h: 4.65, border: { color: "294052", width: 0.6 }, fill: "0D2536", color: COLORS.white, fontFace: "Aptos", fontSize: 10, rowH: 0.34, margin: 0.07, bold: false, autoFit: false, colW: [0.65, 3.25, 1.2, 1.1, 1.1, 2.2] });
 
-  s = slide("Memória de cálculo", "Formação da nota", "Tempo e TMA aparecem separados mesmo quando protegidos.");
+  s = slide("Memória de cálculo", "Formação da nota", "Tempo Total e TMA são componentes separados e comparativos.");
   s.addTable([["Funcionário", "Qtd.", "Tempo", "TMA", "Aval.", "Final"], ...snapshot.ranking.map((row) => [row.atendente, fmt(row.pontosQuantidade), fmt(row.pontosTempo), fmt(row.pontosTma), fmt(row.pontosAvaliacao), fmt(row.notaFinal)])], { x: 0.65, y: 1.95, w: 12, h: 4.65, border: { color: "294052", width: 0.6 }, fill: "0D2536", color: COLORS.white, fontFace: "Aptos", fontSize: 10, rowH: 0.34, margin: 0.07 });
 
   s = slide("Comparativo mensal", "Evolução das competências", "Comparações devem respeitar as versões de regra.");
   s.addTable([["Competência", "Nota média", "Líder", "Elegíveis", "Premiados"], ...history.map((item) => [item.competenciaBr, fmt(item.ranking.reduce((sum, row) => sum + row.notaFinal, 0) / Math.max(1, item.ranking.length)), fmt(item.ranking[0]?.notaFinal), item.ranking.filter((row) => row.elegivel).length, item.ranking.filter((row) => row.premiado).length])], { x: 0.9, y: 2.05, w: 11.4, h: 3.8, border: { color: "294052", width: 0.6 }, fill: "0D2536", color: COLORS.white, fontFace: "Aptos", fontSize: 11, rowH: 0.42, margin: 0.08 });
 
-  s = slide("Operação", "Volume, tempo e satisfação", "A duração artificial de automáticos não entra em Tempo/TMA.");
+  s = slide("Operação", "Volume, tempo e satisfação", "Todos os registros seguem as regras regulares de período e duração.");
   const timed = snapshot.validos.filter((row) => row.duracaoConsiderada).map((row) => row.tmaMinutos).sort((a, b) => a - b);
   addKpis(s, [
     { label: "Volume válido", value: snapshot.validos.length.toLocaleString("pt-BR") },
@@ -209,7 +209,7 @@ export async function exportPowerPoint(snapshot: CompetenceSnapshot, history: Co
     { label: "Excluídos", value: snapshot.excluidos.length.toLocaleString("pt-BR") },
   ]);
 
-  s = slide("Controle", "Finalizados automaticamente", "Incluídos em Quantidade e Avaliação; Tempo/TMA permanecem protegidos.");
+  s = slide("Controle", "Finalizados automaticamente", "Sinalizados para auditoria e submetidos às regras regulares.");
   addKpis(s, [
     { label: "Identificados", value: String(snapshot.estatisticas.AUTOMATICOS_IDENTIFICADOS ?? 0) },
     { label: "Incluídos", value: String(snapshot.estatisticas.AUTOMATICOS_VALIDOS ?? 0) },

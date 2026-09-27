@@ -107,6 +107,7 @@ def create_app(repository: SnapshotRepository | None = None) -> FastAPI:
         file: Annotated[UploadFile, File(...)],
         competencia: Annotated[str, Form(...)],
         atendentes_excluidos: Annotated[str, Form()] = "",
+        resposta_compacta: Annotated[bool, Form()] = False,
     ) -> dict[str, object]:
         try:
             storage = require_repository()
@@ -117,7 +118,10 @@ def create_app(repository: SnapshotRepository | None = None) -> FastAPI:
                 competencia,
                 atendentes_excluidos,
             )
-            return storage.save(snapshot)
+            saved = storage.save(snapshot)
+            if resposta_compacta:
+                return {**saved, "validos": [], "excluidos": []}
+            return saved
         except HTTPException:
             raise
         except Exception as error:
@@ -126,6 +130,10 @@ def create_app(repository: SnapshotRepository | None = None) -> FastAPI:
     @app.get("/api/v1/competencias")
     def list_competences() -> list[dict[str, object]]:
         return require_repository().list()
+
+    @app.get("/api/v1/competencias/resumo")
+    def list_competence_summaries() -> list[dict[str, object]]:
+        return require_repository().list_compact()
 
     @app.get("/api/v1/competencias/{competencia}")
     def get_competence(competencia: str) -> dict[str, object]:

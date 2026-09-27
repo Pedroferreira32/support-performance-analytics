@@ -33,6 +33,23 @@ def test_full_api_flow(tmp_path) -> None:
         assert response.status_code == 200
         assert response.json()["ranking"][0]["premiado"] is True
         assert len(client.get("/api/v1/competencias").json()) == 1
+        summary = client.get("/api/v1/competencias/resumo")
+        assert summary.status_code == 200
+        assert summary.json()[0]["validos"] == []
+        assert summary.json()[0]["excluidos"] == []
+
+        compact = client.post(
+            "/api/v1/competencias/processar",
+            files={"file": ("agosto.csv", content, "text/csv")},
+            data={
+                "competencia": "08/2026",
+                "atendentes_excluidos": "",
+                "resposta_compacta": "true",
+            },
+        )
+        assert compact.status_code == 200
+        assert compact.json()["validos"] == []
+        assert compact.json()["excluidos"] == []
 
         updated = client.patch(
             "/api/v1/competencias/2026-08/feedback/Ana",

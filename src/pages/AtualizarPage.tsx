@@ -168,8 +168,8 @@ export default function AtualizarPage() {
                 <div className="mt-5 grid grid-cols-2 gap-3">
                   {[
                     ["Quantidade", `${config.pesoQuantidade} pts`],
-                    ["Tempo total", config.pontuacaoTempoTmaFixa ? "7,88 pts fixos" : `${config.pesoTempo} pts`],
-                    ["TMA", config.pontuacaoTempoTmaFixa ? "23,62 pts fixos" : `${config.pesoTma} pts`],
+                    ["Tempo total", `${config.pesoTempo} pts`],
+                    ["TMA", `${config.pesoTma} pts`],
                     ["Avaliação", `${config.pesoAvaliacao} pts`],
                   ].map(([label, value]) => (
                     <div key={label} className="rounded-sm border bg-muted/40 p-3">

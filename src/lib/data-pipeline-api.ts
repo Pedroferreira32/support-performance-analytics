@@ -87,9 +87,23 @@ export async function processDataFile(
   }
 }
 
-export async function loadPipelineSnapshots(): Promise<CompetenceSnapshot[] | null> {
+export async function loadPipelineSnapshots(selected?: string | null): Promise<CompetenceSnapshot[] | null> {
   if (!pipelineApiEnabled()) return null;
-  return await request<CompetenceSnapshot[]>("/api/v1/competencias");
+  const summaries = await request<CompetenceSnapshot[]>("/api/v1/competencias/resumo");
+  if (!summaries.length) return summaries;
+  const matchedIndex = selected
+    ? summaries.findIndex((snapshot) => snapshot.competencia === selected)
+    : -1;
+  const selectedIndex = matchedIndex >= 0 ? matchedIndex : summaries.length - 1;
+  const keys = [...new Set([
+    summaries[selectedIndex]?.competencia,
+    summaries[selectedIndex - 1]?.competencia,
+  ].filter((value): value is string => Boolean(value)))];
+  const complete = await Promise.all(
+    keys.map((competence) => request<CompetenceSnapshot>(`/api/v1/competencias/${encodeURIComponent(competence)}`)),
+  );
+  const completeByKey = new Map(complete.map((snapshot) => [snapshot.competencia, snapshot]));
+  return summaries.map((snapshot) => completeByKey.get(snapshot.competencia) ?? snapshot);
 }
 
 export async function persistPipelineFeedback(

@@ -137,7 +137,7 @@ export default function GerencialPage() {
           <SectionCard
             eyebrow="Composição da nota"
             title="Aproveitamento médio por critério"
-            description="Pontos obtidos em relação ao peso máximo; critérios fixos aparecem identificados."
+            description="Pontos obtidos em relação ao peso máximo de cada componente comparativo."
           >
             <RadarComposition />
             <div className="mt-6 space-y-6">
