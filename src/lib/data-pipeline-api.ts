@@ -89,7 +89,12 @@ export async function processDataFile(
 
 export async function loadPipelineSnapshots(selected?: string | null): Promise<CompetenceSnapshot[] | null> {
   if (!pipelineApiEnabled()) return null;
-  const summaries = await request<CompetenceSnapshot[]>("/api/v1/competencias/resumo");
+  const summaries = (await request<CompetenceSnapshot[]>("/api/v1/competencias/resumo"))
+    .map((snapshot) => ({
+      ...snapshot,
+      validos: snapshot.validos ?? [],
+      excluidos: snapshot.excluidos ?? [],
+    }));
   if (!summaries.length) return summaries;
   const matchedIndex = selected
     ? summaries.findIndex((snapshot) => snapshot.competencia === selected)

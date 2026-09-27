@@ -264,7 +264,9 @@ class SnapshotRepository:
             cursor = connection.cursor()
             if self.dialect == "postgresql":
                 rows = cursor.execute(
-                    "SELECT (snapshot::jsonb - 'validos' - 'excluidos')::text "
+                    "SELECT jsonb_set("
+                    "jsonb_set(snapshot::jsonb, '{validos}', '[]'::jsonb), "
+                    "'{excluidos}', '[]'::jsonb)::text "
                     "FROM competencias ORDER BY competencia"
                 ).fetchall()
                 return [json.loads(row[0]) for row in rows]
