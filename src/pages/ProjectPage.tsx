@@ -1,4 +1,5 @@
 import { Equal, Plus } from "lucide-react";
+import { Link } from "react-router-dom";
 
 import { AppShell } from "@/components/layout/app-shell";
 import { KpiCard } from "@/components/ui-ext/kpi-card";
@@ -15,20 +16,77 @@ import {
   engineeringSteps,
   competencia,
   currentSnapshot,
+  operationalSnapshots,
   selectedRule,
   validationGroups,
   versionedRules,
 } from "@/data/support-data-runtime";
 
 export default function ProjectPage() {
+  const records = operationalSnapshots.reduce((sum, snapshot) => sum + snapshot.totalLinhas, 0);
+  const valid = operationalSnapshots.reduce((sum, snapshot) => sum + (snapshot.estatisticas.VALIDOS ?? snapshot.validos.length), 0);
+  const activeClients = currentSnapshot?.carteira?.reduce((sum, row) => sum + row.clientesAtivos, 0) ?? 0;
+  const resellers = currentSnapshot?.carteira?.length ?? 0;
+
   return (
     <AppShell breadcrumb="Painel de performance" title="Visão do projeto">
       <div className="animate-fade-in-up space-y-5">
+        <section className="overflow-hidden rounded-sm border border-primary/20 bg-primary p-6 text-primary-foreground sm:p-8">
+          <p className="mono text-[10px] font-bold uppercase tracking-[0.22em] text-primary-foreground/65">Case público · dados sintéticos</p>
+          <div className="mt-3 grid gap-6 lg:grid-cols-[1.5fr_1fr] lg:items-end">
+            <div>
+              <h2 className="max-w-2xl text-2xl font-bold tracking-tight sm:text-3xl">Do atendimento à decisão, com critérios auditáveis.</h2>
+              <p className="mt-3 max-w-2xl text-sm leading-relaxed text-primary-foreground/80">
+                Um histórico mensal conecta qualidade do suporte, desempenho da equipe e demanda por revenda.
+                A carteira ativa dá contexto ao volume de chamados; o ranking mantém regras e exclusões rastreáveis.
+              </p>
+            </div>
+            <div className="grid gap-2 text-xs sm:grid-cols-3 lg:grid-cols-1">
+              <Link to="/gerencial" className="rounded-sm border border-primary-foreground/20 px-3 py-2 hover:bg-primary-foreground/10">Visão gerencial →</Link>
+              <Link to="/revendas" className="rounded-sm border border-primary-foreground/20 px-3 py-2 hover:bg-primary-foreground/10">Inteligência de revendas →</Link>
+              <Link to="/auditoria" className="rounded-sm border border-primary-foreground/20 px-3 py-2 hover:bg-primary-foreground/10">Trilha de auditoria →</Link>
+            </div>
+          </div>
+        </section>
+
+        <SectionCard
+          eyebrow="Escala da demonstração"
+          title="Uma base que sustenta a análise"
+          description="Os nomes, clientes, protocolos e atendimentos foram gerados para este case. Os totais são calculados a partir das competências carregadas."
+        >
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <KpiCard label="Atendimentos brutos" value={records.toLocaleString("pt-BR")} hint={`${valid.toLocaleString("pt-BR")} válidos`} icon="activity" tone="primary" />
+            <KpiCard label="Meses no histórico" value={operationalSnapshots.length.toLocaleString("pt-BR")} hint="comparação mensal" icon="calendar" />
+            <KpiCard label="Revendas" value={resellers.toLocaleString("pt-BR")} hint="carteira da competência" icon="target" tone="warning" />
+            <KpiCard label="Clientes ativos" value={activeClients.toLocaleString("pt-BR")} hint="inclui quem não abriu chamado" icon="award" tone="success" />
+          </div>
+        </SectionCard>
+
+        <SectionCard
+          eyebrow="Como usar o painel"
+          title="Três perguntas, uma mesma base"
+          description="A leitura parte da decisão gerencial, investiga a operação e preserva as evidências que explicam o resultado."
+        >
+          <div className="grid gap-4 md:grid-cols-3">
+            {[
+              ["01 · Direção", "Onde houve mudança?", "Volume, qualidade e elegibilidade mostram o fechamento de cada competência.", "/gerencial"],
+              ["02 · Diagnóstico", "Onde agir primeiro?", "Clientes recorrentes e chamados por 100 clientes ativos revelam a concentração da demanda.", "/revendas"],
+              ["03 · Auditoria", "Por que o resultado mudou?", "Regras versionadas, exclusões e ranking permitem conferir o cálculo.", "/auditoria"],
+            ].map(([step, question, description, url]) => (
+              <Link key={step} to={url} className="rounded-sm border bg-muted/40 p-5 transition-shadow hover:shadow-elevated">
+                <p className="mono text-[10px] font-bold uppercase tracking-wider text-primary">{step}</p>
+                <h3 className="mt-3 text-sm font-bold">{question}</h3>
+                <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{description}</p>
+              </Link>
+            ))}
+          </div>
+        </SectionCard>
+
         {/* Sobre o projeto */}
         <SectionCard
-          eyebrow="Sobre o projeto"
-          title="Validação da Premiação do Suporte"
-          description="Aplicação criada para transformar a base mensal do ChatMobi em um resultado confiável de premiação. O sistema limpa e padroniza os dados, aplica as regras da competência, calcula o ranking e mantém a memória completa para conferência."
+          eyebrow="Regra de premiação"
+          title="Resultado explicável, mês a mês"
+          description="A pipeline limpa e padroniza a base mensal, aplica o perfil de regra da competência, calcula o ranking e preserva os motivos de exclusão para conferência."
         >
           <div className="grid gap-4 sm:grid-cols-3">
             <KpiCard

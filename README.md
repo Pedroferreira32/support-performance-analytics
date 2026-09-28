@@ -415,6 +415,18 @@ A carteira mensal sintética é gerada separadamente dos atendimentos e inclui e
 
 Se uma competência antiga não possui carteira, o painel não calcula a taxa. As seis bases sintéticas podem ser reproduzidas com `python -m scripts.seed_synthetic_history --database-url sqlite:///backend/data/demo_bi.db`. Para o modelo dimensional e as medidas DAX, veja [docs/bi-model.md](docs/bi-model.md).
 
+### Prévia da branch de teste
+
+A branch `test/reseller-intelligence-demo` reutiliza todo o layout público e traz um histórico próprio, gerado em uma base SQLite isolada. O build de **Preview** da Vercel lê os arquivos estáticos de `public/demo`, inteiramente sintéticos e somente para consulta. Ele carrega os resumos dos seis meses e os registros completos da competência selecionada e da anterior; a produção continua usando a API central. A página inicial apresenta o case e direciona para gerencial, revendas e auditoria.
+
+Para reproduzir os arquivos estáticos depois de gerar a base:
+
+```bash
+python -m scripts.export_preview_fixture --database-url sqlite:///backend/data/demo_bi.db --output public/demo
+```
+
+Os arquivos `.bin` são JSON comprimido com gzip, com hora de compactação fixa para permitir comparar versões. O exportador rejeita origem que não seja `atendimentos_sinteticos_*`.
+
 ## Persistência e modelo de dados
 
 O PostgreSQL utiliza cinco tabelas principais:

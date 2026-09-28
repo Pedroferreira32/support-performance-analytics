@@ -79,7 +79,7 @@ export function AppShell({ breadcrumb, title, children }: AppShellProps) {
                 Performance do Suporte
               </p>
               <p className="mono text-[9px] uppercase tracking-[0.2em] text-muted-foreground">
-                Validação e premiação
+                Inteligência de suporte e revendas
               </p>
             </div>
           </div>
@@ -176,7 +176,7 @@ export function AppShell({ breadcrumb, title, children }: AppShellProps) {
           {/* Faixa de contexto */}
           <div className="mb-5 flex flex-wrap items-center gap-x-2 gap-y-1 rounded-sm border border-border/70 bg-card/50 px-3 py-2 mono text-[11px] text-muted-foreground">
             <span className="rounded-sm bg-success/15 px-1.5 py-0.5 font-bold text-success">
-              {hasOperationalData ? "BASE LOCAL" : "DEMO"}
+              {hasOperationalData ? "BASE SINTÉTICA" : "DEMO"}
             </span>
             <span>Competência {competencia.label}</span>
             <span aria-hidden>·</span>
