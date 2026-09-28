@@ -2,6 +2,7 @@ import * as demo from "@/data/support-data";
 import { loadSnapshots, selectedCompetence } from "@/lib/dashboard-store";
 import { META_ELEGIBILIDADE } from "@/lib/validation-engine";
 import { pipelineApiEnabled } from "@/lib/data-pipeline-api";
+import { previewDataEnabled } from "@/lib/preview-data";
 import type { CompetenceSnapshot, RankingRecord } from "@/lib/validation-engine";
 
 export type Situacao = demo.Situacao;
@@ -122,7 +123,10 @@ export const resultado = current ? {
     { label: "Elegíveis", value: String(eligibleCount), hint: `nota a partir de ${fmt(META_ELEGIBILIDADE, 0)}`, icon: "check", trend: eligibleTrend },
     { label: "Premiados", value: String(awardedCount), hint: `${awardedCount} de ${eligibleCount} elegíveis`, icon: "trophy", trend: monthlyClosures.map((item) => item.premiados) },
     { label: "Base validada", value: `${fmt(importedCount ? (validCount / importedCount) * 100 : 0, 1)}%`, hint: `${fmt(importedCount ? (excludedCount / importedCount) * 100 : 0, 1)}% excluída`, icon: "shield" },
-    { label: "Cobertura CSAT", value: `${fmt(coverage, 1)}%`, hint: `média ponderada ${fmt(weightedCsat)}`, icon: "star", trend: snapshots.map((snapshot) => snapshot.validos.length ? snapshot.ranking.reduce((sum, row) => sum + row.avaliacoes, 0) / snapshot.validos.length * 100 : 0) },
+    { label: "Cobertura CSAT", value: `${fmt(coverage, 1)}%`, hint: `média ponderada ${fmt(weightedCsat)}`, icon: "star", trend: snapshots.map((snapshot) => {
+      const total = snapshot.estatisticas.VALIDOS ?? snapshot.validos.length;
+      return total ? snapshot.ranking.reduce((sum, row) => sum + row.avaliacoes, 0) / total * 100 : 0;
+    }) },
   ],
 } : demo.resultado;
 
@@ -227,7 +231,9 @@ export const validationGroups = demo.validationGroups;
 export const engineeringSteps = demo.engineeringSteps.map((step) => step.numero === "05"
   ? {
       ...step,
-      descricao: pipelineApiEnabled()
+      descricao: previewDataEnabled
+        ? "Histórico sintético versionado e publicado como arquivos estáticos comprimidos para consulta."
+        : pipelineApiEnabled()
         ? "Carga idempotente no banco central e cópia local de contingência, sem duplicar a competência."
         : "Histórico local de contingência, substituindo a competência reprocessada sem duplicidade.",
     }

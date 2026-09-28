@@ -36,7 +36,7 @@ const App = () => {
   if (!ready) {
     return (
       <div className="grid min-h-screen place-items-center bg-background text-sm text-muted-foreground">
-        Sincronizando histórico da pipeline…
+        {previewDataEnabled ? "Carregando demonstração sintética…" : "Sincronizando histórico da pipeline…"}
       </div>
     );
   }
