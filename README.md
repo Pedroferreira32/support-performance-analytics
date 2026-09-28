@@ -1,10 +1,14 @@
-# Performance do Suporte — Validação e Premiação
+# Performance do Suporte — Inteligência Operacional
 
-Plataforma de engenharia e análise de dados para validar os atendimentos do setor de suporte, calcular indicadores de desempenho, identificar os profissionais elegíveis e premiar os três melhores resultados de cada competência.
+Case de engenharia e análise de dados aplicado ao suporte: valida atendimentos, calcula indicadores e premiação, e cruza a demanda das revendas com sua carteira mensal de clientes e assinaturas ativas.
 
-[Acessar o dashboard em produção](https://support-performance-analytics.vercel.app/) · [Verificar a saúde da API](https://support-performance-analytics.vercel.app/api/health)
+[Acessar a versão atual em produção (main)](https://support-performance-analytics.vercel.app/) · [Verificar a saúde da API](https://support-performance-analytics.vercel.app/api/health)
 
 > A versão pública é um projeto de portfólio e utiliza dados sintéticos. Bases reais de funcionários não devem ser publicadas enquanto o ambiente não possuir autenticação e controle de acesso.
+
+**Em 30 segundos:** a análise distingue volume de demanda proporcional. Uma revenda com poucos clientes e muitos chamados pode requerer atenção mesmo que não lidere o volume absoluto. O painel mostra atendimentos por 100 clientes ativos, alcance da carteira, evolução mensal e evidências para investigar; as conclusões do demo são ilustrativas, não resultados reais de uma empresa.
+
+Esta branch de teste prepara a demo publicada para funcionar somente para leitura. Para reproduzir a pipeline e preparar as duas tabelas para Power BI, veja [o modelo analítico](docs/bi-model.md).
 
 ## Resumo executivo
 
@@ -22,6 +26,7 @@ A solução atual transforma a base operacional em uma decisão auditável. O si
 - registra válidos, exclusões, parâmetros, ranking e feedbacks no histórico;
 - apresenta análises gerenciais, operacionais e individuais;
 - identifica clientes com maior volume e recorrência de contatos;
+- compara atendimentos com uma carteira sintética independente de clientes e assinaturas ativos por revenda e mês;
 - exporta auditoria em Excel e relatório executivo em PowerPoint.
 
 O resultado é um produto completo de **engenharia de dados, análise de dados, automação de processos, visualização, qualidade de dados e inteligência operacional**.
@@ -382,11 +387,12 @@ O histórico por funcionário apresenta posição, nota, atendimentos, avaliaç�
 | Projeto | O que foi construído e quais regras são usadas? | Objetivo, pipeline, parâmetros e metodologia |
 | Gerencial | Qual decisão o responsável precisa tomar? | KPIs, ranking, comparação mensal e plano de acompanhamento |
 | Operação | Como o setor está funcionando? | Volume, TMA, P90, CSAT, cobertura e distribuição operacional |
+| Revendas | Onde a demanda é maior em relação à carteira? | Clientes e assinaturas ativos, atendimentos por 100 clientes, alcance e histórico mensal |
 | Clientes críticos | Quais clientes mais acionaram o suporte? | Volume, recorrência, participação, dias ativos, atendentes e sinal de acompanhamento |
 | Premiação | Quem atingiu a meta e quem será premiado? | Ranking, formação da nota, liderança e memória de cálculo |
 | Histórico | Como cada pessoa evoluiu? | Série mensal, comparação individual e feedback |
 | Auditoria | O resultado pode ser conferido? | Reconciliação, exclusões, automáticos, parâmetros e base validada |
-| Atualizar | Como processar a próxima competência? | Upload, competência, exclusões da campanha e reprocessamento |
+| Atualizar | Como processar a próxima competência? | Upload e reprocessamento no desenvolvimento local; demo publicado somente para leitura |
 
 ### Critério de clientes críticos
 
@@ -398,9 +404,20 @@ O painel usa `Contact ID` como identificação principal e `Contact Number` como
 
 Na demonstração pública, todos os nomes, contatos, atendentes e protocolos exibidos nesse painel são fictícios.
 
+### Demanda proporcional das revendas
+
+A carteira mensal sintética é gerada separadamente dos atendimentos e inclui empresas que não abriram chamados. O painel cruza as duas fontes por competência e revenda:
+
+- **Atendimentos por 100 clientes ativos:** atendimentos válidos da revenda / clientes ativos da carteira × 100;
+- **Alcance:** clientes distintos com atendimento / clientes ativos × 100;
+- **Assinaturas ativas:** medida separada para explorar o tamanho da base contratada;
+- **Demanda elevada:** taxa a partir do percentil 90 entre revendas com carteira na competência; sinal de investigação, não diagnóstico de gravidade.
+
+Se uma competência antiga não possui carteira, o painel não calcula a taxa. As seis bases sintéticas podem ser reproduzidas com `python -m scripts.seed_synthetic_history --database-url sqlite:///backend/data/demo_bi.db`. Para o modelo dimensional e as medidas DAX, veja [docs/bi-model.md](docs/bi-model.md).
+
 ## Persistência e modelo de dados
 
-O Neon PostgreSQL utiliza quatro tabelas principais:
+O PostgreSQL utiliza cinco tabelas principais:
 
 | Tabela | Finalidade |
 |---|---|
@@ -408,6 +425,7 @@ O Neon PostgreSQL utiliza quatro tabelas principais:
 | `resultados` | Ranking, indicadores, nota, elegibilidade, premiação e feedback |
 | `atendimentos_validos` | Registros efetivamente utilizados no cálculo |
 | `exclusoes` | Registros retirados, código e descrição do motivo |
+| `carteira_mensal` | Clientes e assinaturas ativos por revenda e competência, inclusive sem chamados |
 
 O reprocessamento é idempotente: os registros da competência informada são substituídos dentro de uma transação, sem duplicar os demais meses.
 
@@ -487,7 +505,9 @@ A apresentação é gerada diretamente no navegador e inclui:
 | `GET /api/v1/competencias/{AAAA-MM}` | Consulta um snapshot mensal |
 | `PATCH /api/v1/competencias/{AAAA-MM}/feedback/{atendente}` | Atualiza o feedback individual |
 
-Em produção, a API é consumida pelo mesmo domínio do dashboard. Se a API estiver temporariamente indisponível, o motor TypeScript pode processar o arquivo localmente e informa que o resultado ainda não foi compartilhado com os demais navegadores.
+Na Vercel, a API é consumida pelo mesmo domínio do dashboard. No desenvolvimento local, se a API estiver temporariamente indisponível, o motor TypeScript pode processar o arquivo no navegador e informa que o resultado ainda não foi compartilhado com os demais navegadores.
+
+Na Vercel, as rotas de detecção, processamento e atualização de feedback devolvem `403`; a demo compartilhada é somente para leitura. O processamento local permanece disponível durante o desenvolvimento.
 
 ## Estrutura do repositório
 
@@ -496,6 +516,7 @@ backend/
 ├── app/main.py                  # FastAPI, endpoints e CORS
 ├── app/pipeline/rules.py        # Regras versionadas por competência
 ├── app/pipeline/engine.py       # Pipeline Pandas e cálculo do ranking
+├── app/portfolio.py             # Validação da carteira mensal
 └── app/database.py              # PostgreSQL/SQLite e carga idempotente
 
 api/index.py                     # Entrada da Vercel Function
@@ -507,7 +528,11 @@ src/
 ├── lib/validation-engine.ts     # Motor TypeScript equivalente
 ├── lib/dashboard-store.ts       # Cache local das competências
 ├── lib/report-export.ts         # Excel e PowerPoint
+├── lib/reseller-intelligence.ts  # Taxas por carteira e sinal relativo
 └── pages/                       # Painéis do dashboard
+
+scripts/seed_synthetic_history.py # Dados reproduzíveis em base isolada
+scripts/export_bi.py              # Fatos CSV para Power BI
 ```
 
 ## Qualidade e testes
@@ -615,7 +640,7 @@ Nunca armazene senhas ou connection strings em arquivos versionados.
 - O banco armazena os registros tratados, parâmetros e evidências necessárias à auditoria.
 - A connection string fica protegida como secret da Vercel.
 - O Excel de auditoria deve ser guardado após cada fechamento oficial.
-- O ambiente público atual não possui autenticação; dados reais exigem controle de acesso antes do uso operacional.
+- O ambiente público não possui autenticação e bloqueia gravações; dados reais exigem controle de acesso antes do uso operacional.
 
 ## Resultado do projeto
 

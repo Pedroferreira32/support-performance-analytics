@@ -1,4 +1,5 @@
 import { AppShell } from "@/components/layout/app-shell";
+import { Link } from "react-router-dom";
 import {
   Accordion,
   AccordionContent,
@@ -33,9 +34,11 @@ import {
   scoreComposition,
 } from "@/data/support-data-runtime";
 import { fmtBR } from "@/lib/format";
+import { buildResellerIntelligence } from "@/lib/reseller-intelligence";
 import { prioridadeTone, situacaoTone } from "@/lib/status-tones";
 
 export default function GerencialPage() {
+  const resellerInsight = buildResellerIntelligence(currentSnapshot);
   return (
     <AppShell breadcrumb="Painel de performance" title="Resumo gerencial">
       <div className="animate-fade-in-up space-y-5">
@@ -83,6 +86,21 @@ export default function GerencialPage() {
             {resultado.descricao}
           </p>
         </section>
+
+        {resellerInsight.topReseller && (
+          <SectionCard eyebrow="Inteligência da rede" title="Demanda proporcional por revenda"
+            description="A carteira de clientes ativos permite comparar revendas de tamanhos diferentes.">
+            <p className="text-sm leading-relaxed text-muted-foreground">
+              <strong className="text-foreground">{resellerInsight.topReseller.revenda}</strong> tem{" "}
+              {fmtBR(resellerInsight.topReseller.taxaPor100 ?? 0, 1)} atendimentos por 100 clientes ativos,
+              ante {fmtBR(resellerInsight.overallRate ?? 0, 1)} na rede.
+              A prioridade é investigar os contatos recorrentes antes de concluir a causa.
+            </p>
+            <Link to="/revendas" className="mt-3 inline-block text-sm font-semibold text-primary hover:underline">
+              Explorar carteira e atendimentos →
+            </Link>
+          </SectionCard>
+        )}
 
         {/* Ranking + leitura do gestor */}
         <div className="grid gap-5 lg:grid-cols-3">

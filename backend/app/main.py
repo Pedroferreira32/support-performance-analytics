@@ -33,7 +33,9 @@ async def _read_file(file: UploadFile) -> bytes:
     return content
 
 
-def create_app(repository: SnapshotRepository | None = None) -> FastAPI:
+def create_app(repository: SnapshotRepository | None = None, read_only: bool | None = None) -> FastAPI:
+    # Vercel hosts the unauthenticated public portfolio. Its shared data is immutable.
+    demo_read_only = bool(os.getenv("VERCEL")) if read_only is None else read_only
     repository_error: str | None = None
     repo = repository
     if repo is None:
@@ -49,6 +51,10 @@ def create_app(repository: SnapshotRepository | None = None) -> FastAPI:
                 detail=repository_error or "O armazenamento persistente não está configurado.",
             )
         return repo
+
+    def require_writable() -> None:
+        if demo_read_only:
+            raise HTTPException(status_code=403, detail="Demonstração pública somente para leitura.")
 
     @asynccontextmanager
     async def lifespan(_: FastAPI):
@@ -83,6 +89,7 @@ def create_app(repository: SnapshotRepository | None = None) -> FastAPI:
             "persistent": repo is not None,
             "detail": repository_error,
             "version": app.version,
+            "readOnly": demo_read_only,
         }
 
     @app.get("/api/v1/regras/{competencia}")
@@ -94,6 +101,7 @@ def create_app(repository: SnapshotRepository | None = None) -> FastAPI:
 
     @app.post("/api/v1/detectar-competencia")
     async def detect(file: Annotated[UploadFile, File(...)]) -> dict[str, str | None]:
+        require_writable()
         try:
             content = await _read_file(file)
             return {"competencia": detect_competence(content, file.filename or "arquivo.csv")}
@@ -109,6 +117,7 @@ def create_app(repository: SnapshotRepository | None = None) -> FastAPI:
         atendentes_excluidos: Annotated[str, Form()] = "",
         resposta_compacta: Annotated[bool, Form()] = False,
     ) -> dict[str, object]:
+        require_writable()
         try:
             storage = require_repository()
             content = await _read_file(file)
@@ -144,6 +153,7 @@ def create_app(repository: SnapshotRepository | None = None) -> FastAPI:
 
     @app.patch("/api/v1/competencias/{competencia}/feedback/{atendente}")
     def update_feedback(competencia: str, atendente: str, body: FeedbackBody) -> dict[str, object]:
+        require_writable()
         snapshot = require_repository().update_feedback(competencia, atendente, body.feedback.strip())
         if snapshot is None:
             raise HTTPException(status_code=404, detail="Resultado não encontrado.")

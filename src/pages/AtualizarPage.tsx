@@ -79,6 +79,23 @@ export default function AtualizarPage() {
     }
   }
 
+  if (import.meta.env.PROD) {
+    return (
+      <AppShell breadcrumb="Ferramentas" title="Sobre a demonstração">
+        <SectionCard
+          eyebrow="Portfólio público"
+          title="Demonstração somente para leitura"
+          description="Os atendimentos, a carteira de revendas e os resultados são inteiramente sintéticos. O histórico compartilhado fica protegido contra alterações por visitantes."
+        >
+          <p className="text-sm text-muted-foreground">
+            A importação e o reprocessamento podem ser testados em uma instalação local com uma base própria.
+            O repositório contém as instruções e o gerador reproduzível dos dados demonstrativos.
+          </p>
+        </SectionCard>
+      </AppShell>
+    );
+  }
+
   return (
     <AppShell breadcrumb="Ferramentas" title="Atualizar base">
       <div className="animate-fade-in-up space-y-5">

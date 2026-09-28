@@ -202,9 +202,13 @@ export default function HistoricoPage() {
         <SectionCard
           eyebrow="Registro de gestão"
           title="Feedback individual"
-          description="Texto vinculado à competência selecionada."
+          description={import.meta.env.PROD ? "Leitura do feedback demonstrativo desta competência." : "Texto vinculado à competência selecionada."}
         >
-          <div className="space-y-3">
+          {import.meta.env.PROD ? (
+            <p className="text-sm leading-relaxed text-muted-foreground">
+              {feedback || "Nenhum feedback registrado nesta competência."}
+            </p>
+          ) : <div className="space-y-3">
             <Textarea
               value={feedback}
               onChange={(e) => setFeedback(e.target.value)}
@@ -223,7 +227,7 @@ export default function HistoricoPage() {
                 Salvar feedback
               </Button>
             </div>
-          </div>
+          </div>}
         </SectionCard>
       </div>
     </AppShell>
