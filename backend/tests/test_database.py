@@ -41,3 +41,19 @@ def test_vercel_requires_persistent_database(monkeypatch) -> None:
 
     with pytest.raises(RuntimeError, match="DATABASE_URL não configurada"):
         default_database_url()
+
+
+def test_reprocessing_replaces_portfolio_rows(tmp_path) -> None:
+    repository = SnapshotRepository(f"sqlite:///{tmp_path / 'portfolio.db'}")
+    repository.initialize()
+    first = snapshot()
+    first["carteira"] = [{"revenda": "Revenda A", "clientesAtivos": 70, "assinaturasAtivas": 82}]
+    repository.save(first)
+    second = snapshot()
+    second["carteira"] = [{"revenda": "Revenda A", "clientesAtivos": 72, "assinaturasAtivas": 85}]
+    repository.save(second)
+
+    assert repository.get("2026-08")["carteira"][0]["clientesAtivos"] == 72
+    with repository._connect() as connection:
+        rows = connection.execute("SELECT clientes_ativos FROM carteira_mensal").fetchall()
+    assert rows == [(72,)]

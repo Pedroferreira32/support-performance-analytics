@@ -66,6 +66,15 @@ SCHEMA = {
             PRIMARY KEY (competencia, linha_origem)
         )
     """,
+    "carteira_mensal": """
+        CREATE TABLE IF NOT EXISTS carteira_mensal (
+            competencia TEXT NOT NULL REFERENCES competencias(competencia) ON DELETE CASCADE,
+            revenda TEXT NOT NULL,
+            clientes_ativos INTEGER NOT NULL CHECK (clientes_ativos > 0),
+            assinaturas_ativas INTEGER NOT NULL CHECK (assinaturas_ativas >= clientes_ativos),
+            PRIMARY KEY (competencia, revenda)
+        )
+    """,
     "idx_resultados_atendente": "CREATE INDEX IF NOT EXISTS idx_resultados_atendente ON resultados(atendente)",
     "idx_validos_atendente": "CREATE INDEX IF NOT EXISTS idx_validos_atendente ON atendimentos_validos(atendente)",
     "idx_exclusoes_motivo": "CREATE INDEX IF NOT EXISTS idx_exclusoes_motivo ON exclusoes(motivo_codigo)",
@@ -138,7 +147,7 @@ class SnapshotRepository:
         stored = deepcopy(snapshot)
         with self._connect() as connection:
             cursor = connection.cursor()
-            for table in ("resultados", "atendimentos_validos", "exclusoes"):
+            for table in ("resultados", "atendimentos_validos", "exclusoes", "carteira_mensal"):
                 cursor.execute(f"DELETE FROM {table} WHERE competencia = {self.placeholder}", (competence,))
             cursor.execute(f"DELETE FROM competencias WHERE competencia = {self.placeholder}", (competence,))
             self._insert(
@@ -250,6 +259,15 @@ class SnapshotRepository:
                         _json(row),
                     )
                     for row in stored["excluidos"]
+                ),
+            )
+            self._insert(
+                cursor,
+                "carteira_mensal",
+                ["competencia", "revenda", "clientes_ativos", "assinaturas_ativas"],
+                (
+                    (competence, row["revenda"], row["clientesAtivos"], row["assinaturasAtivas"])
+                    for row in stored.get("carteira", [])
                 ),
             )
         return stored

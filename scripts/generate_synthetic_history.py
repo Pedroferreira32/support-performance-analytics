@@ -33,10 +33,6 @@ NAMED_CLIENTS = [
     "Hotel Serra Azul — Demo",
 ]
 
-CLIENTS = NAMED_CLIENTS + [
-    f"Empresa Demonstrativa {index:02d}" for index in range(13, 81)
-]
-
 RESELLERS = [
     "Revenda Atlas — Demo",
     "Revenda Conecta — Demo",
@@ -63,6 +59,19 @@ RESELLERS = [
     "Revenda Nordeste — Demo",
     "Revenda Nacional — Demo",
 ]
+
+# A carteira representa empresas ativas, inclusive as que não abriram chamados.
+# Os extremos intencionais permitem comparar volume absoluto e demanda proporcional.
+BASE_CLIENTS = [
+    70, 85, 120, 180, 240, 300, 360, 420, 475, 540, 600, 660,
+    700, 760, 820, 880, 400, 500, 620, 750, 900, 1100, 1250, 1400,
+]
+DEMAND_FACTORS = [
+    0.04, 1.80, 0.85, 0.90, 1.00, 1.05, 0.75, 0.95,
+    1.20, 0.90, 0.80, 1.05, 1.10, 0.95, 0.85, 1.00,
+    0.90, 1.10, 0.95, 0.80, 1.15, 0.85, 1.00, 0.90,
+]
+assert len(RESELLERS) == len(BASE_CLIENTS) == len(DEMAND_FACTORS)
 
 MONTHS = {
     "2026-03": {
@@ -122,6 +131,28 @@ HEADERS = [
     "Status",
 ]
 
+PORTFOLIO_HEADERS = ["Competência", "Revenda", "Clientes ativos", "Assinaturas ativas"]
+
+
+def monthly_portfolio(competence: str) -> list[dict[str, str | int]]:
+    month = int(competence[-2:])
+    return [
+        {
+            "Competência": competence,
+            "Revenda": reseller,
+            "Clientes ativos": max(1, round(base * (1 + (month - 3) * 0.008))),
+            "Assinaturas ativas": max(1, round(base * (1 + (month - 3) * 0.008)))
+            + round(base * (0.16 + index % 4 * 0.025)),
+        }
+        for index, (reseller, base) in enumerate(zip(RESELLERS, BASE_CLIENTS))
+    ]
+
+
+def client_name(reseller_index: int, client_index: int) -> str:
+    if client_index == 0 and reseller_index < len(NAMED_CLIENTS):
+        return NAMED_CLIENTS[reseller_index]
+    return f"Empresa Demonstrativa R{reseller_index + 1:02d} C{client_index + 1:05d}"
+
 
 def month_days(year: int, month: int) -> list[date]:
     cursor = date(year, month, 1)
@@ -137,9 +168,10 @@ def choose_weighted_index(rng: random.Random, weights: list[float]) -> int:
     return rng.choices(range(len(weights)), weights=weights, k=1)[0]
 
 
-def choose_client(rng: random.Random) -> int:
-    weights = [1 / ((index + 2) ** 0.83) for index in range(len(CLIENTS))]
-    return choose_weighted_index(rng, weights)
+def choose_client(rng: random.Random, active_clients: int) -> int:
+    # Uma pequena parcela da carteira concentra contatos recorrentes.
+    frequent_pool = max(1, active_clients // 10)
+    return rng.randrange(frequent_pool if rng.random() < 0.25 else active_clients)
 
 
 def rounded_rating(rng: random.Random, mean: float, maximum: float) -> str:
@@ -192,10 +224,17 @@ def build_month(competence: str, config: dict[str, object]) -> list[dict[str, st
     agent_shares = list(config["shares"])
     agent_ratings = list(config["ratings"])
     coverage = float(config["coverage"])
+    portfolio = monthly_portfolio(competence)
+    reseller_weights = [
+        int(row["Clientes ativos"]) * DEMAND_FACTORS[index]
+        * (1.9 if competence == "2026-07" and index == 2 else 1.0)
+        for index, row in enumerate(portfolio)
+    ]
 
     for index in range(total_rows):
         agent_index = choose_weighted_index(rng, agent_shares)
-        client_index = choose_client(rng)
+        reseller_index = choose_weighted_index(rng, reseller_weights)
+        client_index = choose_client(rng, int(portfolio[reseller_index]["Clientes ativos"]))
         started = normal_start(rng, days)
         duration = valid_duration_minutes(rng, agent_index)
         finished = started + timedelta(minutes=duration)
@@ -237,9 +276,9 @@ def build_month(competence: str, config: dict[str, object]) -> list[dict[str, st
         rows.append(
             {
                 "Protocolo": f"DEMO-{year}{month:02d}-{index + 1:05d}",
-                "Contact ID": CLIENTS[client_index],
-                "Contact Number": f"55000000{1000 + client_index:04d}",
-                "Revenda": RESELLERS[(client_index * 7 + client_index // 3) % len(RESELLERS)],
+                "Contact ID": client_name(reseller_index, client_index),
+                "Contact Number": f"550000{reseller_index + 1:02d}{client_index + 1:05d}",
+                "Revenda": RESELLERS[reseller_index],
                 "Atendente": attendant,
                 "Filas": department,
                 "Iniciado": started_text,
@@ -261,6 +300,11 @@ def main() -> None:
             writer = csv.DictWriter(handle, fieldnames=HEADERS)
             writer.writeheader()
             writer.writerows(rows)
+        portfolio_target = OUTPUT_DIR / f"carteira_sintetica_{competence}.csv"
+        with portfolio_target.open("w", encoding="utf-8-sig", newline="") as handle:
+            writer = csv.DictWriter(handle, fieldnames=PORTFOLIO_HEADERS)
+            writer.writeheader()
+            writer.writerows(monthly_portfolio(competence))
         print(f"{competence}: {len(rows)} linhas -> {target}")
 
 

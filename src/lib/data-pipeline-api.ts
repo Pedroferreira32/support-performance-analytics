@@ -42,6 +42,7 @@ function fallbackWarning(error: unknown): string {
 }
 
 export async function detectDataCompetence(file: File): Promise<PipelineResult<string | null>> {
+  if (import.meta.env.PROD) throw new Error("A demonstração pública é somente para leitura.");
   if (!pipelineApiEnabled()) {
     return { data: await detectCompetence(file), mode: "local" };
   }
@@ -64,6 +65,7 @@ export async function processDataFile(
   competence: string,
   excludedNames: string,
 ): Promise<PipelineResult<CompetenceSnapshot>> {
+  if (import.meta.env.PROD) throw new Error("A demonstração pública é somente para leitura.");
   if (!pipelineApiEnabled()) {
     return { data: await processFile(file, competence, excludedNames), mode: "local" };
   }
@@ -116,6 +118,7 @@ export async function persistPipelineFeedback(
   attendant: string,
   feedback: string,
 ): Promise<PipelineMode> {
+  if (import.meta.env.PROD) throw new Error("A demonstração pública é somente para leitura.");
   if (!pipelineApiEnabled()) return "local";
   try {
     await request<CompetenceSnapshot>(

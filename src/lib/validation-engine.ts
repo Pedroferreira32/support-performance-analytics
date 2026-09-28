@@ -57,6 +57,12 @@ export interface ResellerSummary {
   tmaMedioMin: number | null;
 }
 
+export interface PortfolioRecord {
+  revenda: string;
+  clientesAtivos: number;
+  assinaturasAtivas: number;
+}
+
 export interface OperationalSummary {
   atendimentos: number;
   tmaMedianoMin: number | null;
@@ -106,6 +112,7 @@ export interface CompetenceSnapshot {
   excluidos: ExcludedRecord[];
   ranking: RankingRecord[];
   revendas?: ResellerSummary[];
+  carteira?: PortfolioRecord[];
   operacao?: OperationalSummary;
   mapeamento: Record<string, string>;
   estatisticas: Record<string, number>;
