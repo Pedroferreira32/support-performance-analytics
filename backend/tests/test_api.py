@@ -89,3 +89,11 @@ def test_vercel_enables_read_only_by_default(tmp_path, monkeypatch) -> None:
     repository = SnapshotRepository(f"sqlite:///{tmp_path / 'preview.db'}")
     with TestClient(create_app(repository)) as client:
         assert client.get("/api/health").json()["readOnly"] is True
+
+
+def test_shared_postgres_defaults_to_read_only_without_vercel_variables(monkeypatch) -> None:
+    monkeypatch.delenv("VERCEL", raising=False)
+    monkeypatch.delenv("VERCEL_ENV", raising=False)
+    app = create_app(SnapshotRepository("postgresql://example.invalid/demo"))
+    client = TestClient(app)
+    assert client.get("/api/health").json()["readOnly"] is True

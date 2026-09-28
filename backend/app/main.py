@@ -34,8 +34,6 @@ async def _read_file(file: UploadFile) -> bytes:
 
 
 def create_app(repository: SnapshotRepository | None = None, read_only: bool | None = None) -> FastAPI:
-    # Vercel hosts the unauthenticated public portfolio. Its shared data is immutable.
-    demo_read_only = bool(os.getenv("VERCEL")) if read_only is None else read_only
     repository_error: str | None = None
     repo = repository
     if repo is None:
@@ -43,6 +41,12 @@ def create_app(repository: SnapshotRepository | None = None, read_only: bool | N
             repo = SnapshotRepository()
         except RuntimeError as error:
             repository_error = str(error)
+    # O portfólio sem autenticação nunca altera a base PostgreSQL compartilhada.
+    # A detecção por banco cobre projetos Vercel sem variáveis de sistema expostas.
+    demo_read_only = (
+        bool(os.getenv("VERCEL") or os.getenv("VERCEL_ENV") or (repo and repo.dialect == "postgresql"))
+        if read_only is None else read_only
+    )
 
     def require_repository() -> SnapshotRepository:
         if repo is None:

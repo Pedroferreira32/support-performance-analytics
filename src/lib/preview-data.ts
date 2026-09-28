@@ -8,7 +8,11 @@ interface PreviewManifest {
   summaries: CompetenceSnapshot[];
 }
 
-export const previewDataEnabled = import.meta.env.VITE_PREVIEW_FIXTURE === "preview";
+// A URL de branch da Vercel também identifica a prévia quando as variáveis
+// automáticas do ambiente não foram habilitadas no projeto.
+export const previewDataEnabled = import.meta.env.VITE_PREVIEW_FIXTURE === "preview" || (
+  import.meta.env.PROD && typeof window !== "undefined" && window.location.hostname.includes("-git-test-")
+);
 
 async function fetchJson<T>(url: string): Promise<T> {
   const response = await fetch(url);

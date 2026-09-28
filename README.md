@@ -417,7 +417,7 @@ Se uma competência antiga não possui carteira, o painel não calcula a taxa. A
 
 ### Prévia da branch de teste
 
-A branch `test/reseller-intelligence-demo` reutiliza todo o layout público e traz um histórico próprio, gerado em uma base SQLite isolada. O build de **Preview** da Vercel lê os arquivos estáticos de `public/demo`, inteiramente sintéticos e somente para consulta. Ele carrega os resumos dos seis meses e os registros completos da competência selecionada e da anterior; a produção continua usando a API central. A página inicial apresenta o case e direciona para gerencial, revendas e auditoria.
+A branch `test/reseller-intelligence-demo` reutiliza todo o layout público e traz um histórico próprio, gerado em uma base SQLite isolada. A prévia da Vercel lê os arquivos estáticos de `public/demo`, inteiramente sintéticos e somente para consulta. A URL da branch ativa esta fonte mesmo quando as variáveis de sistema da Vercel não estão expostas ao build. Ela carrega os resumos dos seis meses e os registros completos da competência selecionada e da anterior; a produção continua usando a API central. A página inicial apresenta o case e direciona para gerencial, revendas e auditoria.
 
 Para reproduzir os arquivos estáticos depois de gerar a base:
 
