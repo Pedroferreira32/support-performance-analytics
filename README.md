@@ -1,191 +1,184 @@
-# Performance do Suporte — Validação e Premiação
+# Support Performance — Validation and Awards
 
-Plataforma de engenharia e análise de dados para validar os atendimentos do setor de suporte, calcular indicadores de desempenho, identificar os profissionais elegíveis e premiar os três melhores resultados de cada competência.
+**[English](README.md)** | [Português (Brasil)](README.pt-BR.md) | [Español](README.es.md) | [Italiano](README.it.md)
 
-[Acessar o dashboard em produção](https://support-performance-analytics.vercel.app/) · [Verificar a saúde da API](https://support-performance-analytics.vercel.app/api/health)
+Data engineering and analytics platform for validating support interactions, calculating performance indicators, identifying eligible employees, and rewarding the three highest results in each reporting month.
 
-> A versão pública é um projeto de portfólio e utiliza dados sintéticos. Bases reais de funcionários não devem ser publicadas enquanto o ambiente não possuir autenticação e controle de acesso.
+[Open the production dashboard](https://support-performance-analytics.vercel.app/) · [Check API health](https://support-performance-analytics.vercel.app/api/health)
 
-## Resumo executivo
+> The public version is a portfolio project using synthetic data. Real employee datasets must not be published before authentication and access control are in place.
 
-O projeto nasceu para resolver um fechamento mensal que exigia conferência manual de arquivos exportados do ChatMobi. Era necessário determinar quais atendimentos realmente pertenciam ao suporte, retirar registros inválidos, respeitar as regras vigentes em cada mês, calcular a pontuação de cada funcionário e justificar de forma objetiva quem deveria receber a premiação.
+## Executive overview
 
-A solução atual transforma a base operacional em uma decisão auditável. O sistema:
+I created this project to address a monthly closing process that required manually checking files exported from ChatMobi. I needed to identify interactions belonging to support, remove invalid records, apply the rules in effect for each month, calculate each employee's score, and provide an objective explanation for the awards.
 
-- importa arquivos CSV, TXT e Excel;
-- identifica e padroniza automaticamente as colunas;
-- limpa textos, números, avaliações e datas;
-- aplica regras de qualidade e negócio versionadas por competência;
-- calcula volume, tempo total, TMA, avaliação e cobertura de CSAT;
-- determina elegibilidade a partir de 85 pontos;
-- premia somente o Top 3 entre os elegíveis, por maior nota;
-- registra válidos, exclusões, parâmetros, ranking e feedbacks no histórico;
-- apresenta análises gerenciais, operacionais e individuais;
-- identifica clientes com maior volume e recorrência de contatos;
-- exporta auditoria em Excel e relatório executivo em PowerPoint.
+The current solution turns operational data into an auditable decision. It:
 
-O resultado é um produto completo de **engenharia de dados, análise de dados, automação de processos, visualização, qualidade de dados e inteligência operacional**.
+- imports CSV, TXT, and Excel files;
+- automatically identifies and standardizes columns;
+- cleans text, numbers, ratings, and dates;
+- applies data quality and business rules versioned by reporting month;
+- calculates volume, total time, average handling time (AHT, labeled TMA in the application), ratings, and CSAT response coverage;
+- determines eligibility from 85 points;
+- rewards only the Top 3 eligible employees, ordered by score;
+- stores valid records, exclusions, parameters, rankings, and feedback in history;
+- provides management, operational, and individual analyses;
+- identifies customers with the highest contact volume and recurrence;
+- exports an Excel audit workbook and an executive PowerPoint report.
 
-## Problema de negócio
+The result brings together **data engineering, data analytics, process automation, visualization, data quality, and operational intelligence**.
 
-A premiação do suporte precisava reconhecer os melhores desempenhos sem depender de fórmulas manuais ou avaliações subjetivas. A base bruta, porém, podia conter:
+## Business problem
 
-- atendimentos de outros departamentos;
-- operadores fora da campanha;
-- registros sem atendente ou sem finalização;
-- datas em formatos diferentes;
-- encerramentos no mês seguinte;
-- durações negativas ou acima do limite;
-- atendimentos fora do expediente;
-- avaliações fora da escala vigente;
-- finalizações automáticas que distorciam Tempo Total e TMA.
+Support awards needed to recognize the strongest performance without relying on manual formulas or subjective assessments. However, raw data could contain:
 
-Sem um tratamento padronizado, esses casos alteravam os indicadores e poderiam mudar o ranking. O projeto foi criado para transformar essa apuração em um processo reproduzível, transparente e explicável ao responsável pelo setor.
+- interactions from other departments;
+- operators outside the award program;
+- records without an agent or an end date;
+- dates in different formats;
+- interactions ending in the following month;
+- negative durations or durations above the limit;
+- interactions outside business hours;
+- ratings outside the applicable scale;
+- automatic closures distorting total time and AHT.
 
-## Decisão apoiada
+Without standardized treatment, these cases affected indicators and could change the ranking. I built the project to make the calculation reproducible, transparent, and explainable to the department manager.
 
-Ao final de cada competência, o sistema responde:
+## Decisions supported
 
-1. Quantos registros foram importados, validados e excluídos?
-2. Por que cada registro foi retirado da apuração?
-3. Qual foi o desempenho de cada funcionário?
-4. Quem atingiu a meta mínima de 85 pontos?
-5. Quais são os três maiores resultados entre os elegíveis?
-6. Quais critérios mais influenciaram a nota?
-7. Quais pontos devem ser acompanhados no próximo ciclo?
-8. Como o resultado evoluiu em relação aos meses anteriores?
+At the end of each reporting month, the system answers:
 
-## Evolução do projeto
+1. How many records were imported, validated, and excluded?
+2. Why was each record removed from the calculation?
+3. How did each employee perform?
+4. Who reached the minimum target of 85 points?
+5. Which three eligible employees achieved the highest results?
+6. Which criteria contributed most to the score?
+7. What should be monitored in the next cycle?
+8. How did results change compared with previous months?
 
-### 1. Conferência manual e definição das regras
+## Project evolution
 
-O processo começou com planilhas mensais exportadas do ChatMobi. As regras de escopo, horário, duração, avaliação e pontuação foram documentadas e conferidas manualmente para formar uma base de referência.
+### 1. Manual checks and rule definition
 
-### 2. Automação local em Python
+The process started with monthly spreadsheets exported from ChatMobi. Scope, schedule, duration, rating, and scoring rules were documented and checked manually to establish a reference dataset.
 
-A validação foi automatizada em Python, com leitura de CSV/Excel, tratamento dos dados, cálculo das notas e histórico em SQLite. Essa etapa reduziu a repetição do fechamento mensal e criou uma memória de cálculo reproduzível.
+### 2. Local Python automation
 
-### 3. Primeiras interfaces web
+Validation was automated in Python, including CSV/Excel ingestion, data preparation, score calculation, and SQLite history. This reduced repetitive monthly work and produced reproducible calculation records.
 
-Foram testadas versões com Streamlit, Altair e Matplotlib. Problemas de compatibilidade entre versões do Python e das bibliotecas motivaram a criação de um ambiente isolado e, posteriormente, a substituição dessa interface.
+### 3. Early web interfaces
 
-### 4. Dashboard HTML local
+Versions using Streamlit, Altair, and Matplotlib were tested. Compatibility issues between Python and library versions led to an isolated environment and, later, replacement of that interface.
 
-O sistema evoluiu para HTML, CSS e JavaScript, executado por um servidor Python local. Foram incluídos menu lateral, KPIs, ranking, histórico individual, auditoria, feedbacks, exportação Excel e geração de PowerPoint. O acesso pela rede interna também foi preparado.
+### 4. Local HTML dashboard
 
-### 5. Storytelling e visual executivo
+The system evolved into HTML, CSS, and JavaScript served by a local Python server. It gained a sidebar, KPIs, rankings, individual history, audit views, feedback, Excel exports, and PowerPoint generation. Internal network access was also prepared.
 
-Os painéis foram reorganizados para apresentar primeiro a decisão, depois os direcionadores e, por último, as evidências. Gráficos de pizza, visuais clusterizados e elementos com leitura pouco objetiva foram removidos. A interface passou a usar comparações diretas, metas visíveis, barras ordenadas, tabelas analíticas e linguagem próxima a dashboards profissionais de Power BI.
+### 5. Data storytelling and executive design
 
-### 6. React, TypeScript e Vite
+The dashboards were reorganized to present the decision first, then its drivers, and finally the evidence. Pie charts, clustered visuals, and hard-to-read elements were removed. The interface adopted direct comparisons, visible targets, sorted bars, analytical tables, and a presentation style inspired by professional Power BI dashboards.
 
-O frontend foi reconstruído como uma SPA moderna, mantendo o layout executivo aprovado. O projeto passou a usar React, TypeScript, Vite, Tailwind CSS, shadcn/ui, Radix UI e Recharts.
+### 6. React, TypeScript, and Vite
 
-### 7. Publicação e versionamento
+The frontend was rebuilt as a modern SPA while retaining the approved executive layout. The stack became React, TypeScript, Vite, Tailwind CSS, shadcn/ui, Radix UI, and Recharts.
 
-O código foi publicado no GitHub com dados sintéticos. O Render foi utilizado durante uma fase de hospedagem e depois substituído pela Vercel, que atualmente publica o frontend e a API no mesmo domínio por integração contínua com a branch `main`.
+### 7. Publishing and version control
 
-### 8. Retorno da pipeline Python/Pandas
+The code was published on GitHub with synthetic data. Render was used during an earlier hosting phase and later replaced by Vercel, which now serves the frontend and API on the same domain through continuous integration with the `main` branch.
 
-O layout moderno foi preservado e o processamento profissional de dados voltou ao centro da solução. A API FastAPI recebe o arquivo, a pipeline Pandas executa limpeza, validação, transformação, cálculo e carga, e o motor TypeScript permanece como contingência local.
+### 8. Return of the Python/Pandas pipeline
 
-### 9. Histórico compartilhado com Neon Postgres
+The modern layout was preserved while data processing returned to the center of the solution. FastAPI receives the file, the Pandas pipeline cleans, validates, transforms, calculates, and loads the data, and the TypeScript engine remains available as a local fallback.
 
-A persistência local foi ampliada para um PostgreSQL gerenciado no Neon. O histórico agora pode ser centralizado e consultado por diferentes navegadores, sem depender do computador que iniciou o sistema.
+### 9. Shared history with Neon Postgres
 
-### 10. Análise automatizada sem IA generativa
+Local persistence was extended to managed PostgreSQL on Neon. History can now be centralized and accessed from different browsers, independently of the computer that started the system.
 
-Uma integração experimental com Ollama foi avaliada e retirada. A versão atual gera feedbacks e recomendações por regras determinísticas baseadas nos KPIs, evitando respostas genéricas e mantendo a explicação ligada aos números realmente calculados.
+### 10. Automated analysis without generative AI
 
-## Arquitetura em produção
+An experimental Ollama integration was evaluated and removed. The current version generates feedback and recommendations through deterministic KPI-based rules, keeping explanations tied to the calculated numbers.
 
-```mermaid
-flowchart TD
-    A["ChatMobi: CSV ou Excel"] --> B["Vercel Function: FastAPI"]
-    B --> C["Pipeline Pandas"]
-    C --> D["Qualidade e regras versionadas"]
-    D --> E["KPIs, nota e Top 3"]
-    E --> F["Neon PostgreSQL"]
-    F --> G["Dashboard React"]
-    G --> H["Excel e PowerPoint"]
-```
+## Production architecture
 
-| Camada | Implementação atual |
+| Layer | Current implementation |
 |---|---|
-| Origem | Arquivos operacionais CSV/TXT/XLS/XLSX/XLSM do ChatMobi |
-| Processamento | Python 3.12 e Pandas 2.2 |
-| API | FastAPI executada como Vercel Function |
-| Persistência | Neon PostgreSQL em produção e SQLite no desenvolvimento local |
-| Aplicação | React 19, TypeScript e Vite |
-| Visualização | Recharts, SVG e componentes analíticos próprios |
-| Exportações | SheetJS e PptxGenJS |
-| Publicação | GitHub + Vercel, com deploy automático da `main` |
+| Source | ChatMobi operational CSV/TXT/XLS/XLSX/XLSM files |
+| Processing | Python 3.12 and Pandas 2.2 |
+| API | FastAPI running as a Vercel Function |
+| Persistence | Neon PostgreSQL in production and SQLite for local development |
+| Application | React 19, TypeScript, and Vite |
+| Visualization | Recharts, SVG, and custom analytical components |
+| Exports | SheetJS and PptxGenJS |
+| Deployment | GitHub + Vercel, automatically deployed from `main` |
 
-Em produção, o frontend chama a API pelo mesmo domínio. A variável privada `DATABASE_URL` conecta a Function ao Neon; ela nunca é exposta ao navegador nem armazenada no repositório.
+Data flows from the ChatMobi export through FastAPI, Pandas, versioned quality and business rules, KPIs and Top 3 calculation, Neon PostgreSQL, and the React dashboard to Excel and PowerPoint exports.
 
-## Pipeline de engenharia de dados
+In production, the frontend calls the API on the same domain. The private `DATABASE_URL` variable connects the Function to Neon; it is never exposed to the browser or stored in the repository.
 
-O fluxo segue uma estrutura ETL aplicada ao fechamento mensal:
+## Data engineering pipeline
 
-### 1. Extração
+The monthly closing process follows an ETL structure:
 
-- Recebimento do arquivo exportado do ChatMobi.
-- Leitura da primeira planilha dos arquivos Excel.
-- Detecção automática do delimitador dos arquivos de texto.
-- Localização da linha que contém o cabeçalho real.
+### 1. Extraction
 
-### 2. Padronização do esquema
+- Receive the file exported from ChatMobi.
+- Read the first worksheet in Excel files.
+- Automatically detect delimiters in text files.
+- Locate the row containing the actual header.
 
-- Associação de nomes diferentes ao mesmo campo lógico.
-- Remoção de espaços excedentes e normalização de acentos.
-- Padronização de atendente, setor, status e protocolo.
-- Conversão das avaliações para valores numéricos.
+### 2. Schema standardization
 
-### 3. Tratamento temporal
+- Map different column names to the same logical field.
+- Remove excess whitespace and normalize accents.
+- Standardize agents, departments, statuses, and ticket identifiers.
+- Convert ratings to numeric values.
 
-- Conversão de datas brasileiras, ISO e seriais do Excel.
-- Cálculo de duração em horas e TMA em minutos.
-- Determinação da competência pela data de início.
-- Preservação de atendimentos iniciados no mês e finalizados no mês seguinte.
+### 3. Temporal processing
 
-### 4. Qualidade e validação
+- Convert Brazilian dates, ISO dates, and Excel serial dates.
+- Calculate duration in hours and AHT in minutes.
+- Assign the reporting month using the start date.
+- Preserve interactions starting in one month and ending in the next.
 
-- Classificação de cada linha como válida ou excluída.
-- Registro do primeiro motivo de exclusão para impedir dupla contagem.
-- Identificação de finalizações potencialmente automáticas.
-- Validação da escala de avaliação correspondente ao período.
-- Reconciliação entre total importado, válidos e excluídos.
+### 4. Quality and validation
 
-### 5. Transformação e agregação
+- Classify every row as valid or excluded.
+- Record the first exclusion reason to prevent double counting.
+- Identify potentially automatic closures.
+- Validate ratings against the scale applicable to the period.
+- Reconcile imported, valid, and excluded totals.
 
-- Agrupamento dos registros válidos por funcionário.
-- Cálculo de quantidade, horas, média e percentis do TMA.
-- Cálculo de avaliação média e cobertura de CSAT.
-- Normalização dos indicadores pelo melhor resultado da equipe.
+### 5. Transformation and aggregation
 
-### 6. Regra de negócio
+- Group valid records by employee.
+- Calculate counts, hours, and AHT means and percentiles.
+- Calculate average ratings and CSAT response coverage.
+- Normalize indicators against the team's best result.
 
-- Aplicação do perfil correspondente à competência.
-- Cálculo da nota final e do teto efetivo.
-- Definição de elegibilidade.
-- Ordenação do ranking e seleção do Top 3 premiado.
+### 6. Business rules
 
-### 7. Carga e persistência
+- Apply the rule profile for the reporting month.
+- Calculate the final score and effective ceiling.
+- Determine eligibility.
+- Sort the ranking and select the Top 3 award recipients.
 
-- Gravação transacional no PostgreSQL.
-- Snapshot completo da competência.
-- Substituição idempotente do mês reprocessado.
-- Histórico sem duplicidade.
+### 7. Loading and persistence
 
-### 8. Consumo analítico
+- Write transactionally to PostgreSQL.
+- Store a complete monthly snapshot.
+- Replace a reprocessed month idempotently.
+- Maintain history without duplicates.
 
-- Sincronização dos dados com o frontend React.
-- Atualização dos painéis e feedbacks.
-- Geração de Excel de auditoria e PowerPoint executivo.
+### 8. Analytical consumption
 
-## Formatos e campos reconhecidos
+- Synchronize data with the React frontend.
+- Update dashboards and feedback.
+- Generate the Excel audit workbook and executive PowerPoint.
 
-### Arquivos aceitos
+## Supported formats and fields
+
+### Accepted files
 
 - `.csv`
 - `.txt`
@@ -194,228 +187,230 @@ O fluxo segue uma estrutura ETL aplicada ao fechamento mensal:
 - `.xls`
 - `.xlsm`
 
-### Mapeamento de campos
+### Field mapping
 
-| Campo lógico | Exemplos reconhecidos | Obrigatório |
+The examples below retain the actual input column names recognized by the application.
+
+| Logical field | Recognized examples | Required |
 |---|---|---:|
-| Atendente | Atendente, User ID, Operador, Usuário, Agente | Sim |
-| Início | Iniciado, Início, Data Início, Criado, Data, Criado em | Sim |
-| Finalização | Fim, Data Última Mensagem, Última Mensagem, Finalizado | Sim |
-| Departamento | Filas, Fila, Departamento, Setor, Setores, Transfers | Sim |
-| Avaliação | Rating, Avaliação, Nota, Satisfação | Não |
-| Protocolo | Protocolo, Ticket, ID | Não |
-| Status | Status, Situação | Não |
+| Agent | Atendente, User ID, Operador, Usuário, Agente | Yes |
+| Start | Iniciado, Início, Data Início, Criado, Data, Criado em | Yes |
+| End | Fim, Data Última Mensagem, Última Mensagem, Finalizado | Yes |
+| Department | Filas, Fila, Departamento, Setor, Setores, Transfers | Yes |
+| Rating | Rating, Avaliação, Nota, Satisfação | No |
+| Ticket identifier | Protocolo, Ticket, ID | No |
+| Status | Status, Situação | No |
 
-Quando o protocolo não existe, o número da linha de origem é usado como identificador de auditoria.
+When a ticket identifier is missing, the source row number is used as the audit identifier.
 
-## Regras de validação da base
+## Dataset validation rules
 
-Um atendimento pode ser excluído pelos seguintes motivos:
+An interaction may be excluded for the following reasons:
 
-- departamento diferente de Suporte;
-- atendente não informado;
-- atendente presente na lista de pessoas fora da campanha;
-- data de início inválida ou pendente;
-- data final não informada;
-- data final anterior à data inicial;
-- duração superior ao limite da competência;
-- atendimento iniciado fora do expediente permitido;
-- atendimento iniciado no domingo.
+- a department other than Support;
+- a missing agent;
+- an agent listed as outside the award program;
+- an invalid or pending start date;
+- a missing end date;
+- an end date earlier than the start date;
+- a duration exceeding the month's limit;
+- a start time outside permitted business hours;
+- a Sunday start date.
 
-Regras adicionais:
+Additional rules:
 
-- Suporte pode aparecer em `Filas`, `Setores` ou campos de transferência.
-- A lista de pessoas fora da campanha aceita nomes completos ou parciais separados por ponto e vírgula.
-- Cada linha recebe somente o primeiro motivo de exclusão.
-- Avaliações fora da escala não excluem o atendimento; apenas deixam de participar da média.
-- A competência é determinada pela data de início, não pela finalização.
-- Um registro iniciado em `31/08` e finalizado em `01/09` continua em agosto.
-- Se a maioria dos inícios pertencer a outro mês, o sistema bloqueia o processamento e informa a competência detectada.
-- Registros sem protocolo continuam rastreáveis pelo número da linha.
+- Support may appear in `Filas`, `Setores`, or transfer fields.
+- The exclusion list accepts full or partial names separated by semicolons.
+- Each row receives only its first exclusion reason.
+- Out-of-scale ratings do not exclude an interaction; they are omitted from the average.
+- The reporting month is determined by the start date, not the end date.
+- A record starting on `31/08` and ending on `01/09` remains in August.
+- If most start dates belong to a different month, processing is blocked and the detected month is reported.
+- Records without ticket identifiers remain traceable through their row numbers.
 
-## Finalizações automáticas
+## Automatic closures
 
-Um atendimento é marcado como potencialmente automático quando:
+An interaction is flagged as potentially automatic when:
 
-- o horário final é exatamente `06:00`; ou
-- pelo menos 20 registros terminam no mesmo minuto.
+- its end time is exactly `06:00`; or
+- at least 20 records end in the same minute.
 
-O sinalizador permanece disponível para auditoria, mas esses registros seguem as mesmas regras de período e duração dos demais atendimentos. Não existe neutralização especial de Tempo Total ou TMA no projeto público.
+The flag remains available for auditing, but these records follow the same period and duration rules as other interactions. The public project does not apply special neutralization of total time or AHT.
 
-## Regras de pontuação por competência
+## Scoring rules by reporting month
 
-| Período | Escala | Limite regular | Quantidade | Tempo | TMA | Avaliação | Teto | Tratamento de Tempo/TMA |
+| Period | Rating scale | Regular limit | Volume | Time | AHT | Rating | Ceiling | Time/AHT treatment |
 |---|---:|---:|---:|---:|---:|---:|---:|---|
-| Até maio/2026 | 0–10 | 8 horas | 30 | 15 | 25 | 30 | 100,00 | Separados e comparativos |
-| Junho/2026 em diante | 0–5 | 9 horas | 20 | 10 | 30 | 40 | 100,00 | Separados e comparativos |
+| Through May 2026 | 0–10 | 8 hours | 30 | 15 | 25 | 30 | 100.00 | Separate, comparative indicators |
+| From June 2026 | 0–5 | 9 hours | 20 | 10 | 30 | 40 | 100.00 | Separate, comparative indicators |
 
-### Modelo histórico de 100 pontos
+### Historical 100-point model
 
-Na primeira regra, Tempo Total e TMA **não eram somados como uma base comum**. Os quatro indicadores eram calculados separadamente:
+Under the first rule, total time and AHT **were not combined into a common base**. The four indicators were calculated separately:
 
-- Quantidade: até 30 pontos;
-- Tempo Total: até 15 pontos;
-- TMA: até 25 pontos;
-- Avaliação: até 30 pontos.
+- Volume: up to 30 points;
+- Total time: up to 15 points;
+- AHT: up to 25 points;
+- Rating: up to 30 points.
 
-De junho/2026 em diante, o teto continua em 100 pontos e mantém Tempo Total e TMA independentes, com pesos de 10 e 30 pontos. As notas demonstrativas originalmente reportadas são preservadas como referência histórica; novos processamentos sempre usam a regra de 100 pontos.
+From June 2026, the ceiling remains 100 points and total time and AHT stay independent, with weights of 10 and 30 points. Originally reported demonstration scores are preserved as historical references; new processing always uses the 100-point rule.
 
-## Fórmulas utilizadas
+## Formulas
 
-Para cada funcionário `i`:
+For each employee `i`:
 
-```text
-Quantidadeᵢ = número de atendimentos válidos
+~~~text
+Volumeᵢ = number of valid interactions
 
-Horas totaisᵢ = soma das durações consideradas
+Total hoursᵢ = sum of included durations
 
-TMA médioᵢ = média das durações consideradas em minutos
+Average AHTᵢ = mean included duration in minutes
 
-Avaliação médiaᵢ = média das avaliações válidas
+Average ratingᵢ = mean valid rating
 
-Cobertura CSATᵢ = avaliações válidas / atendimentos válidos × 100
-```
+CSAT coverageᵢ = valid ratings / valid interactions × 100
+~~~
 
-### Pontuação de Quantidade
+### Volume score
 
-```text
-Pontos Quantidadeᵢ =
-(Quantidadeᵢ / maior Quantidade da equipe) × peso de Quantidade
-```
+~~~text
+Volume pointsᵢ =
+(Volumeᵢ / highest team Volume) × Volume weight
+~~~
 
-### Pontuação de Tempo Total
+### Total time score
 
-```text
-Pontos Tempoᵢ =
-(Horas totaisᵢ / maior total de Horas da equipe) × peso de Tempo
-```
+~~~text
+Time pointsᵢ =
+(Total hoursᵢ / highest team total Hours) × Time weight
+~~~
 
-### Pontuação de TMA
+### AHT score
 
-Como um TMA menor representa maior eficiência:
+Since a lower AHT represents greater efficiency:
 
-```text
-Pontos TMAᵢ =
-(menor TMA positivo da equipe / TMA médioᵢ) × peso de TMA
-```
+~~~text
+AHT pointsᵢ =
+(lowest positive team AHT / Average AHTᵢ) × AHT weight
+~~~
 
-### Pontuação de Avaliação
+### Rating score
 
-```text
-Pontos Avaliaçãoᵢ =
-(Avaliação médiaᵢ / maior Avaliação média da equipe) × peso de Avaliação
-```
+~~~text
+Rating pointsᵢ =
+(Average ratingᵢ / highest team Average rating) × Rating weight
+~~~
 
-### Nota final
+### Final score
 
-```text
-Nota finalᵢ =
-Pontos Quantidade + Pontos Tempo + Pontos TMA + Pontos Avaliação
-```
+~~~text
+Final scoreᵢ =
+Volume points + Time points + AHT points + Rating points
+~~~
 
-Os cálculos utilizam a precisão completa. A interface arredonda os valores somente para apresentação.
+Calculations use full precision. Values are rounded only for display.
 
-## Elegibilidade, ranking e premiação
+## Eligibility, ranking, and awards
 
-- **Meta mínima:** nota final maior ou igual a 85 pontos.
-- **Elegível:** funcionário que atingiu a meta.
-- **Premiado:** somente um dos três primeiros elegíveis.
-- **Quarto elegível:** permanece elegível, mas fora das posições premiadas.
+- **Minimum target:** a final score of at least 85 points.
+- **Eligible:** an employee who reaches the target.
+- **Award recipient:** only one of the first three eligible employees.
+- **Fourth eligible employee:** remains eligible but outside the awarded positions.
 
-Ordem do ranking:
+Ranking order:
 
-1. maior nota final;
-2. maior quantidade de atendimentos;
-3. maior avaliação média;
-4. ordem alfabética, caso o empate permaneça.
+1. highest final score;
+2. highest interaction count;
+3. highest average rating;
+4. alphabetical order if the tie remains.
 
-A regra separa claramente **atingir a meta** de **receber a premiação**. Mesmo que quatro ou mais pessoas alcancem 85 pontos, apenas os três maiores resultados são premiados.
+The rule distinguishes **reaching the target** from **receiving an award**. Even if four or more people reach 85 points, only the three highest results receive awards.
 
-## Análises e KPIs
+## Analyses and KPIs
 
-### Qualidade da base
+### Data quality
 
-- total importado;
-- quantidade e percentual de válidos;
-- quantidade e percentual de excluídos;
-- distribuição dos motivos de exclusão;
-- finalizações automáticas identificadas e auditadas;
-- avaliações válidas;
-- reconciliação entre base importada, base premiável e exceções.
+- total imported;
+- number and percentage of valid records;
+- number and percentage of excluded records;
+- distribution of exclusion reasons;
+- automatic closures identified and audited;
+- valid ratings;
+- reconciliation of imported data, award-eligible data, and exceptions.
 
-### Operação do suporte
+### Support operations
 
-- volume de atendimentos por funcionário;
-- participação no volume da equipe;
-- horas totais consideradas;
-- TMA médio e mediano;
-- TMA P90 para observar a cauda dos atendimentos longos;
-- avaliação média;
-- cobertura de CSAT;
-- distribuição por horário e dia da semana.
+- interactions per employee;
+- share of team volume;
+- total included hours;
+- mean and median AHT;
+- P90 AHT to examine the tail of long interactions;
+- average rating;
+- CSAT response coverage;
+- distribution by hour and weekday.
 
-### Performance e premiação
+### Performance and awards
 
-- nota média e mediana da equipe;
-- líder da competência;
-- elegíveis e premiados;
-- distância individual até a meta;
-- distância até o Top 3;
-- composição da nota por critério;
-- comparação mensal;
-- ranking ordenado;
-- principal alavanca de melhoria.
+- team mean and median scores;
+- monthly leader;
+- eligible employees and award recipients;
+- individual gap to target;
+- gap to the Top 3;
+- score composition by criterion;
+- monthly comparison;
+- sorted ranking;
+- main improvement opportunity.
 
-### Análise individual
+### Individual analysis
 
-O histórico por funcionário apresenta posição, nota, atendimentos, avaliação, componentes da pontuação e evolução entre competências. Os feedbacks são produzidos por regras objetivas que destacam:
+Employee history presents position, score, interaction count, rating, score components, and month-to-month progress. Objective rules generate feedback highlighting:
 
-- critério de melhor aproveitamento;
-- critério com maior oportunidade;
-- distância para a meta ou para o Top 3;
-- ação sugerida com base nos números observados.
+- the best-performing criterion;
+- the criterion with the greatest opportunity;
+- the gap to the target or the Top 3;
+- a suggested action based on the observed numbers.
 
-## Painéis do sistema
+## Dashboard areas
 
-| Área | Pergunta respondida | Conteúdo principal |
+| Area | Question answered | Main content |
 |---|---|---|
-| Projeto | O que foi construído e quais regras são usadas? | Objetivo, pipeline, parâmetros e metodologia |
-| Gerencial | Qual decisão o responsável precisa tomar? | KPIs, ranking, comparação mensal e plano de acompanhamento |
-| Operação | Como o setor está funcionando? | Volume, TMA, P90, CSAT, cobertura e distribuição operacional |
-| Clientes críticos | Quais clientes mais acionaram o suporte? | Volume, recorrência, participação, dias ativos, atendentes e sinal de acompanhamento |
-| Premiação | Quem atingiu a meta e quem será premiado? | Ranking, formação da nota, liderança e memória de cálculo |
-| Histórico | Como cada pessoa evoluiu? | Série mensal, comparação individual e feedback |
-| Auditoria | O resultado pode ser conferido? | Reconciliação, exclusões, automáticos, parâmetros e base validada |
-| Atualizar | Como processar a próxima competência? | Upload, competência, exclusões da campanha e reprocessamento |
+| Project | What was built and which rules are used? | Purpose, pipeline, parameters, and methodology |
+| Management | What decision does the manager need to make? | KPIs, ranking, monthly comparisons, and follow-up plan |
+| Operations | How is the department operating? | Volume, AHT, P90, CSAT, coverage, and operational distribution |
+| Critical customers | Which customers contacted support most? | Volume, recurrence, share, active days, agents, and follow-up signals |
+| Awards | Who reached the target and who receives an award? | Ranking, score composition, leadership, and calculation details |
+| History | How has each person progressed? | Monthly series, individual comparisons, and feedback |
+| Audit | Can the result be verified? | Reconciliation, exclusions, automatic closures, parameters, and validated data |
+| Update | How is the next reporting month processed? | Upload, month selection, program exclusions, and reprocessing |
 
-### Critério de clientes críticos
+### Critical customer criteria
 
-O painel usa `Contact ID` como identificação principal e `Contact Number` como referência de contingência. Os telefones são mascarados na interface. A classificação indica concentração de demanda, não gravidade técnica:
+The dashboard uses `Contact ID` as the primary identifier and `Contact Number` as a fallback. Phone numbers are masked in the interface. Classification indicates demand concentration rather than technical severity:
 
-- **Crítico:** volume no percentil 90 da competência, com pelo menos dois contatos;
-- **Atenção:** volume no percentil 75 da competência, com pelo menos dois contatos;
-- **Regular:** demais clientes identificados.
+- **Critical:** volume at the month's 90th percentile, with at least two contacts;
+- **Attention:** volume at the month's 75th percentile, with at least two contacts;
+- **Regular:** other identified customers.
 
-Na demonstração pública, todos os nomes, contatos, atendentes e protocolos exibidos nesse painel são fictícios.
+In the public demonstration, all names, contacts, agents, and ticket identifiers shown in this area are fictional.
 
-## Persistência e modelo de dados
+## Persistence and data model
 
-O Neon PostgreSQL utiliza quatro tabelas principais:
+Neon PostgreSQL uses four main tables:
 
-| Tabela | Finalidade |
+| Table | Purpose |
 |---|---|
-| `competencias` | Configuração, origem, estatísticas, avisos e snapshot mensal |
-| `resultados` | Ranking, indicadores, nota, elegibilidade, premiação e feedback |
-| `atendimentos_validos` | Registros efetivamente utilizados no cálculo |
-| `exclusoes` | Registros retirados, código e descrição do motivo |
+| `competencias` | Configuration, source, statistics, warnings, and monthly snapshot |
+| `resultados` | Ranking, indicators, score, eligibility, awards, and feedback |
+| `atendimentos_validos` | Records actually used in the calculation |
+| `exclusoes` | Removed records, reason code, and description |
 
-O reprocessamento é idempotente: os registros da competência informada são substituídos dentro de uma transação, sem duplicar os demais meses.
+Reprocessing is idempotent: records for the selected month are replaced within a transaction without duplicating other months.
 
-## Exportações
+## Exports
 
-### Excel de auditoria
+### Excel audit workbook
 
-O arquivo Excel contém:
+The Excel file contains these worksheets, retaining their application names:
 
 - `Ranking`;
 - `Historico_Notas`;
@@ -425,209 +420,205 @@ O arquivo Excel contém:
 - `Parametros_Auditoria`;
 - `Finalizados_Automaticos`.
 
-### PowerPoint executivo
+### Executive PowerPoint
 
-A apresentação é gerada diretamente no navegador e inclui:
+The presentation is generated directly in the browser and includes:
 
-- capa e decisão da competência;
-- indicadores centrais;
-- regras aplicadas;
-- pipeline de engenharia de dados;
-- ranking e memória de cálculo;
-- comparação mensal;
-- indicadores operacionais;
-- controle dos automáticos;
-- análise por funcionário;
-- insights e recomendações.
+- cover and monthly decision;
+- core indicators;
+- applied rules;
+- data engineering pipeline;
+- ranking and calculation details;
+- monthly comparison;
+- operational indicators;
+- automatic closure controls;
+- employee analysis;
+- insights and recommendations.
 
-## Tecnologias utilizadas
+## Technology stack
 
-| Área | Tecnologias | Uso no projeto |
+| Area | Technologies | Use in this project |
 |---|---|---|
-| Linguagem de dados | Python 3.12 | Pipeline, regras, API e persistência |
-| Engenharia de dados | Pandas 2.2 | DataFrame, limpeza, transformação, qualidade, agregação e KPIs |
-| Arquivos Excel | OpenPyXL e xlrd | Leitura de formatos modernos e históricos |
-| Upload | python-multipart | Recebimento de arquivos pela API |
-| API | FastAPI e Pydantic | Endpoints, validação de contratos e respostas tipadas |
-| Servidor local | Uvicorn | Execução da API em desenvolvimento |
-| Driver de banco | Psycopg 3 | Conexão transacional com PostgreSQL |
-| Banco em produção | Neon PostgreSQL 18 | Histórico central, persistente e compartilhado |
-| Banco local | SQLite | Desenvolvimento e testes sem infraestrutura externa |
-| Frontend | React 19 e React DOM | Interface componentizada |
-| Linguagem do frontend | TypeScript 5.9 | Tipagem e segurança do código |
-| Build | Vite 7 | Desenvolvimento e compilação otimizada |
-| Rotas | React Router 7 | Navegação da SPA |
-| Dados assíncronos | Fetch API e TanStack Query | Comunicação com a API e gerenciamento das requisições |
-| Interface | Tailwind CSS, shadcn/ui e Radix UI | Design responsivo e componentes acessíveis |
-| Visualização | Recharts 3 e SVG | Gráficos, rankings, metas e séries históricas |
-| Interação | Lucide React, Sonner e Framer Motion | Ícones, avisos e transições |
-| Formulários | React Hook Form e Zod | Validação dos dados de entrada |
-| Datas | date-fns e parsers próprios | Exibição e conversão de datas operacionais |
-| Excel no navegador | SheetJS (`xlsx`) | Importação de contingência e exportação de auditoria |
-| PowerPoint | PptxGenJS | Relatório executivo em `.pptx` |
-| Cache local | Local Storage e LZ-String | Cópia comprimida para contingência no navegador |
-| Testes frontend | Vitest | Regras TypeScript e exportações |
-| Testes backend | Pytest | Pipeline Pandas, API e banco |
-| Qualidade de código | ESLint e TypeScript Compiler | Análise estática e validação de tipos |
-| Pacotes | pnpm | Instalação reproduzível do frontend |
-| Versionamento | Git e GitHub | Histórico, colaboração e integração contínua |
-| Hospedagem | Vercel CDN e Vercel Functions | Frontend e backend no mesmo domínio |
-| Infraestrutura anterior | Render | Etapa anterior de hospedagem, substituída pela Vercel |
-| Protótipos anteriores | Streamlit, Altair e Matplotlib | Primeiras versões da interface e validações visuais |
+| Data language | Python 3.12 | Pipeline, rules, API, and persistence |
+| Data engineering | Pandas 2.2 | DataFrames, cleaning, transformation, quality, aggregation, and KPIs |
+| Excel files | OpenPyXL and xlrd | Reading modern and legacy formats |
+| Uploads | python-multipart | Receiving files through the API |
+| API | FastAPI and Pydantic | Endpoints, contract validation, and typed responses |
+| Local server | Uvicorn | Running the development API |
+| Database driver | Psycopg 3 | Transactional PostgreSQL connections |
+| Production database | Neon PostgreSQL 18 | Centralized, persistent, shared history |
+| Local database | SQLite | Development and tests without external infrastructure |
+| Frontend | React 19 and React DOM | Component-based interface |
+| Frontend language | TypeScript 5.9 | Typing and code safety |
+| Build | Vite 7 | Development and optimized builds |
+| Routing | React Router 7 | SPA navigation |
+| Asynchronous data | Fetch API and TanStack Query | API communication and request management |
+| Interface | Tailwind CSS, shadcn/ui, and Radix UI | Responsive design and accessible components |
+| Visualization | Recharts 3 and SVG | Charts, rankings, targets, and historical series |
+| Interaction | Lucide React, Sonner, and Framer Motion | Icons, notifications, and transitions |
+| Forms | React Hook Form and Zod | Input validation |
+| Dates | date-fns and custom parsers | Display and conversion of operational dates |
+| Browser Excel | SheetJS (`xlsx`) | Fallback imports and audit exports |
+| PowerPoint | PptxGenJS | Executive `.pptx` reports |
+| Local cache | Local Storage and LZ-String | Compressed browser fallback copy |
+| Frontend tests | Vitest | TypeScript rules and exports |
+| Backend tests | Pytest | Pandas pipeline, API, and database |
+| Code quality | ESLint and TypeScript Compiler | Static analysis and type checking |
+| Packages | pnpm | Reproducible frontend installation |
+| Version control | Git and GitHub | History, collaboration, and continuous integration |
+| Hosting | Vercel CDN and Vercel Functions | Frontend and backend on the same domain |
+| Previous infrastructure | Render | Earlier hosting phase, replaced by Vercel |
+| Earlier prototypes | Streamlit, Altair, and Matplotlib | Initial interfaces and visual validation |
 
 ## API
 
-| Método e rota | Finalidade |
+| Method and route | Purpose |
 |---|---|
-| `GET /api/health` | Informa versão, pipeline, banco e persistência |
-| `GET /api/v1/regras/{AAAA-MM}` | Retorna os parâmetros oficiais da competência |
-| `POST /api/v1/detectar-competencia` | Detecta o mês pela data de início |
-| `POST /api/v1/competencias/processar` | Executa a pipeline e grava a competência |
-| `GET /api/v1/competencias` | Sincroniza o histórico completo |
-| `GET /api/v1/competencias/{AAAA-MM}` | Consulta um snapshot mensal |
-| `PATCH /api/v1/competencias/{AAAA-MM}/feedback/{atendente}` | Atualiza o feedback individual |
+| `GET /api/health` | Reports version, pipeline, database, and persistence |
+| `GET /api/v1/regras/{AAAA-MM}` | Returns the official monthly parameters |
+| `POST /api/v1/detectar-competencia` | Detects the month from start dates |
+| `POST /api/v1/competencias/processar` | Runs the pipeline and saves the reporting month |
+| `GET /api/v1/competencias` | Synchronizes the complete history |
+| `GET /api/v1/competencias/{AAAA-MM}` | Retrieves a monthly snapshot |
+| `PATCH /api/v1/competencias/{AAAA-MM}/feedback/{atendente}` | Updates individual feedback |
 
-Em produção, a API é consumida pelo mesmo domínio do dashboard. Se a API estiver temporariamente indisponível, o motor TypeScript pode processar o arquivo localmente e informa que o resultado ainda não foi compartilhado com os demais navegadores.
+In production, the API is accessed on the dashboard's domain. If temporarily unavailable, the TypeScript engine can process the file locally and indicates that the result has not yet been shared with other browsers.
 
-## Estrutura do repositório
+## Repository structure
 
-```text
-backend/
-├── app/main.py                  # FastAPI, endpoints e CORS
-├── app/pipeline/rules.py        # Regras versionadas por competência
-├── app/pipeline/engine.py       # Pipeline Pandas e cálculo do ranking
-└── app/database.py              # PostgreSQL/SQLite e carga idempotente
+| Path | Responsibility |
+|---|---|
+| `backend/app/main.py` | FastAPI, endpoints, and CORS |
+| `backend/app/pipeline/rules.py` | Rules versioned by reporting month |
+| `backend/app/pipeline/engine.py` | Pandas pipeline and ranking calculation |
+| `backend/app/database.py` | PostgreSQL/SQLite and idempotent loading |
+| `api/index.py` | Vercel Function entry point |
+| `src/components/` | Layout and analytical components |
+| `src/data/support-data-runtime.ts` | Adapting snapshots for dashboards |
+| `src/lib/data-pipeline-api.ts` | API-first integration and fallback |
+| `src/lib/validation-engine.ts` | Equivalent TypeScript engine |
+| `src/lib/dashboard-store.ts` | Local monthly cache |
+| `src/lib/report-export.ts` | Excel and PowerPoint |
+| `src/pages/` | Dashboard pages |
 
-api/index.py                     # Entrada da Vercel Function
+## Quality and tests
 
-src/
-├── components/                  # Layout e componentes analíticos
-├── data/support-data-runtime.ts # Adaptação dos snapshots aos painéis
-├── lib/data-pipeline-api.ts     # Integração API-first e contingência
-├── lib/validation-engine.ts     # Motor TypeScript equivalente
-├── lib/dashboard-store.ts       # Cache local das competências
-├── lib/report-export.ts         # Excel e PowerPoint
-└── pages/                       # Painéis do dashboard
-```
+The automated suite covers:
 
-## Qualidade e testes
+- historical and current rules;
+- a 100-point ceiling for every reporting month;
+- separate, comparative total time and AHT;
+- reporting month determined by start date;
+- interactions ending in the following month;
+- department, agent, business-hour, and duration filters;
+- partial matching of people outside the award program;
+- automatic closures following regular rules;
+- out-of-scale ratings;
+- eligibility from 85 points;
+- only three award recipients among eligible employees;
+- tie-breaking and ranking;
+- persistence and duplicate-free reprocessing;
+- API endpoints;
+- Excel and PowerPoint generation.
 
-A suíte automatizada cobre:
+Validation commands:
 
-- regras históricas e atuais;
-- teto de 100 pontos em todas as competências;
-- Tempo Total e TMA separados e comparativos;
-- competência determinada pela data de início;
-- atendimento finalizado no mês seguinte;
-- filtros de setor, atendente, expediente e duração;
-- correspondência parcial de pessoas fora da campanha;
-- finalizações automáticas submetidas às regras regulares;
-- avaliações fora da escala;
-- elegibilidade a partir de 85;
-- somente três premiados entre os elegíveis;
-- desempate e ranking;
-- persistência e reprocessamento sem duplicidade;
-- endpoints da API;
-- geração de Excel e PowerPoint.
-
-Comandos de validação:
-
-```bash
+~~~bash
 pnpm check
 python -m pytest backend/tests -q
 pnpm build:prod
-```
+~~~
 
-A versão publicada foi validada com testes do frontend e backend, build de produção, saúde da API e conexão persistente com o PostgreSQL.
+The published version was validated with frontend and backend tests, a production build, API health checks, and a persistent PostgreSQL connection.
 
-## Execução local
+## Local setup
 
-Requisitos:
+Requirements:
 
-- Node.js 20 ou superior;
+- Node.js 20 or later;
 - pnpm;
-- Python 3.12 ou superior.
+- Python 3.12 or later.
 
-```bash
+~~~bash
 git clone https://github.com/Pedroferreira32/support-performance-analytics.git
 cd support-performance-analytics
 pnpm install
 python -m venv .venv
-```
+~~~
 
-Ative o ambiente virtual:
+Activate the virtual environment:
 
-```bash
+~~~bash
 # Windows
 .venv\Scripts\activate
 
-# Linux ou macOS
+# Linux or macOS
 source .venv/bin/activate
-```
+~~~
 
-Instale e execute a API:
+Install dependencies and run the API:
 
-```bash
+~~~bash
 pip install -r backend/requirements-dev.txt
 uvicorn backend.app.main:app --reload --port 10000
-```
+~~~
 
-Em outro terminal, configure e inicie o frontend:
+In another terminal, configure and start the frontend:
 
-```bash
+~~~bash
 cp .env.example .env
 pnpm dev
-```
+~~~
 
-Endereços locais:
+Local addresses:
 
 - frontend: `http://localhost:5173`;
 - API: `http://localhost:10000`;
-- documentação da API: `http://localhost:10000/api/docs`.
+- API documentation: `http://localhost:10000/api/docs`.
 
-Sem `DATABASE_URL`, o backend local cria um banco SQLite em `backend/data/support_performance.db`.
+Without `DATABASE_URL`, the local backend creates a SQLite database at `backend/data/support_performance.db`.
 
-## Publicação na Vercel
+## Deployment on Vercel
 
-O projeto utiliza uma única implantação:
+The project uses a single deployment:
 
-- React/Vite é distribuído pela CDN da Vercel;
-- `api/index.py` empacota a FastAPI como Vercel Function;
-- `/api/*` é direcionado ao backend;
-- as demais rotas são entregues pela SPA;
-- o Neon é acessado pela variável secreta `DATABASE_URL`;
-- a branch `main` aciona o deploy automático pelo GitHub.
+- React/Vite is distributed through Vercel's CDN;
+- `api/index.py` packages FastAPI as a Vercel Function;
+- `/api/*` is routed to the backend;
+- other routes are served by the SPA;
+- Neon is accessed through the secret `DATABASE_URL` variable;
+- the `main` branch triggers automatic GitHub deployments.
 
-Variáveis principais:
+Main variables:
 
-| Variável | Ambiente | Finalidade |
+| Variable | Environment | Purpose |
 |---|---|---|
-| `DATABASE_URL` | Production e Preview | Conexão privada com o Neon PostgreSQL |
-| `VITE_DATA_API_URL` | Desenvolvimento | URL do backend local; não é necessária em produção |
-| `VITE_ALLOW_LOCAL_PIPELINE_FALLBACK` | Opcional | Controla o motor TypeScript de contingência |
+| `DATABASE_URL` | Production and Preview | Private connection to Neon PostgreSQL |
+| `VITE_DATA_API_URL` | Development | Local backend URL; unnecessary in production |
+| `VITE_ALLOW_LOCAL_PIPELINE_FALLBACK` | Optional | Controls the fallback TypeScript engine |
 
-Nunca armazene senhas ou connection strings em arquivos versionados.
+Never store passwords or connection strings in versioned files.
 
-## Privacidade e governança
+## Privacy and governance
 
-- A demonstração pública utiliza nomes e dados sintéticos.
-- O arquivo original não é mantido pelo backend.
-- O banco armazena os registros tratados, parâmetros e evidências necessárias à auditoria.
-- A connection string fica protegida como secret da Vercel.
-- O Excel de auditoria deve ser guardado após cada fechamento oficial.
-- O ambiente público atual não possui autenticação; dados reais exigem controle de acesso antes do uso operacional.
+- The public demonstration uses synthetic names and data.
+- The backend does not retain the original file.
+- The database stores processed records, parameters, and evidence needed for auditing.
+- The connection string is protected as a Vercel secret.
+- The audit workbook should be saved after every official monthly closing.
+- The current public environment has no authentication; real data requires access control before operational use.
 
-## Resultado do projeto
+## Project outcome
 
-O sistema substitui uma validação mensal fragmentada por uma pipeline rastreável e uma camada analítica orientada à decisão. Além de identificar o Top 3 da premiação, demonstra na prática:
+The system replaces fragmented monthly validation with a traceable pipeline and a decision-oriented analytical layer. Beyond identifying the Top 3 award recipients, it demonstrates:
 
-- engenharia e qualidade de dados;
-- modelagem de regras de negócio;
-- integração entre frontend, API e banco;
-- análise de KPIs operacionais;
-- storytelling com dados;
-- automação de relatórios;
-- versionamento e CI/CD;
-- implantação serverless em produção.
+- data engineering and quality;
+- business rule modeling;
+- frontend, API, and database integration;
+- operational KPI analysis;
+- data storytelling;
+- report automation;
+- version control and CI/CD;
+- production serverless deployment.
 
-O projeto pode ser apresentado como um case completo de **Data Engineering + Data Analytics aplicado à gestão de desempenho do suporte**.
+The project can be presented as a complete **Data Engineering + Data Analytics case applied to support performance management**.
